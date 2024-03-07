@@ -29,7 +29,7 @@ setup(
     name="amino.fix.fix",
     license="MIT",
     author="imperialwool",
-    version="1.0",
+    version="1.0.1",
     author_email="hi@iwool.dev",
     description="Library for Aminoapps",
     url="https://github.com/imperialwool/Amino.fix.fix",
