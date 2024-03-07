@@ -12,6 +12,6 @@ Fork of Amino.fix to improve this library.
 
 ## Warning
 
-- Subclients are created a bit different way, please check source code and figure out, how to do it
+- if you using subclients, you SHOULD pass main client, NOT profile
 - Requests -> Httpx, i think its better
 - lib/util -> lib/ (why lib was empty?)
