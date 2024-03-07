@@ -8,8 +8,8 @@ from time import time as timestamp
 from threading import Thread
 from sys import _getframe as getframe
 
-from .lib import objects, helpers
-from .lib.helpers import gen_deviceId
+from ..lib import objects, helpers
+from ..lib.helpers import gen_deviceId
 
 class SocketHandler:
     def __init__(self, client, socket_trace = False, debug = False):

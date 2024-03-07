@@ -6,7 +6,6 @@ BASIC_HEADERS = {
     "Accept-Encoding": "gzip, deflate, br",
     "Accept-Language": "en-US,en;q=0.9",
     "Content-Type": "application/x-www-form-urlencoded",
-    "User-Agent": "Apple iPhone12,1 iOS v15.5 Main/3.12.2",
     "Host": "service.aminoapps.com",
     "Connection": "keep-alive",
     "NDCLANG": "en"
