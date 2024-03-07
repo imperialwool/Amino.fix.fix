@@ -9,6 +9,22 @@ requirements = [
     "json_minify"
 ]
 
+keywords = [
+    'aminoapps',
+    'amino.fix',
+    'amino.fix.fix',
+    'amino',
+    'amino-bot',
+    'narvii',
+    'medialab',
+    'api',
+    'python',
+    'python3',
+    'python3.x',
+    'minori',
+    'imperialwool',
+]
+
 setup(
     name="amino.fix.fix",
     license="MIT",
@@ -19,20 +35,8 @@ setup(
     url="https://github.com/imperialwool/Amino.fix.fix",
     packages=find_packages(),
     long_description=open("README.md").read(),
+    long_description_content_type="text/markdown",
     install_requires=requirements,
-    keywords=[
-        'aminoapps',
-        'amino.fix',
-        'amino.fix.fix',
-        'amino',
-        'amino-bot',
-        'narvii',
-        'api',
-        'python',
-        'python3',
-        'python3.x',
-        'minori',
-        'imperialwool',
-    ],
+    keywords=keywords,
     python_requires='>=3.7',
 )

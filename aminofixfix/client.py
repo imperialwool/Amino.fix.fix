@@ -48,6 +48,9 @@ class Client(Callbacks, SocketHandler):
         self.active_live_chats = []
         self.stop_loop = False
 
+        try: self.socket.close()
+        except: pass
+
     def additional_headers(self, data: str = None, type: str = None):
         return headers.additionals(
             data=data,
@@ -243,17 +246,17 @@ class Client(Callbacks, SocketHandler):
         if response.status_code != 200: exceptions.CheckException(response.text)
         else:
             self.authenticated = True
-            self.json = loads(response.text)
+            self.json = response.json()
             self.sid = self.json["sid"]
             self.userId = self.json["account"]["uid"]
             self.account: objects.UserProfile = objects.UserProfile(self.json["account"]).UserProfile
             self.profile: objects.UserProfile = objects.UserProfile(self.json["userProfile"]).UserProfile
-            self.secret = self.get("secret")
+            self.secret = self.json.get("secret")
 
             if self.socket_enabled:
                 self.run_amino_socket()
 
-            return loads(response.text)
+            return response.json()
 
     def login_phone(self, phoneNumber: str, password: str):
         """
@@ -284,7 +287,7 @@ class Client(Callbacks, SocketHandler):
 
         else:
             self.authenticated = True
-            self.json = loads(response.text)
+            self.json = response.json()
             self.sid = self.json["sid"]
             self.userId = self.json["account"]["uid"]
 
@@ -295,7 +298,7 @@ class Client(Callbacks, SocketHandler):
             if self.socket_enabled:
                 self.run_amino_socket()
 
-            return loads(response.text)
+            return response.json()
 
     def login_secret(self, secret: str):
         """
@@ -324,7 +327,7 @@ class Client(Callbacks, SocketHandler):
 
         else:
             self.authenticated = True
-            self.json = loads(response.text)
+            self.json = response.json()
             self.sid = self.json["sid"]
             self.userId = self.json["account"]["uid"]
 
@@ -334,7 +337,7 @@ class Client(Callbacks, SocketHandler):
             if self.socket_enabled:
                 self.run_amino_socket()
 
-            return loads(response.text)
+            return response.json()
 
     def register(self, nickname: str, email: str, password: str, verificationCode: str, deviceId: str = None, timeout: int = None):
         """
@@ -381,7 +384,7 @@ class Client(Callbacks, SocketHandler):
         if response.status_code != 200: 
             return exceptions.CheckException(response.text)
         else:
-            return loads(response.text)
+            return response.json()
 
     def restore(self, email: str, password: str):
         """
@@ -656,7 +659,7 @@ class Client(Callbacks, SocketHandler):
         if response.status_code != 200: 
             return exceptions.CheckException(response.text)
         else:
-            return objects.UserProfile(loads(response.text)["account"]).UserProfile
+            return objects.UserProfile(response.json()["account"]).UserProfile
 
     def upload_media(self, file: BinaryIO, fileType: str):
         """
@@ -678,12 +681,11 @@ class Client(Callbacks, SocketHandler):
 
         data = file.read()
 
-        response = self.session.post(f"/g/s/media/upload", data=data, headers=headers.ApisHeaders(type=t, data=data, deviceId=gen_deviceId() if self.autoDevice else self.device_id, user_agent=self.user_agent, sid=self.sid).headers)
+        response = self.session.post(f"/g/s/media/upload", data=data, headers=self.additional_headers(type=t, data=data))
         if response.status_code != 200: 
             return exceptions.CheckException(response.text)
         else:
-            print(response.text)
-            return loads(response.text)["mediaValue"]
+            return response.json()["mediaValue"]
 
     def handle_socket_message(self, data):
         return self.resolve(data)
@@ -693,7 +695,7 @@ class Client(Callbacks, SocketHandler):
         if response.status_code != 200: 
             return exceptions.CheckException(response.text)
         else:
-            return loads(response.text)
+            return response.json()
 
     def sub_clients(self, start: int = 0, size: int = 25):
         """
@@ -713,7 +715,7 @@ class Client(Callbacks, SocketHandler):
         if response.status_code != 200: 
             return exceptions.CheckException(response.text)
         else:
-            return objects.CommunityList(loads(response.text)["communityList"]).CommunityList
+            return objects.CommunityList(response.json()["communityList"]).CommunityList
 
     def sub_clients_profile(self, start: int = 0, size: int = 25):
         if not self.authenticated: raise exceptions.NotLoggedIn()
@@ -721,7 +723,7 @@ class Client(Callbacks, SocketHandler):
         if response.status_code != 200: 
             return exceptions.CheckException(response.text)
         else:
-            return loads(response.text)["userInfoInCommunities"]
+            return response.json()["userInfoInCommunities"]
 
     def get_user_info(self, userId: str):
         """
@@ -739,7 +741,7 @@ class Client(Callbacks, SocketHandler):
         if response.status_code != 200: 
             return exceptions.CheckException(response.text)
         else:
-            return objects.UserProfile(loads(response.text)["userProfile"]).UserProfile
+            return objects.UserProfile(response.json()["userProfile"]).UserProfile
 
     def watch_ad(self, userId: str = None):
         data = dumps(headers.Tapjoy(userId if userId else self.userId).data) 
@@ -764,7 +766,7 @@ class Client(Callbacks, SocketHandler):
         if response.status_code != 200: 
             return exceptions.CheckException(response.text)
         else:
-            return objects.ThreadList(loads(response.text)["threadList"]).ThreadList
+            return objects.ThreadList(response.json()["threadList"]).ThreadList
 
     def get_chat_thread(self, chatId: str):
         """
@@ -782,14 +784,14 @@ class Client(Callbacks, SocketHandler):
         if response.status_code != 200: 
             return exceptions.CheckException(response.text)
         else:
-            return objects.Thread(loads(response.text)["thread"]).Thread
+            return objects.Thread(response.json()["thread"]).Thread
 
     def get_chat_users(self, chatId: str, start: int = 0, size: int = 25):
         response = self.session.get(f"/g/s/chat/thread/{chatId}/member?start={start}&size={size}&type=default&cv=1.2", headers=self.additional_headers())
         if response.status_code != 200: 
             return exceptions.CheckException(response.text)
         else:
-            return objects.UserProfileList(loads(response.text)["memberList"]).UserProfileList
+            return objects.UserProfileList(response.json()["memberList"]).UserProfileList
 
     def join_chat(self, chatId: str):
         """
@@ -869,7 +871,7 @@ class Client(Callbacks, SocketHandler):
         if response.status_code != 200: 
             return exceptions.CheckException(response.text)
         else:
-            return objects.Thread(loads(response.text)["thread"]).Thread
+            return objects.Thread(response.json()["thread"]).Thread
 
     def invite_to_chat(self, userId: Union[str, list], chatId: str):
         """
@@ -930,7 +932,7 @@ class Client(Callbacks, SocketHandler):
         if response.status_code != 200: 
             return exceptions.CheckException(response.text)
         else:
-            return objects.GetMessages(loads(response.text)).GetMessages
+            return objects.GetMessages(response.json()).GetMessages
 
     def get_message_info(self, chatId: str, messageId: str):
         """
@@ -949,7 +951,7 @@ class Client(Callbacks, SocketHandler):
         if response.status_code != 200: 
             return exceptions.CheckException(response.text)
         else:
-            return objects.Message(loads(response.text)["message"]).Message
+            return objects.Message(response.json()["message"]).Message
 
     def get_community_info(self, comId: str):
         """
@@ -967,7 +969,7 @@ class Client(Callbacks, SocketHandler):
         if response.status_code != 200: 
             return exceptions.CheckException(response.text)
         else:
-            return objects.Community(loads(response.text)["community"]).Community
+            return objects.Community(response.json()["community"]).Community
 
     def search_community(self, aminoId: str):
         """
@@ -986,7 +988,7 @@ class Client(Callbacks, SocketHandler):
             return exceptions.CheckException(response.text)
         else:
 
-            response = loads(response.text)["resultList"]
+            response = response.json()["resultList"]
             if len(response) == 0: raise exceptions.CommunityNotFound(aminoId)
             else: return objects.CommunityList([com["refObject"] for com in response]).CommunityList
 
@@ -1008,7 +1010,7 @@ class Client(Callbacks, SocketHandler):
         if response.status_code != 200: 
             return exceptions.CheckException(response.text)
         else:
-            return objects.UserProfileList(loads(response.text)["userProfileList"]).UserProfileList
+            return objects.UserProfileList(response.json()["userProfileList"]).UserProfileList
 
     def get_user_followers(self, userId: str, start: int = 0, size: int = 25):
         """
@@ -1028,7 +1030,7 @@ class Client(Callbacks, SocketHandler):
         if response.status_code != 200: 
             return exceptions.CheckException(response.text)
         else:
-            return objects.UserProfileList(loads(response.text)["userProfileList"]).UserProfileList
+            return objects.UserProfileList(response.json()["userProfileList"]).UserProfileList
 
     def get_user_visitors(self, userId: str, start: int = 0, size: int = 25):
         """
@@ -1048,7 +1050,7 @@ class Client(Callbacks, SocketHandler):
         if response.status_code != 200: 
             return exceptions.CheckException(response.text)
         else:
-            return objects.VisitorsList(loads(response.text)).VisitorsList
+            return objects.VisitorsList(response.json()).VisitorsList
 
     def get_blocked_users(self, start: int = 0, size: int = 25):
         """
@@ -1067,7 +1069,7 @@ class Client(Callbacks, SocketHandler):
         if response.status_code != 200: 
             return exceptions.CheckException(response.text)
         else:
-            return objects.UserProfileList(loads(response.text)["userProfileList"]).UserProfileList
+            return objects.UserProfileList(response.json()["userProfileList"]).UserProfileList
 
     def get_blog_info(self, blogId: str = None, wikiId: str = None, quizId: str = None, fileId: str = None):
         if blogId or quizId:
@@ -1076,21 +1078,21 @@ class Client(Callbacks, SocketHandler):
             if response.status_code != 200: 
                 return exceptions.CheckException(response.text)
             else:
-                return objects.GetBlogInfo(loads(response.text)).GetBlogInfo
+                return objects.GetBlogInfo(response.json()).GetBlogInfo
 
         elif wikiId:
             response = self.session.get(f"/g/s/item/{wikiId}", headers=self.additional_headers())
             if response.status_code != 200: 
                 return exceptions.CheckException(response.text)
             else:
-                return objects.GetBlogInfo(loads(response.text)).GetWikiInfo
+                return objects.GetBlogInfo(response.json()).GetWikiInfo
 
         elif fileId:
             response = self.session.get(f"/g/s/shared-folder/files/{fileId}", headers=self.additional_headers())
             if response.status_code != 200: 
                 return exceptions.CheckException(response.text)
             else:
-                return objects.SharedFolderFile(loads(response.text)["file"]).SharedFolderFile
+                return objects.SharedFolderFile(response.json()["file"]).SharedFolderFile
 
         else: raise exceptions.SpecifyType()
 
@@ -1110,7 +1112,7 @@ class Client(Callbacks, SocketHandler):
         if response.status_code != 200: 
             return exceptions.CheckException(response.text)
         else:
-            return objects.CommentList(loads(response.text)["commentList"]).CommentList
+            return objects.CommentList(response.json()["commentList"]).CommentList
 
     def get_blocker_users(self, start: int = 0, size: int = 25):
         """
@@ -1129,7 +1131,7 @@ class Client(Callbacks, SocketHandler):
         if response.status_code != 200: 
             return exceptions.CheckException(response.text)
         else:
-            return loads(response.text)["blockerUidList"]
+            return response.json()["blockerUidList"]
 
     def get_wall_comments(self, userId: str, sorting: str, start: int = 0, size: int = 25):
         """
@@ -1156,7 +1158,7 @@ class Client(Callbacks, SocketHandler):
         if response.status_code != 200: 
             return exceptions.CheckException(response.text)
         else:
-            return objects.CommentList(loads(response.text)["commentList"]).CommentList
+            return objects.CommentList(response.json()["commentList"]).CommentList
 
     def flag(self, reason: str, flagType: int, userId: str = None, blogId: str = None, wikiId: str = None, asGuest: bool = False):
         """
@@ -1802,7 +1804,7 @@ class Client(Callbacks, SocketHandler):
         if response.status_code != 200: 
             return exceptions.CheckException(response.text)
         else:
-            return objects.CommunityList(loads(response.text)["linkedCommunityList"]).CommunityList
+            return objects.CommunityList(response.json()["linkedCommunityList"]).CommunityList
 
     def get_unlinked_communities(self, userId: str):
         """
@@ -1820,7 +1822,7 @@ class Client(Callbacks, SocketHandler):
         if response.status_code != 200: 
             return exceptions.CheckException(response.text)
         else:
-            return objects.CommunityList(loads(response.text)["unlinkedCommunityList"]).CommunityList
+            return objects.CommunityList(response.json()["unlinkedCommunityList"]).CommunityList
 
     def reorder_linked_communities(self, comIds: list):
         """
@@ -2107,7 +2109,7 @@ class Client(Callbacks, SocketHandler):
         if response.status_code != 200: 
             return exceptions.CheckException(response.text)
         else:
-            return objects.Membership(loads(response.text)).Membership
+            return objects.Membership(response.json()).Membership
 
     def get_ta_announcements(self, language: str = "en", start: int = 0, size: int = 25):
         """
@@ -2129,7 +2131,7 @@ class Client(Callbacks, SocketHandler):
         if response.status_code != 200: 
             return exceptions.CheckException(response.text)
         else:
-            return objects.BlogList(loads(response.text)["blogList"]).BlogList
+            return objects.BlogList(response.json()["blogList"]).BlogList
 
     def get_wallet_info(self):
         """
@@ -2147,7 +2149,7 @@ class Client(Callbacks, SocketHandler):
         if response.status_code != 200: 
             return exceptions.CheckException(response.text)
         else:
-            return objects.WalletInfo(loads(response.text)["wallet"]).WalletInfo
+            return objects.WalletInfo(response.json()["wallet"]).WalletInfo
 
     def get_wallet_history(self, start: int = 0, size: int = 25):
         """
@@ -2166,7 +2168,7 @@ class Client(Callbacks, SocketHandler):
         if response.status_code != 200: 
             return exceptions.CheckException(response.text)
         else:
-            return objects.WalletHistory(loads(response.text)["coinHistoryList"]).WalletHistory
+            return objects.WalletHistory(response.json()["coinHistoryList"]).WalletHistory
 
     def get_from_deviceid(self, deviceId: str):
         """
@@ -2184,7 +2186,7 @@ class Client(Callbacks, SocketHandler):
         if response.status_code != 200: 
             return exceptions.CheckException(response.text)
         else:
-            return loads(response.text)["auid"]
+            return response.json()["auid"]
 
     def get_from_code(self, code: str):
         """
@@ -2203,7 +2205,7 @@ class Client(Callbacks, SocketHandler):
         if response.status_code != 200: 
             return exceptions.CheckException(response.text)
         else:
-            return objects.FromCode(loads(response.text)["linkInfoV2"]).FromCode
+            return objects.FromCode(response.json()["linkInfoV2"]).FromCode
 
     def get_from_id(self, objectId: str, objectType: int, comId: str = None):
         """
@@ -2231,7 +2233,7 @@ class Client(Callbacks, SocketHandler):
         if response.status_code != 200: 
             return exceptions.CheckException(response.text)
         else:
-            return objects.FromCode(loads(response.text)["linkInfoV2"]).FromCode
+            return objects.FromCode(response.json()["linkInfoV2"]).FromCode
 
     def get_supported_languages(self):
         """
@@ -2249,7 +2251,7 @@ class Client(Callbacks, SocketHandler):
         if response.status_code != 200: 
             return exceptions.CheckException(response.text)
         else:
-            return loads(response.text)["supportedLanguages"]
+            return response.json()["supportedLanguages"]
 
     def claim_new_user_coupon(self):
         """
@@ -2286,7 +2288,7 @@ class Client(Callbacks, SocketHandler):
         if response.status_code != 200: 
             return exceptions.CheckException(response.text)
         else:
-            return loads(response.text)["storeSubscriptionItemList"]
+            return response.json()["storeSubscriptionItemList"]
 
     def get_all_users(self, start: int = 0, size: int = 25):
         """
@@ -2305,7 +2307,7 @@ class Client(Callbacks, SocketHandler):
         if response.status_code != 200: 
             return exceptions.CheckException(response.text)
         else:
-            return objects.UserProfileCountList(loads(response.text)).UserProfileCountList
+            return objects.UserProfileCountList(response.json()).UserProfileCountList
 
     def accept_host(self, chatId: str, requestId: str):
         data = dumps({})
@@ -2321,7 +2323,7 @@ class Client(Callbacks, SocketHandler):
     # Contributed by 'https://github.com/LynxN1'
     def link_identify(self, code: str):
         response = self.session.get(f"/g/s/community/link-identify?q=http%3A%2F%2Faminoapps.com%2Finvite%2F{code}", headers=self.additional_headers())
-        return loads(response.text)
+        return response.json()
 
     def invite_to_vc(self, chatId: str, userId: str):
         """
@@ -2406,4 +2408,4 @@ class Client(Callbacks, SocketHandler):
         if response.status_code != 200: 
             return exceptions.CheckException(response.text)
         else:
-            return objects.CommunityList(loads(response.text)["communityList"]).CommunityList
+            return objects.CommunityList(response.json()["communityList"]).CommunityList
