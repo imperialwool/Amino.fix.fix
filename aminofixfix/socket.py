@@ -1,17 +1,17 @@
 import time
 import json
 import websocket
-import contextlib
+from random import randint
 
 from threading import Thread
 from sys import _getframe as getframe
 
-from ..lib.util import objects, helpers
-from ..lib.util.helpers import gen_deviceId
+from .lib import objects, helpers
+from .lib.helpers import gen_deviceId
 
 class SocketHandler:
     def __init__(self, client, socket_trace = False, debug = False):
-        self.socket_url = "wss://ws1.aminoapps.com"
+        self.socket_url = f"wss://ws{randint(1,4)}.aminoapps.com"
         self.client = client
         self.debug = debug
         self.active = False
@@ -53,6 +53,14 @@ class SocketHandler:
             time.sleep(5)
 
         self.socket.send(data)
+    def handle_error(self, ws, err):
+        print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n" +
+                "CRITICAL SOCKET ERROR: " + str(err) +
+                f"\nSOCKET INFO: {self.socket_url}\n" +
+                "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+                
+    def handle_close(self, ws, close_code, close_msg):
+        print(f"! Socket {self.socket_url} closed: '{close_code} = {close_msg}'!")
 
     def run_amino_socket(self):
         try:
@@ -73,7 +81,9 @@ class SocketHandler:
             self.socket = websocket.WebSocketApp(
                 f"{self.socket_url}/?signbody={final.replace('|', '%7C')}",
                 on_message = self.handle_message,
-                header = self.headers
+                header = self.headers,
+                on_error = self.handle_error,
+                on_close = self.handle_close
             )
 
             self.active = True

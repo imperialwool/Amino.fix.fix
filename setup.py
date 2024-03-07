@@ -1,32 +1,29 @@
 from setuptools import setup, find_packages
 
 requirements = [
-    "requests",
+    "httpx",
+    "httpx[http2]",
+    "httpx[socks]",
     "websocket-client==1.3.1", 
     "setuptools", 
-    "json_minify", 
-    "six",
-    "aiohttp",
-    "websockets"
+    "json_minify"
 ]
 
-with open("README.md", "r") as stream:
-    long_description = stream.read()
-
 setup(
-    name="amino.fix",
+    name="amino.fix.fix",
     license="MIT",
-    author="Minori",
-    version="2.3.6.1",
-    author_email="minorigithub@gmail.com",
-    description="Library for Amino. Discord - https://discord.gg/Bf3dpBRJHj",
-    url="https://github.com/Minori100/Amino.fix",
+    author="imperialwool",
+    version="1.0",
+    author_email="hi@iwool.dev",
+    description="Library for Aminoapps",
+    url="https://github.com/imperialwool/Amino.fix.fix",
     packages=find_packages(),
-    long_description=long_description,
+    long_description=open("README.md").read(),
     install_requires=requirements,
     keywords=[
         'aminoapps',
         'amino.fix',
+        'amino.fix.fix',
         'amino',
         'amino-bot',
         'narvii',
@@ -34,7 +31,8 @@ setup(
         'python',
         'python3',
         'python3.x',
-        'minori'
+        'minori',
+        'imperialwool',
     ],
-    python_requires='>=3.6',
+    python_requires='>=3.7',
 )

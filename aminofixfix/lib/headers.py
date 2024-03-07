@@ -1,32 +1,37 @@
-from aminofix.lib.util import signature
-
 from uuid import uuid4
+from .helpers import signature
 
-sid = None
-device_id = None
-user_agent = None
+BASIC_HEADERS = {
+    "Accept": "*/*",
+    "Accept-Encoding": "gzip, deflate, br",
+    "Accept-Language": "en-US,en;q=0.9",
+    "Content-Type": "application/x-www-form-urlencoded",
+    "User-Agent": "Apple iPhone12,1 iOS v15.5 Main/3.12.2",
+    "Host": "service.aminoapps.com",
+    "Connection": "keep-alive",
+    "NDCLANG": "en"
+}
 
-class ApisHeaders:
-    def __init__(self, data = None, type = None, deviceId: str = None, sig: str = None):
+def additionals(data = None, user_agent = None, type = None, deviceId: str = None, sig: str = None, sid: str = None, auid: str = None):
+    headers = dict()
 
-        headers = {
-            "Accept-Language": "en-US",
-            "Content-Type": "application/x-www-form-urlencoded",
-            "User-Agent": user_agent,
-            "Host": "service.narvii.com",
-            "Accept-Encoding": "gzip",
-            "Connection": "Upgrade"
-        }
+    if user_agent:
+        headers['User-Agent'] = user_agent
+    if deviceId:
+        headers["NDCDEVICEID"] = deviceId
+    if data:
+        headers["Content-Length"] = str(len(data))
+        headers["NDC-MSG-SIG"] = signature(data)
+    if auid:
+        headers['AUID'] = auid
+    if sid:
+        headers["NDCAUTH"] = f"sid={sid}"
+    if type: 
+        headers["Content-Type"] = type
+    if sig:
+        headers["NDC-MSG-SIG"] = sig
 
-        if device_id: headers["NDCDEVICEID"] = device_id
-        if data:
-            headers["Content-Length"] = str(len(data))
-            headers["NDC-MSG-SIG"] = signature(data)
-        if sid: headers["NDCAUTH"] = f"sid={sid}"
-        if type: headers["Content-Type"] = type
-        if sig: headers["NDC-MSG-SIG"] = sig
-
-        self.headers = headers
+    return headers
 
 class Tapjoy:
     def __init__(self, userId: str = None):

@@ -1,10 +1,10 @@
-import json
-import os
 
-from functools import reduce
 from base64 import b64decode, b64encode
+from functools import reduce
 from typing import Union
 from hashlib import sha1
+from os import urandom
+from json import loads
 from hmac import new
 
 PREFIX = bytes.fromhex("19")
@@ -13,7 +13,7 @@ DEVICE_KEY = bytes.fromhex("E7309ECC0953C6FA60005B2765F99DBBC965C8E9")
 
 def gen_deviceId(data: bytes = None) -> str:
     if isinstance(data, str): data = bytes(data, 'utf-8')
-    identifier = PREFIX + (data or os.urandom(20))
+    identifier = PREFIX + (data or urandom(20))
     mac = new(DEVICE_KEY, identifier, sha1)
     return f"{identifier.hex()}{mac.hexdigest()}".upper()
 
@@ -25,7 +25,7 @@ def update_deviceId(device: str) -> str:
     return gen_deviceId(bytes.fromhex(device[2:42]))
 
 def decode_sid(sid: str) -> dict:
-    return json.loads(b64decode(reduce(lambda a, e: a.replace(*e), ("-+", "_/"), sid + "=" * (-len(sid) % 4)).encode())[1:-20].decode())
+    return loads(b64decode(reduce(lambda a, e: a.replace(*e), ("-+", "_/"), sid + "=" * (-len(sid) % 4)).encode())[1:-20].decode())
 
 def sid_to_uid(SID: str) -> str: return decode_sid(SID)["2"]
 
