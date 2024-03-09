@@ -28,7 +28,11 @@ class VCHeaders:
 
 
 class SubClient(Client):
-    def __init__(self, mainClient: Client, comId: str = None, aminoId: str = None, *, deviceId: str = None, autoDevice: bool = False, proxies: dict = None, certificatePath: str = None):
+    def __init__(
+        self, mainClient: Client,
+        comId: str = None, aminoId: str = None, *,
+        deviceId: str = None, autoDevice: bool = False, proxies: dict = None, certificatePath: str = None
+    ):
         Client.__init__(self, deviceId=deviceId, sub=True, proxies=proxies, certificatePath=certificatePath)
         self.vc_connect = False
         self.sid = mainClient.sid

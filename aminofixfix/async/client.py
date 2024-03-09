@@ -8,6 +8,7 @@ from json import loads, dumps
 from time import timezone, sleep
 from typing import BinaryIO, Union
 from time import time as timestamp
+from httpx import Timeout as TimeoutConfig
 from httpx import AsyncClient as HttpxClient
 from locale import getdefaultlocale as locale
 
@@ -18,43 +19,61 @@ from ..lib import exceptions, headers, objects, helpers
 #@dorthegra/IDörthe#8835 thanks for support!
 
 class Client(Callbacks, SocketHandler):
-    def __init__(self, deviceId: str = None, userAgent: str = None, proxies: dict = None, certificatePath = None, socket_trace = False, socketDebugging = False, socket_enabled = True, autoDevice = False, sub: bool = False):
+    def __init__(
+        self,
+        deviceId: str = None, userAgent: str = None, proxies: dict = None,
+        socket_trace = False, socketDebugging = False, socket_enabled = True,
+        autoDevice = False, sub: bool = False, http2_enabled: bool = True,
+            
+        default_timeout: int | None = 30,
+        connect_timeout: int | None = None, pool_timeout: int | None = None,
+        read_timeout: int | None = None, write_timeout: int | None= None
+    ):
         self.api = "https://service.aminoapps.com/api/v1"
-        self.authenticated = False
-        self.configured = False
-        self.autoDevice = autoDevice
-        self.certificatePath = certificatePath
-
-        if deviceId: 
-            self.device_id = deviceId
-        else: 
-            self.device_id = gen_deviceId()
-
         self.proxies = proxies
-        self.user_agent = userAgent if userAgent else helpers.gen_userAgent()
+        self.configured = False
+        self.authenticated = False
+        self.autoDevice = autoDevice
         self.socket_enabled = socket_enabled
+        self.device_id = deviceId if deviceId else gen_deviceId()
+        self.user_agent = userAgent if userAgent else helpers.gen_userAgent()
 
+        if not read_timeout and not default_timeout:
+            read_timeout = connect_timeout * 60
+        
+        if default_timeout:
+            self.timeout_settings = TimeoutConfig(
+                default_timeout,
+                read=default_timeout*60
+            )
+        else:
+            self.timeout_settings = TimeoutConfig(
+                default_timeout,
+                connect=connect_timeout or default_timeout,
+                read=read_timeout or (default_timeout*60 if default_timeout else None),
+                write=write_timeout or default_timeout,
+                pool=pool_timeout or default_timeout
+            )
+        
         self.session = HttpxClient(
             headers=headers.BASIC_HEADERS,
-            http2=True,
+            http2=http2_enabled,
             base_url=self.api,
-            proxies=proxies
+            proxies=proxies,
+            timeout=self.timeout_settings
         )
 
         SocketHandler.__init__(self, self, socket_trace=socket_trace, debug=socketDebugging)
         Callbacks.__init__(self, self)
-        self.json = None
         self.sid = None
+        self.json = None
+        self.secret = None
         self.userId = None
         self.account: objects.UserProfile = objects.UserProfile(None)
         self.profile: objects.UserProfile = objects.UserProfile(None)
-        self.secret = None
 
-        self.active_live_chats = []
         self.stop_loop = False
-
-        try: self.socket.close()
-        except: pass
+        self.active_live_chats = []
 
     def additional_headers(self, data: str = None, type: str = None):
         return headers.additionals(

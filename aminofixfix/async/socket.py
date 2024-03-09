@@ -12,6 +12,18 @@ from ..lib import objects, helpers
 from ..lib.helpers import gen_deviceId
 
 class SocketHandler:
+    '''
+        Sockets needs rewrite. Really.
+
+        It's hard to add new features or support it, because code is mess of useless functions and things.
+        It's LITTERALY a digital spaghetti that will poison you instead of healing you.
+
+        In next update if sockets will be rewritten,
+        just know that sockets was written from scratch using "websockets" library, not "websocket-client".
+
+        And please. DO NOT SEND any issues about websockets if they arent rewritten.
+        I will close it and ignore it. Just please. I'm asking you as human to you, human.
+    '''
     def __init__(self, client, socket_trace = False, debug = False):
         self.socket_url = f"wss://ws{randint(1,4)}.aminoapps.com"
         self.client = client
