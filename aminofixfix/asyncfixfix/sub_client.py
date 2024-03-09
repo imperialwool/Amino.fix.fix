@@ -34,27 +34,34 @@ class SubClient(Client):
         deviceId: str = None, autoDevice: bool = False, proxies: dict = None
     ):
         Client.__init__(self, deviceId=deviceId, sub=True, proxies=proxies)
+        self.comId = comId
+        self.aminoId = aminoId
         self.vc_connect = False
-        self.sid = mainClient.sid
-        self.device_id = mainClient.device_id
-        self.user_agent = mainClient.user_agent
-        self.profile = mainClient.profile
-        self.userId = mainClient.userId
+        self.mainClient = mainClient
+        
+        self.sid = self.mainClient.sid
+        self.userId = self.mainClient.userId
+        self.device_id = self.mainClient.device_id
+        self.user_agent = self.mainClient.user_agent
+        
+        self.community: objects.Community
+        self.profile: objects.UserProfile = self.mainClient.profile
+        
 
-        if comId is not None:
-            self.comId = comId
-            self.community: objects.Community = self.get_community_info(comId)
+    def __await__(self):
+        return self._init().__await__()
 
-        if aminoId is not None:
-            link = "http://aminoapps.com/c/"
-            self.comId = self.get_from_code(link + aminoId).comId
-            self.community: objects.Community = self.get_community_info(self.comId)
-
-        if comId is None and aminoId is None: raise exceptions.NoCommunity()
-
-        try: self.profile: objects.UserProfile = self.get_user_info(userId=self.profile.userId)
+    async def _init(self):
+        if self.comId is not None:
+            self.community: objects.Community = await self.get_community_info(self.comId)
+        if self.aminoId is not None:
+            self.comId = (await self.mainClient.search_community(self.aminoId)).comId[0]
+            self.community: objects.Community = await self.mainClient.get_community_info(self.comId)
+        if self.comId is None and self.aminoId is None: raise exceptions.NoCommunity()
+        try: self.profile: objects.UserProfile = await self.get_user_info(userId=self.profile.userId)
         except AttributeError: raise exceptions.FailedLogin()
-        except exceptions.UserUnavailable: pass
+        except exceptions.UserUnavailable(): pass
+        return self
 
     def additional_headers(self, data: str = None, type: str = None):
         return headers.additionals(
