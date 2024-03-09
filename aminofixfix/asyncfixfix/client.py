@@ -236,8 +236,8 @@ class Client(Callbacks, SocketHandler):
         self.sid = SID
         self.userId = uId
 
-        self.account: objects.UserProfile = self.get_user_info(uId)
-        self.profile: objects.UserProfile = self.get_user_info(uId)
+        self.account: objects.UserProfile = await self.get_user_info(uId)
+        self.profile: objects.UserProfile = await self.get_user_info(uId)
 
         if self.socket_enabled:
             self.run_amino_socket()
@@ -2150,7 +2150,7 @@ class Client(Callbacks, SocketHandler):
 
             - **Fail** : :meth:`Exceptions <aminofix.lib.util.exceptions>`
         """
-        if language not in self.get_supported_languages(): raise exceptions.UnsupportedLanguage(language)
+        if language not in await self.get_supported_languages(): raise exceptions.UnsupportedLanguage(language)
         response = await self.session.get(f"/g/s/announcement?language={language}&start={start}&size={size}", headers=self.additional_headers())
         if response.status_code != 200: 
             return exceptions.CheckException(response.text)
