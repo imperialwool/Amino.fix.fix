@@ -711,7 +711,7 @@ class Client(Callbacks, SocketHandler):
         else:
             return response.json()["mediaValue"]
 
-    async def handle_socket_message(self, data):
+    def handle_socket_message(self, data):
         return self.resolve(data)
 
     async def get_eventlog(self):
