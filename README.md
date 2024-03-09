@@ -15,7 +15,7 @@ Fork of Amino.fix to improve this library.
 
 If you want to use sync version of library, you should `import aminofixfix`.
 
-If you want to use Async version of library, you should `import aminofixfix.async`.
+If you want to use Async version of library, you should `import aminofixfix.asyncfixfix`.
 
 ## API Reference
 
