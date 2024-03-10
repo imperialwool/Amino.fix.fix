@@ -1,5 +1,5 @@
 from setuptools import setup, find_packages
-from aminofixfix.lib.helpers import LIBRARY_VERSION
+LIBRARY_VERSION = "1.0.3.7"
 
 requirements = [
     "httpx",

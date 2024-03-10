@@ -22,10 +22,12 @@ class Client(Callbacks, SocketHandler):
     def __init__(
         self,
         deviceId: str = None, userAgent: str = None, proxies: dict = None,
-        certificatePath = None, socket_trace = False, socketDebugging = False, socket_enabled = True,
+        socket_trace = False, socketDebugging = False, socket_enabled = True,
         autoDevice = False, sub: bool = False, http2_enabled: bool = True,
         
-        default_timeout: int | None = 30,
+        disable_timeout: bool = False,
+        default_timeout: int | None = 30, own_timeout: TimeoutConfig | None = None,
+
         connect_timeout: int | None = None, pool_timeout: int | None = None,
         read_timeout: int | None = None, write_timeout: int | None= None
     ):
@@ -34,27 +36,24 @@ class Client(Callbacks, SocketHandler):
         self.configured = False
         self.authenticated = False
         self.autoDevice = autoDevice
+        self.http2_enabled = http2_enabled
         self.socket_enabled = socket_enabled
-        self.certificatePath = certificatePath
         self.device_id = deviceId if deviceId else gen_deviceId()
         self.user_agent = userAgent if userAgent else helpers.gen_userAgent()
 
-        if not read_timeout and not default_timeout:
-            read_timeout = connect_timeout * 60 if connect_timeout else None
-        
-        if default_timeout:
+        if disable_timeout:
+            self.timeout_settings = TimeoutConfig(None)
+        elif isinstance(own_timeout, TimeoutConfig):
+            self.timeout_settings = own_timeout
+        elif read_timeout or write_timeout or pool_timeout or connect_timeout:
             self.timeout_settings = TimeoutConfig(
-                default_timeout,
-                read=default_timeout*60
+                read=read_timeout,
+                write=write_timeout,
+                pool=pool_timeout,
+                connect=connect_timeout
             )
         else:
-            self.timeout_settings = TimeoutConfig(
-                default_timeout,
-                connect=connect_timeout or default_timeout,
-                read=read_timeout or (default_timeout*60 if default_timeout else None),
-                write=write_timeout or default_timeout,
-                pool=pool_timeout or default_timeout
-            )
+            self.timeout_settings = TimeoutConfig(default_timeout or 60)
 
         self.session = HttpxClient(
             headers=headers.BASIC_HEADERS,
