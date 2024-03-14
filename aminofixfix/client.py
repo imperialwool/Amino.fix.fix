@@ -75,10 +75,10 @@ class Client(Callbacks, SocketHandler):
         self.stop_loop = False
         self.active_live_chats = []
 
-    def additional_headers(self, data: str = None, type: str = None):
+    def additional_headers(self, data: str = None, content_type: str = None):
         return headers.additionals(
             data=data,
-            type=type,
+            content_type=content_type,
             user_agent=self.user_agent,
             sid=self.sid,
             auid=self.userId,
@@ -829,7 +829,7 @@ class Client(Callbacks, SocketHandler):
 
             - **Fail** : :meth:`Exceptions <aminofix.lib.util.exceptions>`
         """
-        response = self.session.post(f"/g/s/chat/thread/{chatId}/member/{self.userId}", headers=self.additional_headers(type="application/x-www-form-urlencoded"))
+        response = self.session.post(f"/g/s/chat/thread/{chatId}/member/{self.userId}", headers=self.additional_headers())
         if response.status_code != 200: 
             return exceptions.CheckException(response.text)
         else:
@@ -1461,13 +1461,13 @@ class Client(Callbacks, SocketHandler):
         if viewOnly is not None:
             if viewOnly:
                 
-                response = self.session.post(f"/g/s/chat/thread/{chatId}/view-only/enable", headers=self.additional_headers(type="application/x-www-form-urlencoded"))
+                response = self.session.post(f"/g/s/chat/thread/{chatId}/view-only/enable", headers=self.additional_headers())
                 if response.status_code != 200: res.append(exceptions.CheckException(response.text))
                 else: res.append(response.status_code)
 
             if not viewOnly:
                 
-                response = self.session.post(f"/g/s/chat/thread/{chatId}/view-only/disable", headers=self.additional_headers(type="application/x-www-form-urlencoded"))
+                response = self.session.post(f"/g/s/chat/thread/{chatId}/view-only/disable", headers=self.additional_headers())
                 if response.status_code != 200: res.append(exceptions.CheckException(response.text))
                 else: res.append(response.status_code)
 
