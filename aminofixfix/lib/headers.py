@@ -27,7 +27,7 @@ def additionals(data = None, user_agent = None, content_type = None, deviceId: s
     if sig:
         headers["NDC-MSG-SIG"] = sig
 
-    if content_type.lower() == "default":
+    if isinstance(content_type, str) and content_type.lower() == "default":
         pass # letting HTTPX do its job
     elif content_type: 
         headers["Content-Type"] = content_type
