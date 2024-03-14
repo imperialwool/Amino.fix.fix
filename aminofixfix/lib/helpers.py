@@ -8,7 +8,7 @@ from json import loads
 from hmac import new
 import re
 
-LIBRARY_VERSION = "1.0.3.7"
+LIBRARY_VERSION = "1.0.4"
 
 PREFIX = bytes.fromhex("19")
 SIG_KEY = bytes.fromhex("DFA5ED192DDA6E88A12FE12130DC6206B1251E44")
@@ -32,11 +32,10 @@ APP_VERSIONS = [
     "3.22.0", "3.21.0", "3.20.0", "3.19.0", "3.18.0"
 ]
 
+
 def gen_deviceId(data: bytes = None) -> str:
-    if isinstance(data, str): data = bytes(data, 'utf-8')
-    identifier = PREFIX + (data or urandom(20))
-    mac = new(DEVICE_KEY, identifier, sha1)
-    return f"{identifier.hex()}{mac.hexdigest()}".upper()
+    identifier = PREFIX + ((data if isinstance(data, bytes) else bytes(data, 'utf-8')) if data else urandom(20))
+    return "{}{}".format(identifier.hex(), new(DEVICE_KEY, identifier, sha1).hexdigest()).upper()
 
 def gen_userAgent() -> str:
     return "Apple iPhone{} iOS v{} Main/{}".format(

@@ -1,6 +1,12 @@
 # You don't even know how long this shit took...
 # F*ck you Sand for making me do this.
 
+from enum import Enum
+
+class EmbedTypes(Enum):
+    LINK_SNIPPET = 1
+    ATTACHED_OBJECT = 2
+
 class Objects:
     class Users:
         team_amino = "000000000-0000-0000-0000-000000000000"

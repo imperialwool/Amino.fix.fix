@@ -1,11 +1,12 @@
 from setuptools import setup, find_packages
-LIBRARY_VERSION = "1.0.3.7"
+LIBRARY_VERSION = "1.0.4"
 
 requirements = [
-    "httpx",
+    "httpx>=0.27.0",
     "httpx[http2]",
     "httpx[socks]",
-    "websocket-client==1.3.1", 
+    "websocket-client>=1.3.1", #not sure why it NEEDS 1.3.1 version, latest version works fine
+    "python-socks", 
     "setuptools"
 ]
 

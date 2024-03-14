@@ -1,8 +1,8 @@
-from uuid import UUID
 from os import urandom
 from time import timezone
 from binascii import hexlify
 from base64 import b64encode
+from uuid import UUID, uuid4
 from json import loads, dumps
 from typing import BinaryIO, Union
 from time import time as timestamp
@@ -31,11 +31,11 @@ class SubClient(Client):
     def __init__(
         self, mainClient: Client,
         comId: str = None, aminoId: str = None, *,
-        deviceId: str = None, autoDevice: bool = False, proxies: dict = None
+        deviceId: str = None, autoDevice: bool | None = None, proxies: dict = None
     ):
         Client.__init__(
             self, deviceId=deviceId, sub=True, proxies=proxies,
-            autoDevice=mainClient.autoDevice, userAgent=mainClient.user_agent,
+            autoDevice=autoDevice or mainClient.autoDevice, userAgent=mainClient.user_agent,
             http2_enabled=mainClient.http2_enabled,
             own_timeout=mainClient.timeout_settings
         )
@@ -61,10 +61,10 @@ class SubClient(Client):
         except AttributeError: raise exceptions.FailedLogin()
         except exceptions.UserUnavailable: pass
 
-    def additional_headers(self, data: str = None, type: str = None):
+    def additional_headers(self, data: str = None, content_type: str = None):
         return headers.additionals(
             data=data,
-            type=type,
+            content_type=content_type,
             user_agent=self.user_agent,
             sid=self.sid,
             auid=self.userId,
@@ -111,7 +111,6 @@ class SubClient(Client):
         else:
             if imageList is not None:
                 for image in imageList:
-                    print(self.upload_media(image, "image"))
                     mediaList.append([100, self.upload_media(image, "image"), None])
 
         data = {
@@ -762,7 +761,16 @@ class SubClient(Client):
             return exceptions.CheckException(response.text)
         else: return response.status_code
 
-    def send_message(self, chatId: str, message: str = None, messageType: int = 0, file: BinaryIO = None, fileType: str = None, replyTo: str = None, mentionUserIds: list = None, stickerId: str = None, embedId: str = None, embedType: int = None, embedLink: str = None, embedTitle: str = None, embedContent: str = None, embedImage: BinaryIO = None):
+    def send_message(
+            self,
+            chatId: str, message: str = None, messageType: int = 0,
+            file: BinaryIO = None, fileType: str = None,
+            replyTo: str = None, mentionUserIds: list = None,
+            stickerId: str = None,
+        
+            embedId: str = None, embedObjectType: int = None, embedLink: str = None, embedTitle: str = None, embedContent: str = None, embedImage: BinaryIO = None,
+            embedType: objects.EmbedTypes = objects.EmbedTypes.LINK_SNIPPET
+        ):
         """
         Send a Message to a Chat.
 
@@ -776,11 +784,13 @@ class SubClient(Client):
             - **mentionUserIds** : List of User IDS to mention. '@' needed in the Message.
             - **replyTo** : Message ID to reply to.
             - **stickerId** : Sticker ID to be sent.
-            - **embedTitle** : Title of the Embed.
-            - **embedContent** : Content of the Embed.
+            - **embedType** : Type of the Embed. Can be aminofixfix.lib.objects.EmbedTypes only. By default it's LinkSnippet one.
             - **embedLink** : Link of the Embed.
             - **embedImage** : Image of the Embed.
-            - **embedId** : ID of the Embed.
+            - **embedId** : ID of the Embed. Works only in AttachedObject Embeds.
+            - **embedType** : Type of the AttachedObject Embed. Works only in AttachedObject Embeds.
+            - **embedTitle** : Title of the Embed. Works only in AttachedObject Embeds.
+            - **embedContent** : Content of the Embed. Works only in AttachedObject Embeds.
 
         **Returns**
             - **Success** : 200 (int)
@@ -793,27 +803,49 @@ class SubClient(Client):
 
         mentions = []
         if mentionUserIds:
-            for mention_uid in mentionUserIds:
-                mentions.append({"uid": mention_uid})
+            mentions = [{"uid": mention_uid} for mention_uid in mentionUserIds]
 
-        if embedImage:
-            embedImage = [[100, self.upload_media(embedImage, "image"), None]]
 
-        data = {
-            "type": messageType,
-            "content": message,
-            "clientRefId": int(timestamp() / 10 % 1000000000),
-            "attachedObject": {
-                "objectId": embedId,
-                "objectType": embedType,
-                "link": embedLink,
-                "title": embedTitle,
-                "content": embedContent,
-                "mediaList": embedImage
-            },
-            "extensions": {"mentionedArray": mentions},
-            "timestamp": int(timestamp() * 1000)
-        }
+        if embedType == objects.EmbedTypes.LINK_SNIPPET:
+            data = {
+                "type": messageType,
+                "content": message,
+                "clientRefId": int(timestamp() / 10 % 1000000000),
+                "extensions": {
+                    "linkSnippetList": [{
+                        "link": embedLink,
+                        "mediaType": 100,
+                        "mediaUploadValue": b64encode(embedImage.read()).decode(),
+                        "mediaUploadValueContentType": "image/png"
+                    }],
+                    "mentionedArray": mentions
+                },
+                "timestamp": int(timestamp() * 1000)
+            }
+        elif embedType == objects.EmbedTypes.ATTACHED_OBJECT:
+            data = {
+                "type": messageType,
+                "content": message,
+                "clientRefId": int(timestamp() / 10 % 1000000000),
+                "attachedObject": {
+                    "objectId": embedId,
+                    "objectType": embedType,
+                    "link": embedLink,
+                    "title": embedTitle,
+                    "content": embedContent,
+                    "mediaList": [[100, self.upload_media(embedImage, "image"), None]]
+                },
+                "extensions": {"mentionedArray": mentions},
+                "timestamp": int(timestamp() * 1000)
+            }
+        else:
+            data = {
+                "type": messageType,
+                "content": message,
+                "clientRefId": int(timestamp() / 10 % 1000000000),
+                "extensions": {"mentionedArray": mentions},
+                "timestamp": int(timestamp() * 1000)
+            }
 
         if replyTo: data["replyMessageId"] = replyTo
 
@@ -847,28 +879,6 @@ class SubClient(Client):
         response = self.session.post(f"/x{self.comId}/s/chat/thread/{chatId}/message", headers=self.additional_headers(data=data), data=data)
         if response.status_code != 200: 
             return exceptions.CheckException(response.text)
-        else: return response.status_code
-
-    def full_embed(self, link: str, image: BinaryIO, message: str, chatId: str):
-        data = {
-        "type": 0,
-        "content": message,
-        "extensions": {
-            "linkSnippetList": [{
-                "link": link,
-                "mediaType": 100,
-                "mediaUploadValue": b64encode(image.read()).decode(),
-                "mediaUploadValueContentType": "image/png"
-            }]
-        },
-            "clientRefId": int(timestamp() / 10 % 100000000),
-            "timestamp": int(timestamp() * 1000),
-            "attachedObject": None
-        }
-        
-        data = dumps(data)
-        response = self.session.post(f"/x{self.comId}/s/chat/thread/{chatId}/message", headers=self.additional_headers(data=data), data=data)
-        if response.status_code != 200: return exceptions.CheckException(response.text)
         else: return response.status_code
 
     def delete_message(self, chatId: str, messageId: str, asStaff: bool = False, reason: str = None):
@@ -1009,12 +1019,12 @@ class SubClient(Client):
 
         if viewOnly is not None:
             if viewOnly:
-                response = self.session.post(f"/x{self.comId}/s/chat/thread/{chatId}/view-only/enable", headers=self.additional_headers(type="application/x-www-form-urlencoded"))
+                response = self.session.post(f"/x{self.comId}/s/chat/thread/{chatId}/view-only/enable", headers=self.additional_headers())
                 if response.status_code != 200: res.append(exceptions.CheckException(response.text))
                 else: res.append(response.status_code)
 
             if not viewOnly:
-                response = self.session.post(f"/x{self.comId}/s/chat/thread/{chatId}/view-only/disable", headers=self.additional_headers(type="application/x-www-form-urlencoded"))
+                response = self.session.post(f"/x{self.comId}/s/chat/thread/{chatId}/view-only/disable", headers=self.additional_headers())
                 if response.status_code != 200: res.append(exceptions.CheckException(response.text))
                 else: res.append(response.status_code)
 
@@ -1093,7 +1103,7 @@ class SubClient(Client):
 
             - **Fail** : :meth:`Exceptions <aminofix.lib.util.exceptions>`
         """
-        response = self.session.post(f"/x{self.comId}/s/chat/thread/{chatId}/member/{self.profile.userId}", headers=self.additional_headers(type="application/x-www-form-urlencoded"))
+        response = self.session.post(f"/x{self.comId}/s/chat/thread/{chatId}/member/{self.profile.userId}", headers=self.additional_headers())
         if response.status_code != 200: 
             return exceptions.CheckException(response.text)
         else: return response.status_code
@@ -2224,4 +2234,40 @@ class SubClient(Client):
         response = self.session.post(f"/x{self.comId}/s/chat/thread/apply-bubble", headers=self.additional_headers(data=data), data=data)
         if response.status_code != 200: 
             return exceptions.CheckException(response.text)
+        else: return response.status_code
+
+    def send_video(self, chatId: str, message: str = None, videoFile: BinaryIO = None, imageFile: BinaryIO = None, mediaUhqEnabled: bool = False):
+        i = str(uuid4()).upper()
+        cover = f"{i}_thumb.jpg"
+        video = f"{i}.mp4"
+        
+        data = dumps({
+            "clientRefId": int(timestamp() / 10 % 1000000000),
+            "content": message,
+            "mediaType": 123,
+            "videoUpload":
+            {
+                "contentType": "video/mp4",
+                "cover": cover,
+                "video": video
+            },
+            "type": 4,
+            "timestamp": int(timestamp() * 1000),
+            "mediaUhqEnabled": mediaUhqEnabled,
+            "extensions": {}    
+        })
+
+        files = {
+            video: (video, videoFile.read(), 'video/mp4'),
+            cover: (cover, imageFile.read(), 'application/octet-stream'),
+            'payload': (None, data, 'application/octet-stream')
+        }
+        
+        response = self.session.post(
+            f"/x{self.comId}/s/chat/thread/{chatId}/message",
+            headers=self.additional_headers(data=data, type="default"),
+            files=files
+        )
+        
+        if response.status_code != 200: return exceptions.CheckException(response.text)
         else: return response.status_code

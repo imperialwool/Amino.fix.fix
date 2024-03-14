@@ -5,13 +5,12 @@ BASIC_HEADERS = {
     "Accept": "*/*",
     "Accept-Encoding": "gzip, deflate, br",
     "Accept-Language": "en-US,en;q=0.9",
-    "Content-Type": "application/x-www-form-urlencoded",
     "Host": "service.aminoapps.com",
     "Connection": "keep-alive",
     "NDCLANG": "en"
 }
 
-def additionals(data = None, user_agent = None, type = None, deviceId: str = None, sig: str = None, sid: str = None, auid: str = None):
+def additionals(data = None, user_agent = None, content_type = None, deviceId: str = None, sig: str = None, sid: str = None, auid: str = None):
     headers = dict()
 
     if user_agent:
@@ -25,10 +24,15 @@ def additionals(data = None, user_agent = None, type = None, deviceId: str = Non
         headers['AUID'] = auid
     if sid:
         headers["NDCAUTH"] = f"sid={sid}"
-    if type: 
-        headers["Content-Type"] = type
     if sig:
         headers["NDC-MSG-SIG"] = sig
+
+    if content_type.lower() == "default":
+        pass # letting HTTPX do its job
+    elif content_type: 
+        headers["Content-Type"] = content_type
+    else:
+        headers["Content-Type"] = "application/x-www-form-urlencoded"
 
     return headers
 

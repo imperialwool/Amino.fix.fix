@@ -1,8 +1,8 @@
-from uuid import UUID
 from os import urandom
 from time import timezone
 from binascii import hexlify
 from base64 import b64encode
+from uuid import UUID, uuid4
 from json import loads, dumps
 from typing import BinaryIO, Union
 from time import time as timestamp
@@ -31,9 +31,14 @@ class SubClient(Client):
     def __init__(
         self, mainClient: Client,
         comId: str = None, aminoId: str = None, *,
-        deviceId: str = None, autoDevice: bool = False, proxies: dict = None
+        deviceId: str = None, autoDevice: bool | None = None, proxies: dict = None
     ):
-        Client.__init__(self, deviceId=deviceId, sub=True, proxies=proxies)
+        Client.__init__(
+            self, deviceId=deviceId, sub=True, proxies=proxies,
+            autoDevice=autoDevice or mainClient.autoDevice, userAgent=mainClient.user_agent,
+            http2_enabled=mainClient.http2_enabled,
+            own_timeout=mainClient.timeout_settings
+        )
         self.comId = comId
         self.aminoId = aminoId
         self.vc_connect = False
@@ -63,10 +68,10 @@ class SubClient(Client):
         except exceptions.UserUnavailable(): pass
         return self
 
-    def additional_headers(self, data: str = None, type: str = None):
+    def additional_headers(self, data: str = None, content_type: str = None):
         return headers.additionals(
             data=data,
-            type=type,
+            content_type=content_type,
             user_agent=self.user_agent,
             sid=self.sid,
             auid=self.userId,
@@ -108,13 +113,12 @@ class SubClient(Client):
 
         if captionList is not None:
             for image, caption in zip(imageList, captionList):
-                mediaList.append([100, self.upload_media(image, "image"), caption])
+                mediaList.append([100, await self.upload_media(image, "image"), caption])
 
         else:
             if imageList is not None:
                 for image in imageList:
-                    print(self.upload_media(image, "image"))
-                    mediaList.append([100, self.upload_media(image, "image"), None])
+                    mediaList.append([100, await self.upload_media(image, "image"), None])
 
         data = {
             "address": None,
@@ -143,7 +147,7 @@ class SubClient(Client):
         mediaList = []
 
         for image in imageList:
-            mediaList.append([100, self.upload_media(image, "image"), None])
+            mediaList.append([100, await self.upload_media(image, "image"), None])
 
         data = {
             "label": title,
@@ -168,7 +172,7 @@ class SubClient(Client):
         mediaList = []
 
         for image in imageList:
-            mediaList.append([100, self.upload_media(image, "image"), None])
+            mediaList.append([100, await self.upload_media(image, "image"), None])
 
         data = {
             "address": None,
@@ -262,18 +266,18 @@ class SubClient(Client):
 
         if captionList is not None:
             for image, caption in zip(imageList, captionList):
-                mediaList.append([100, self.upload_media(image, "image"), caption])
+                mediaList.append([100, await self.upload_media(image, "image"), caption])
 
         else:
             if imageList is not None:
                 for image in imageList:
-                    mediaList.append([100, self.upload_media(image, "image"), None])
+                    mediaList.append([100, await self.upload_media(image, "image"), None])
 
         if imageList is not None or captionList is not None:
             data["mediaList"] = mediaList
 
         if nickname: data["nickname"] = nickname
-        if icon: data["icon"] = self.upload_media(icon, "image")
+        if icon: data["icon"] = await self.upload_media(icon, "image")
         if content: data["content"] = content
 
         if chatRequestPrivilege: data["extensions"] = {"privilegeOfChatInviteRequest": chatRequestPrivilege}
@@ -799,7 +803,7 @@ class SubClient(Client):
                 mentions.append({"uid": mention_uid})
 
         if embedImage:
-            embedImage = [[100, self.upload_media(embedImage, "image"), None]]
+            embedImage = [[100, await self.upload_media(embedImage, "image"), None]]
 
         data = {
             "type": messageType,
@@ -1011,12 +1015,12 @@ class SubClient(Client):
 
         if viewOnly is not None:
             if viewOnly:
-                response = await self.session.post(f"/x{self.comId}/s/chat/thread/{chatId}/view-only/enable", headers=self.additional_headers(type="application/x-www-form-urlencoded"))
+                response = await self.session.post(f"/x{self.comId}/s/chat/thread/{chatId}/view-only/enable", headers=self.additional_headers())
                 if response.status_code != 200: res.append(exceptions.CheckException(response.text))
                 else: res.append(response.status_code)
 
             if not viewOnly:
-                response = await self.session.post(f"/x{self.comId}/s/chat/thread/{chatId}/view-only/disable", headers=self.additional_headers(type="application/x-www-form-urlencoded"))
+                response = await self.session.post(f"/x{self.comId}/s/chat/thread/{chatId}/view-only/disable", headers=self.additional_headers())
                 if response.status_code != 200: res.append(exceptions.CheckException(response.text))
                 else: res.append(response.status_code)
 
@@ -2225,5 +2229,42 @@ class SubClient(Client):
         data = dumps(data)
         response = await self.session.post(f"/x{self.comId}/s/chat/thread/apply-bubble", headers=self.additional_headers(data=data), data=data)
         if response.status_code != 200: 
+            return exceptions.CheckException(response.text)
+        else: return response.status_code
+
+    async def send_video(self, chatId: str, message: str = None, videoFile: BinaryIO = None, imageFile: BinaryIO = None, mediaUhqEnabled: bool = False):
+        i = str(uuid4()).upper()
+        cover = f"{i}_thumb.jpg"
+        video = f"{i}.mp4"
+        
+        data = dumps({
+            "clientRefId": int(timestamp() / 10 % 1000000000),
+            "content": message,
+            "mediaType": 123,
+            "videoUpload":
+            {
+                "contentType": "video/mp4",
+                "cover": cover,
+                "video": video
+            },
+            "type": 4,
+            "timestamp": int(timestamp() * 1000),
+            "mediaUhqEnabled": mediaUhqEnabled,
+            "extensions": {}    
+        })
+
+        files = {
+            video: (video, videoFile.read(), 'video/mp4'),
+            cover: (cover, imageFile.read(), 'application/octet-stream'),
+            'payload': (None, data, 'application/octet-stream')
+        }
+        
+        response = await self.session.post(
+            f"/x{self.comId}/s/chat/thread/{chatId}/message",
+            headers=self.additional_headers(data=data, type="default"),
+            files=files
+        )
+        
+        if response.status_code != 200:
             return exceptions.CheckException(response.text)
         else: return response.status_code
