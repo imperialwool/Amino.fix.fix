@@ -786,7 +786,7 @@ class SubClient(Client):
             - **stickerId** : Sticker ID to be sent.
             - **embedType** : Type of the Embed. Can be aminofixfix.lib.objects.EmbedTypes only. By default it's LinkSnippet one.
             - **embedLink** : Link of the Embed.
-            - **embedImage** : Image of the Embed.
+            - **embedImage** : Image of the Embed. Required to send Embed.
             - **embedId** : ID of the Embed. Works only in AttachedObject Embeds.
             - **embedType** : Type of the AttachedObject Embed. Works only in AttachedObject Embeds.
             - **embedTitle** : Title of the Embed. Works only in AttachedObject Embeds.
@@ -805,6 +805,8 @@ class SubClient(Client):
         if mentionUserIds:
             mentions = [{"uid": mention_uid} for mention_uid in mentionUserIds]
 
+        if not isinstance(embedImage, BinaryIO):
+            embedType = None
 
         if embedType == objects.EmbedTypes.LINK_SNIPPET:
             data = {
@@ -829,7 +831,7 @@ class SubClient(Client):
                 "clientRefId": int(timestamp() / 10 % 1000000000),
                 "attachedObject": {
                     "objectId": embedId,
-                    "objectType": embedType,
+                    "objectType": embedObjectType,
                     "link": embedLink,
                     "title": embedTitle,
                     "content": embedContent,
@@ -2236,7 +2238,16 @@ class SubClient(Client):
             return exceptions.CheckException(response.text)
         else: return response.status_code
 
-    def send_video(self, chatId: str, message: str = None, videoFile: BinaryIO = None, imageFile: BinaryIO = None, mediaUhqEnabled: bool = False):
+    def send_video(self, chatId: str, videoFile: BinaryIO, imageFile: BinaryIO, message: str = None, mediaUhqEnabled: bool = False):
+        """
+            Sending video.
+
+            chatId: str
+            message: str
+            videoFile: BinaryIO [open(file, "rb")]
+            imageFile: BinaryIO [open(file, "rb")]
+            mediaUhqEnabled: bool = False
+        """
         i = str(uuid4()).upper()
         cover = f"{i}_thumb.jpg"
         video = f"{i}.mp4"

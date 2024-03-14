@@ -768,7 +768,16 @@ class SubClient(Client):
             return exceptions.CheckException(response.text)
         else: return response.status_code
 
-    async def send_message(self, chatId: str, message: str = None, messageType: int = 0, file: BinaryIO = None, fileType: str = None, replyTo: str = None, mentionUserIds: list = None, stickerId: str = None, embedId: str = None, embedType: int = None, embedLink: str = None, embedTitle: str = None, embedContent: str = None, embedImage: BinaryIO = None):
+    async def send_message(
+            self,
+            chatId: str, message: str = None, messageType: int = 0,
+            file: BinaryIO = None, fileType: str = None,
+            replyTo: str = None, mentionUserIds: list = None,
+            stickerId: str = None,
+        
+            embedId: str = None, embedObjectType: int = None, embedLink: str = None, embedTitle: str = None, embedContent: str = None, embedImage: BinaryIO = None,
+            embedType: objects.EmbedTypes = objects.EmbedTypes.LINK_SNIPPET
+        ):
         """
         Send a Message to a Chat.
 
@@ -782,11 +791,13 @@ class SubClient(Client):
             - **mentionUserIds** : List of User IDS to mention. '@' needed in the Message.
             - **replyTo** : Message ID to reply to.
             - **stickerId** : Sticker ID to be sent.
-            - **embedTitle** : Title of the Embed.
-            - **embedContent** : Content of the Embed.
+            - **embedType** : Type of the Embed. Can be aminofixfix.lib.objects.EmbedTypes only. By default it's LinkSnippet one.
             - **embedLink** : Link of the Embed.
-            - **embedImage** : Image of the Embed.
-            - **embedId** : ID of the Embed.
+            - **embedImage** : Image of the Embed. Required to send Embed.
+            - **embedId** : ID of the Embed. Works only in AttachedObject Embeds.
+            - **embedType** : Type of the AttachedObject Embed. Works only in AttachedObject Embeds.
+            - **embedTitle** : Title of the Embed. Works only in AttachedObject Embeds.
+            - **embedContent** : Content of the Embed. Works only in AttachedObject Embeds.
 
         **Returns**
             - **Success** : 200 (int)
@@ -799,27 +810,51 @@ class SubClient(Client):
 
         mentions = []
         if mentionUserIds:
-            for mention_uid in mentionUserIds:
-                mentions.append({"uid": mention_uid})
+            mentions = [{"uid": mention_uid} for mention_uid in mentionUserIds]
 
-        if embedImage:
-            embedImage = [[100, await self.upload_media(embedImage, "image"), None]]
+        if not isinstance(embedImage, BinaryIO):
+            embedType = None
 
-        data = {
-            "type": messageType,
-            "content": message,
-            "clientRefId": int(timestamp() / 10 % 1000000000),
-            "attachedObject": {
-                "objectId": embedId,
-                "objectType": embedType,
-                "link": embedLink,
-                "title": embedTitle,
-                "content": embedContent,
-                "mediaList": embedImage
-            },
-            "extensions": {"mentionedArray": mentions},
-            "timestamp": int(timestamp() * 1000)
-        }
+        if embedType == objects.EmbedTypes.LINK_SNIPPET:
+            data = {
+                "type": messageType,
+                "content": message,
+                "clientRefId": int(timestamp() / 10 % 1000000000),
+                "extensions": {
+                    "linkSnippetList": [{
+                        "link": embedLink,
+                        "mediaType": 100,
+                        "mediaUploadValue": b64encode(embedImage.read()).decode(),
+                        "mediaUploadValueContentType": "image/png"
+                    }],
+                    "mentionedArray": mentions
+                },
+                "timestamp": int(timestamp() * 1000)
+            }
+        elif embedType == objects.EmbedTypes.ATTACHED_OBJECT:
+            data = {
+                "type": messageType,
+                "content": message,
+                "clientRefId": int(timestamp() / 10 % 1000000000),
+                "attachedObject": {
+                    "objectId": embedId,
+                    "objectType": embedObjectType,
+                    "link": embedLink,
+                    "title": embedTitle,
+                    "content": embedContent,
+                    "mediaList": [[100, await self.upload_media(embedImage, "image"), None]]
+                },
+                "extensions": {"mentionedArray": mentions},
+                "timestamp": int(timestamp() * 1000)
+            }
+        else:
+            data = {
+                "type": messageType,
+                "content": message,
+                "clientRefId": int(timestamp() / 10 % 1000000000),
+                "extensions": {"mentionedArray": mentions},
+                "timestamp": int(timestamp() * 1000)
+            }
 
         if replyTo: data["replyMessageId"] = replyTo
 
@@ -2232,7 +2267,16 @@ class SubClient(Client):
             return exceptions.CheckException(response.text)
         else: return response.status_code
 
-    async def send_video(self, chatId: str, message: str = None, videoFile: BinaryIO = None, imageFile: BinaryIO = None, mediaUhqEnabled: bool = False):
+    async def send_video(self, chatId: str, videoFile: BinaryIO, imageFile: BinaryIO, message: str = None, mediaUhqEnabled: bool = False):
+        """
+            Sending video.
+
+            chatId: str
+            message: str
+            videoFile: BinaryIO [open(file, "rb")]
+            imageFile: BinaryIO [open(file, "rb")]
+            mediaUhqEnabled: bool = False
+        """
         i = str(uuid4()).upper()
         cover = f"{i}_thumb.jpg"
         video = f"{i}.mp4"
