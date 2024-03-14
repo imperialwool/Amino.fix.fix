@@ -7,6 +7,14 @@
 
 Fork of Amino.fix to improve this library.
 
+## Important notices
+
+- in subclients you should pass **clients**, **not profiles**
+- instead of requests this library using **HTTPX**, so if you have issues please create issue
+- lib/util -> lib/
+- supporting **only python3.9+**, lower will be never supported
+- if you have issues in pydroid, reinstall/update it
+
 ## How to install?
 
 `pip install amino.fix.fix`
@@ -20,10 +28,3 @@ If you want to use Async version of library, you should `import aminofixfix.asyn
 ## API Reference
 
 [Read the Docs Link](https://aminopy.readthedocs.io/en/latest/)
-
-## Warning
-
-- if you using subclients, you SHOULD pass main client, NOT profile
-- this library using HTTPX, not REQUESTS
-- lib/util -> lib/
-- supporting only python 3.9 and higher
