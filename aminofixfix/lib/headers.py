@@ -11,7 +11,9 @@ BASIC_HEADERS = {
 }
 
 def additionals(data = None, user_agent = None, content_type = None, deviceId: str = None, sig: str = None, sid: str = None, auid: str = None):
-    headers = dict()
+    headers = {
+        "AUID": auid or str(uuid4())
+    }
 
     if user_agent:
         headers['User-Agent'] = user_agent
@@ -20,8 +22,6 @@ def additionals(data = None, user_agent = None, content_type = None, deviceId: s
     if data:
         headers["Content-Length"] = str(len(data))
         headers["NDC-MSG-SIG"] = signature(data)
-    if auid:
-        headers['AUID'] = auid
     if sid:
         headers["NDCAUTH"] = f"sid={sid}"
     if sig:
