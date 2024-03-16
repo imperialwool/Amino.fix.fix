@@ -78,7 +78,83 @@ class ACM(client.Client):
         if response.status_code != 200: return response.status_code
         else: return loads(response.text)
 
+    async def get_themepack_info(self, file: BinaryIO):
+        """
+        This method can be used for getting info about current themepack of community.
+        """
+        if self.comId is None: raise exceptions.CommunityNeeded()
+        response = await self.session.get(f"/g/s-x{self.comId}/community/info?withTopicList=1&withInfluencerList=1&influencerListOrderStrategy=fansCount", data=file.read(), headers=headers.Headers(data=file.read()).s_headers, proxies=self.proxies)
+        if response.status_code != 200: return exceptions.CheckException(response.text)
+        else: return await response.json()['community']['themePack']
+
     async def upload_themepack_raw(self, file: BinaryIO):
+        """
+        Uploading new themepack.
+
+        File is technically a ZIP file, but you should rename .zip to .ndthemepack.
+        Also this "zip" file have specific stucture.
+
+        The structure is:
+        - theme_info.json
+        - images/
+            - background/
+                - background_375x667.jpeg
+                - background_750x1334.jpeg
+            - logo/
+                - logo_219x44.png
+                - logo_439x88.png
+            - titlebar/
+                - titlebar_320x64.jpeg
+                - titlebar_640x128.jpeg
+            - titlebarBackground/
+                - titlebarBackground_375x667.jpeg
+                - titlebarBackground_750x1334.jpeg
+        
+        And now its time to explain tricky "theme.json".
+        
+        - I can't really explain "id" here, *maybe* its random uuid4.
+        - "format-version" **SHOULD** be "1.0", its themepack format version
+        - "author" is.. nickname or aminoId of theme uploader (or agent, it doesnt matter)
+        - "revision".. u *can* leave revision that you have, Amino will do all stuff instead of you
+        - "theme-color" should be **VALID** hex color. I think they didn't fixed that you can pass invalid hex color, but it will cost a crash on every device
+        
+        About images in "theme.json":
+
+        - for logo folder stands key "logo" in json, for titlebar - "titlebar-image", for titlebarBackground - "titlebar-background-image", for background - "background-image"
+        - you can *pass* or *not pass* these keys in json, if they are not passed they will ignored/deleted
+        - keys have array values like this:
+            - [
+                {
+                    "height": height*2,
+                    "path": "images/logo/logo_width*2xheight*2.png",
+                    "width": width*2,
+                    "x": 0,
+                    "y": 0
+                },
+                {
+                    "height": height,
+                    "path": "images/logo/logo_widthxheight.png",
+                    "width": width,
+                    "x": 0,
+                    "y": 0
+                }
+            ]
+        - default values of height (h) and width (w) for every key:
+            - "background-image":
+                - w = 375
+                - h = 667
+            - "logo":
+                - w = 196
+                - h = 44
+            - "titlebar-background-image":
+                - w = 375
+                - h = 667
+            - "titlebar-image":
+                - w = 320
+                - h = 64
+        - you *can* specify "x" and "y" if you want
+        - theoretically you can provide different "w" and "h"
+        """
         if self.comId is None: raise exceptions.CommunityNeeded()
         response = await self.session.post(f"/x{self.comId}/s/media/upload/target/community-theme-pack", data=file.read(), headers=headers.Headers(data=file.read()).s_headers, proxies=self.proxies)
         if response.status_code != 200: return exceptions.CheckException(response.text)

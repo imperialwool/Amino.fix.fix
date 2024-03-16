@@ -8,7 +8,7 @@ from json import loads
 from hmac import new
 import re
 
-LIBRARY_VERSION = "1.0.4.4"
+LIBRARY_VERSION = "1.0.5b1"
 
 PREFIX = bytes.fromhex("19")
 SIG_KEY = bytes.fromhex("DFA5ED192DDA6E88A12FE12130DC6206B1251E44")
@@ -60,7 +60,7 @@ def json_minify(string, strip_space=True):
     '''
         Took from: https://github.com/getify/JSON.minify/
         
-        I think install library to just minify json is stupid
+        I think install library to just minify json is stupid sorry
     '''
     tokenizer = re.compile(r'"|(/\*)|(\*/)|(//)|\n|\r')
     end_slashes_re = re.compile(r'(\\)*$')

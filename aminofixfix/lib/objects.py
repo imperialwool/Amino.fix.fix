@@ -1,11 +1,12 @@
-# You don't even know how long this shit took...
-# F*ck you Sand for making me do this.
+# Enums
 
 from enum import Enum
 
 class EmbedTypes(Enum):
     LINK_SNIPPET = 1
     ATTACHED_OBJECT = 2
+
+# Objects
 
 class Objects:
     class Users:

@@ -23,7 +23,7 @@ class Client(Callbacks, SocketHandler):
         self,
         deviceId: str = None, userAgent: str = None, proxies: dict = None,
         socket_trace = False, socketDebugging = False, socket_enabled = True,
-        autoDevice = False, sub: bool = False, http2_enabled: bool = True,
+        autoDevice = False, http2_enabled: bool = True,
         
         disable_timeout: bool = False,
         default_timeout: int | None = 30, own_timeout: TimeoutConfig | None = None,

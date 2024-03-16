@@ -34,10 +34,11 @@ class SubClient(Client):
         deviceId: str = None, autoDevice: bool | None = None, proxies: dict = None
     ):
         Client.__init__(
-            self, deviceId=deviceId, sub=True, proxies=proxies,
+            self, deviceId=deviceId, proxies=proxies,
             autoDevice=autoDevice or mainClient.autoDevice, userAgent=mainClient.user_agent,
             http2_enabled=mainClient.http2_enabled,
-            own_timeout=mainClient.timeout_settings
+            own_timeout=mainClient.timeout_settings,
+            socket_enabled=False
         )
         self.vc_connect = False
         self.sid = mainClient.sid

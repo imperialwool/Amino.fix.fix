@@ -1,5 +1,5 @@
 from setuptools import setup, find_packages
-LIBRARY_VERSION = "1.0.4.4"
+LIBRARY_VERSION = "1.0.5b1"
 
 requirements = [
     "httpx>=0.27.0",
