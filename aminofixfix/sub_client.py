@@ -2280,7 +2280,7 @@ class SubClient(Client):
         
         response = self.session.post(
             f"/x{self.comId}/s/chat/thread/{chatId}/message",
-            headers=self.additional_headers(data=data, type="default"),
+            headers=self.additional_headers(data=data, content_type="default"),
             files=files
         )
         

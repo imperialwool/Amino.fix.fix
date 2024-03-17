@@ -1138,7 +1138,7 @@ class SubClient(Client):
 
             - **Fail** : :meth:`Exceptions <aminofix.lib.util.exceptions>`
         """
-        response = await self.session.post(f"/x{self.comId}/s/chat/thread/{chatId}/member/{self.profile.userId}", headers=self.additional_headers(type="application/x-www-form-urlencoded"))
+        response = await self.session.post(f"/x{self.comId}/s/chat/thread/{chatId}/member/{self.profile.userId}", headers=self.additional_headers())
         if response.status_code != 200: 
             return exceptions.CheckException(response.text)
         else: return response.status_code
@@ -2309,7 +2309,7 @@ class SubClient(Client):
         
         response = await self.session.post(
             f"/x{self.comId}/s/chat/thread/{chatId}/message",
-            headers=self.additional_headers(data=data, type="default"),
+            headers=self.additional_headers(data=data, content_type="default"),
             files=files
         )
         
