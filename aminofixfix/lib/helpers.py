@@ -1,3 +1,6 @@
+from __future__ import annotations
+# ^ this thing should fix problem for python3.9 and lower(?)
+
 from base64 import b64decode, b64encode
 from functools import reduce
 from random import choice
@@ -8,7 +11,7 @@ from json import loads
 from hmac import new
 import re
 
-LIBRARY_VERSION = "1.0.5b1"
+LIBRARY_VERSION = "1.0.5b3"
 
 PREFIX = bytes.fromhex("19")
 SIG_KEY = bytes.fromhex("DFA5ED192DDA6E88A12FE12130DC6206B1251E44")

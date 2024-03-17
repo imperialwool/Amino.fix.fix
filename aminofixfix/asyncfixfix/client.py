@@ -1,3 +1,5 @@
+from __future__ import annotations
+# ^ this thing should fix problem for python3.9 and lower(?)
 
 from uuid import UUID
 from os import urandom

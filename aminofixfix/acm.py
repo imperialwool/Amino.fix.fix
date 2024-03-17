@@ -1,3 +1,6 @@
+from __future__ import annotations
+# ^ this thing should fix problem for python3.9 and lower(?)
+
 from typing import BinaryIO
 from json import loads, dumps
 from time import time as timestamp

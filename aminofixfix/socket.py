@@ -1,3 +1,6 @@
+from __future__ import annotations
+# ^ this thing should fix problem for python3.9 and lower(?)
+
 import ssl
 import websocket
 from time import sleep
