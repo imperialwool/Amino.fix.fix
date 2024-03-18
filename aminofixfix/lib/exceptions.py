@@ -1,5 +1,7 @@
-import json
+from __future__ import annotations
+# ^ this thing should fix problem for python3.9 and lower(?)
 
+from json import loads
 
 class UnsupportedService(Exception):
     """
@@ -851,6 +853,56 @@ class IpTemporaryBan(Exception):
     def __init__(*args, **kwargs):
         Exception.__init__(*args, **kwargs)
 
+class NotFound(Exception):
+    """
+    - **API Code** : 404
+    - **API Message** : 404 Not Found
+    - **API String** : ``Unknown String``
+    """
+
+    def __init__(*args, **kwargs):
+        Exception.__init__(*args, **kwargs)
+
+class InternalServerError(Exception):
+    """
+    - **API Code** : 500
+    - **API Message** : 500 Internal Server Error
+    - **API String** : ``Unknown String``
+    """
+
+    def __init__(*args, **kwargs):
+        Exception.__init__(*args, **kwargs)
+
+class ServersAreDying(Exception):
+    """
+    - **API Code** : 502-504
+    - **API Message** : Bad Gateway, Service Unavailable or Gateway Timeout
+    - **API String** : ``Unknown String``
+    """
+
+    def __init__(*args, **kwargs):
+        Exception.__init__(*args, **kwargs)
+
+class TooBigContent(Exception):
+    """
+    - **API Code** : 413
+    - **API Message** : 413 Content Too Large
+    - **API String** : ``Unknown String``
+    """
+
+    def __init__(*args, **kwargs):
+        Exception.__init__(*args, **kwargs)
+
+class Teapot(Exception):
+    """
+    - **API Code** : 418
+    - **API Message** : 418 I'm teapot
+    - **API String** : ``Unknown String``
+    """
+
+    def __init__(*args, **kwargs):
+        Exception.__init__(*args, **kwargs)
+
 class Unauthorized(Exception):
     """
     - **API Code** : 401
@@ -872,22 +924,60 @@ class FailedSubscribeFanClub(Exception):
         Exception.__init__(*args, **kwargs)
 
 class UnknownError(Exception):
+    """
+    - **API Code** : ???
+    - **API Message** : ???
+    - **API String** : ``Unknown String``
+
+    Fallback for unknown errors, exceptions and etc.
+    """
     def __init__(*args, **kwargs):
         Exception.__init__(*args, **kwargs)
 
-def CheckException(data):
-    try:
-        data = json.loads(data)
-        try:
-            api_code = data["api:statuscode"]
-        except:
-            raise UnknownError(data)
-    except json.decoder.JSONDecodeError:
-        api_code = 403
+def CheckException(response):
+    '''
+    Check exception for any request of client. It doesn't matter if it sync or async. It uses standart json library and getting text from response. Just make sure that `response.text` is not function.
 
+    Pass response from request.
+    
+    Nothing returns.
+
+    Raises exception.
+    '''
+    try:
+        data = loads(response.text)
+        api_code = data["api:statuscode"]
+        http_error_code = False
+
+        if api_code == response.status_code:
+            http_error_code = True
+    except:
+        data = response.text
+        api_code = response.status_code
+        http_error_code = True
+
+    CheckCode(data, api_code, http_error_code)
+    return 
+
+def CheckCode(data: str | dict, api_code: int, http_error_code: bool = False):
+    '''
+    Big chungus for destroying api codes and your code rising an metal gear exception
+    '''
+    # http error codes that very common in amino
+    if http_error_code:    
+        if api_code == 401: raise Unauthorized(data)
+        elif api_code == 403: raise IpTemporaryBan(data)
+        elif api_code == 404: raise NotFound(data)
+        elif api_code == 413: raise TooBigContent(data)
+        elif api_code == 418: raise Teapot(data)
+        elif api_code == 500: raise InternalServerError(data)
+        elif api_code in [502, 503, 504]: raise ServersAreDying(data)
+        else: raise UnknownError(data)
+
+    # amino errors
     if api_code == 100: raise UnsupportedService(data)
     elif api_code == 102: raise FileTooLarge(data)
-    elif api_code == 103 or api_code == 104: raise InvalidRequest(data)
+    elif api_code in [103, 104]: raise InvalidRequest(data)
     elif api_code == 105: raise InvalidSession(data)
     elif api_code == 106: raise AccessDenied(data)
     elif api_code == 107: raise UnexistentData(data)
@@ -922,9 +1012,7 @@ def CheckException(data):
     elif api_code == 300: raise BadImage(data)
     elif api_code == 313: raise InvalidThemepack(data)
     elif api_code == 314: raise InvalidVoiceNote(data)
-    elif api_code == 401: raise Unauthorized(data)
-    elif api_code == 403: raise IpTemporaryBan(data)
-    elif api_code == 500 or api_code == 700 or api_code == 1600: raise RequestedNoLongerExists(data)
+    elif api_code in [500, 700, 1600]: raise RequestedNoLongerExists(data)
     elif api_code == 503: raise PageRepostedTooRecently(data)
     elif api_code == 551: raise InsufficientLevel(data)
     elif api_code == 702: raise WallCommentingDisabled(data)
@@ -960,9 +1048,9 @@ def CheckException(data):
     elif api_code == 3905: raise NotOwnerOfChatBubble(data)
     elif api_code == 4300: raise NotEnoughCoins(data)
     elif api_code == 4400: raise AlreadyPlayedLottery(data)
-    elif api_code == 4500 or api_code == 4501: raise CannotSendCoins(data)
+    elif api_code in [4500, 4501]: raise CannotSendCoins(data)
     elif api_code == 4805: raise FailedSubscribeFanClub(data)
     elif api_code == 6001: raise AminoIDAlreadyChanged(data)
     elif api_code == 6002: raise InvalidAminoID(data)
     elif api_code == 9901: raise InvalidName(data)
-    else: raise Exception(data)
+    else: raise UnknownError(data)

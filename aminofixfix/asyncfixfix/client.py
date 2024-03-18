@@ -99,7 +99,7 @@ class Client(Callbacks, SocketHandler):
         
         response = await self.session.post(f"/g/s/user-profile/{self.profile.userId}/online-status", headers=self.additional_headers(data=data), data=data)
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return response.status_code
 
     async def join_voice_chat(self, comId: str, chatId: str, joinType: int = 1):
@@ -268,7 +268,7 @@ class Client(Callbacks, SocketHandler):
         })
 
         response = await self.session.post(f"/g/s/auth/login", headers=self.additional_headers(data=data), data=data)
-        if response.status_code != 200: exceptions.CheckException(response.text)
+        if response.status_code != 200: exceptions.CheckException(response)
         else:
             self.authenticated = True
             self.json = response.json()
@@ -308,7 +308,7 @@ class Client(Callbacks, SocketHandler):
 
         response = await self.session.post(f"/g/s/auth/login", headers=self.additional_headers(data=data), data=data)
         self.run_amino_socket()
-        if response.status_code != 200: exceptions.CheckException(response.text)
+        if response.status_code != 200: exceptions.CheckException(response)
 
         else:
             self.authenticated = True
@@ -348,7 +348,7 @@ class Client(Callbacks, SocketHandler):
 
         response = await self.session.post(f"/g/s/auth/login", headers=self.additional_headers(data=data), data=data)
         self.run_amino_socket()
-        if response.status_code != 200: exceptions.CheckException(response.text)
+        if response.status_code != 200: exceptions.CheckException(response)
 
         else:
             self.authenticated = True
@@ -407,7 +407,7 @@ class Client(Callbacks, SocketHandler):
 
         response = await self.session.post(f"/g/s/auth/register", data=data, headers=self.additional_headers(data=data), timeout=timeout)
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else:
             return response.json()
 
@@ -433,7 +433,7 @@ class Client(Callbacks, SocketHandler):
 
         response = await self.session.post(f"/g/s/account/delete-request/cancel", headers=self.additional_headers(data=data), data=data)
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else:
             return response.status_code
 
@@ -457,7 +457,7 @@ class Client(Callbacks, SocketHandler):
 
         response = await self.session.post(f"/g/s/auth/logout", headers=self.additional_headers(data=data), data=data)
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else:
 
             self.authenticated = False
@@ -501,7 +501,7 @@ class Client(Callbacks, SocketHandler):
 
         response = await self.session.post(f"/g/s/persona/profile/basic", data=data, headers=self.additional_headers(data=data))
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else:
             return response.status_code
 
@@ -529,7 +529,7 @@ class Client(Callbacks, SocketHandler):
 
         response = await self.session.post(f"/g/s/auth/check-security-validation", headers=self.additional_headers(data=data), data=data)
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else:
             return response.status_code
 
@@ -559,7 +559,7 @@ class Client(Callbacks, SocketHandler):
         data = dumps(data)
         response = await self.session.post(f"/g/s/auth/request-security-validation", headers=self.additional_headers(data=data), data=data, timeout=timeout)
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else:
             return response.status_code
 
@@ -586,7 +586,7 @@ class Client(Callbacks, SocketHandler):
 
         response = await self.session.post(f"/g/s/auth/activate-email", headers=self.additional_headers(data=data), data=data)
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else:
             return response.status_code
 
@@ -611,7 +611,7 @@ class Client(Callbacks, SocketHandler):
 
         response = await self.session.post(f"/g/s/account/delete-request", headers=self.additional_headers(data=data), data=data)
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else:
             return response.status_code
 
@@ -647,7 +647,7 @@ class Client(Callbacks, SocketHandler):
 
         response = await self.session.post(f"/g/s/auth/reset-password", headers=self.additional_headers(data=data), data=data)
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else:
             return response.status_code
 
@@ -675,14 +675,14 @@ class Client(Callbacks, SocketHandler):
 
         response = await self.session.post(f"/g/s/device", headers=self.additional_headers(data=data), data=data)
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else:
             self.configured = True; return response.status_code
 
     async def get_account_info(self):
         response = await self.session.get(f"/g/s/account", headers=self.additional_headers())
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else:
             return objects.UserProfile(response.json()["account"]).UserProfile
 
@@ -708,7 +708,7 @@ class Client(Callbacks, SocketHandler):
 
         response = await self.session.post(f"/g/s/media/upload", data=data, headers=self.additional_headers(type=t, data=data))
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else:
             return response.json()["mediaValue"]
 
@@ -718,7 +718,7 @@ class Client(Callbacks, SocketHandler):
     async def get_eventlog(self):
         response = await self.session.get(f"/g/s/eventlog/profile?language=en", headers=self.additional_headers())
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else:
             return response.json()
 
@@ -738,7 +738,7 @@ class Client(Callbacks, SocketHandler):
         if not self.authenticated: raise exceptions.NotLoggedIn()
         response = await self.session.get(f"/g/s/community/joined?v=1&start={start}&size={size}", headers=self.additional_headers())
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else:
             return objects.CommunityList(response.json()["communityList"]).CommunityList
 
@@ -746,7 +746,7 @@ class Client(Callbacks, SocketHandler):
         if not self.authenticated: raise exceptions.NotLoggedIn()
         response = await self.session.get(f"/g/s/community/joined?v=1&start={start}&size={size}", headers=self.additional_headers())
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else:
             return response.json()["userInfoInCommunities"]
 
@@ -764,14 +764,14 @@ class Client(Callbacks, SocketHandler):
         """
         response = await self.session.get(f"/g/s/user-profile/{userId}", headers=self.additional_headers())
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else:
             return objects.UserProfile(response.json()["userProfile"]).UserProfile
 
     async def watch_ad(self, userId: str = None):
         data = dumps(headers.Tapjoy(userId if userId else self.userId).data) 
         response = await self.session.post("https://ads.tapdaq.com/v4/analytics/reward", data=data, headers=headers.Tapjoy().headers)
-        if response.status_code != 204: return exceptions.CheckException(response.text)
+        if response.status_code != 204: return exceptions.CheckException(response)
         else: return response.status_code
 
     async def get_chat_threads(self, start: int = 0, size: int = 25):
@@ -789,7 +789,7 @@ class Client(Callbacks, SocketHandler):
         """
         response = await self.session.get(f"/g/s/chat/thread?type=joined-me&start={start}&size={size}", headers=self.additional_headers())
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else:
             return objects.ThreadList(response.json()["threadList"]).ThreadList
 
@@ -807,14 +807,14 @@ class Client(Callbacks, SocketHandler):
         """
         response = await self.session.get(f"/g/s/chat/thread/{chatId}", headers=self.additional_headers())
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else:
             return objects.Thread(response.json()["thread"]).Thread
 
     async def get_chat_users(self, chatId: str, start: int = 0, size: int = 25):
         response = await self.session.get(f"/g/s/chat/thread/{chatId}/member?start={start}&size={size}&type=default&cv=1.2", headers=self.additional_headers())
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else:
             return objects.UserProfileList(response.json()["memberList"]).UserProfileList
 
@@ -832,7 +832,7 @@ class Client(Callbacks, SocketHandler):
         """
         response = await self.session.post(f"/g/s/chat/thread/{chatId}/member/{self.userId}", headers=self.additional_headers())
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else:
             return response.status_code
 
@@ -850,7 +850,7 @@ class Client(Callbacks, SocketHandler):
         """
         response = await self.session.delete(f"/g/s/chat/thread/{chatId}/member/{self.userId}", headers=self.additional_headers())
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else:
             return response.status_code
 
@@ -894,7 +894,7 @@ class Client(Callbacks, SocketHandler):
 
         response = await self.session.post(f"/g/s/chat/thread", data=data, headers=self.additional_headers(data=data))
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else:
             return objects.Thread(response.json()["thread"]).Thread
 
@@ -922,7 +922,7 @@ class Client(Callbacks, SocketHandler):
 
         response = await self.session.post(f"/g/s/chat/thread/{chatId}/member/invite", headers=self.additional_headers(data=data), data=data)
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else:
             return response.status_code
 
@@ -931,7 +931,7 @@ class Client(Callbacks, SocketHandler):
         if not allowRejoin: allowRejoin = 0
         response = await self.session.delete(f"/g/s/chat/thread/{chatId}/member/{userId}?allowRejoin={allowRejoin}", headers=self.additional_headers())
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else:
             return response.status_code
 
@@ -955,7 +955,7 @@ class Client(Callbacks, SocketHandler):
 
         response = await self.session.get(url, headers=self.additional_headers())
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else:
             return objects.GetMessages(response.json()).GetMessages
 
@@ -974,7 +974,7 @@ class Client(Callbacks, SocketHandler):
         """
         response = await self.session.get(f"/g/s/chat/thread/{chatId}/message/{messageId}", headers=self.additional_headers())
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else:
             return objects.Message(response.json()["message"]).Message
 
@@ -992,7 +992,7 @@ class Client(Callbacks, SocketHandler):
         """
         response = await self.session.get(f"/g/s-x{comId}/community/info?withInfluencerList=1&withTopicList=true&influencerListOrderStrategy=fansCount", headers=self.additional_headers())
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else:
             return objects.Community(response.json()["community"]).Community
 
@@ -1010,7 +1010,7 @@ class Client(Callbacks, SocketHandler):
         """
         response = await self.session.get(f"/g/s/search/amino-id-and-link?q={aminoId}", headers=self.additional_headers())
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else:
 
             response = response.json()["resultList"]
@@ -1033,7 +1033,7 @@ class Client(Callbacks, SocketHandler):
         """
         response = await self.session.get(f"/g/s/user-profile/{userId}/joined?start={start}&size={size}", headers=self.additional_headers())
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else:
             return objects.UserProfileList(response.json()["userProfileList"]).UserProfileList
 
@@ -1053,7 +1053,7 @@ class Client(Callbacks, SocketHandler):
         """
         response = await self.session.get(f"/g/s/user-profile/{userId}/member?start={start}&size={size}", headers=self.additional_headers())
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else:
             return objects.UserProfileList(response.json()["userProfileList"]).UserProfileList
 
@@ -1073,7 +1073,7 @@ class Client(Callbacks, SocketHandler):
         """
         response = await self.session.get(f"/g/s/user-profile/{userId}/visitors?start={start}&size={size}", headers=self.additional_headers())
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else:
             return objects.VisitorsList(response.json()).VisitorsList
 
@@ -1092,7 +1092,7 @@ class Client(Callbacks, SocketHandler):
         """
         response = await self.session.get(f"/g/s/block?start={start}&size={size}", headers=self.additional_headers())
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else:
             return objects.UserProfileList(response.json()["userProfileList"]).UserProfileList
 
@@ -1101,21 +1101,21 @@ class Client(Callbacks, SocketHandler):
             if quizId is not None: blogId = quizId
             response = await self.session.get(f"/g/s/blog/{blogId}", headers=self.additional_headers())
             if response.status_code != 200: 
-                return exceptions.CheckException(response.text)
+                return exceptions.CheckException(response)
             else:
                 return objects.GetBlogInfo(response.json()).GetBlogInfo
 
         elif wikiId:
             response = await self.session.get(f"/g/s/item/{wikiId}", headers=self.additional_headers())
             if response.status_code != 200: 
-                return exceptions.CheckException(response.text)
+                return exceptions.CheckException(response)
             else:
                 return objects.GetBlogInfo(response.json()).GetWikiInfo
 
         elif fileId:
             response = await self.session.get(f"/g/s/shared-folder/files/{fileId}", headers=self.additional_headers())
             if response.status_code != 200: 
-                return exceptions.CheckException(response.text)
+                return exceptions.CheckException(response)
             else:
                 return objects.SharedFolderFile(response.json()["file"]).SharedFolderFile
 
@@ -1135,7 +1135,7 @@ class Client(Callbacks, SocketHandler):
         else: raise exceptions.SpecifyType()
 
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else:
             return objects.CommentList(response.json()["commentList"]).CommentList
 
@@ -1154,7 +1154,7 @@ class Client(Callbacks, SocketHandler):
         """
         response = await self.session.get(f"/g/s/block/full-list?start={start}&size={size}", headers=self.additional_headers())
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else:
             return response.json()["blockerUidList"]
 
@@ -1181,7 +1181,7 @@ class Client(Callbacks, SocketHandler):
 
         response = await self.session.get(f"/g/s/user-profile/{userId}/g-comment?sort={sorting}&start={start}&size={size}", headers=self.additional_headers())
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else:
             return objects.CommentList(response.json()["commentList"]).CommentList
 
@@ -1231,7 +1231,7 @@ class Client(Callbacks, SocketHandler):
         data = dumps(data)
         response = await self.session.post(f"/g/s/{flg}", data=data, headers=self.additional_headers(data=data))
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else:
             return response.status_code
 
@@ -1319,7 +1319,7 @@ class Client(Callbacks, SocketHandler):
 
         response = await self.session.post(f"/g/s/chat/thread/{chatId}/message", headers=self.additional_headers(data=data), data=data)
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else:
             return response.status_code
 
@@ -1349,7 +1349,7 @@ class Client(Callbacks, SocketHandler):
         if not asStaff: response = await self.session.delete(f"/g/s/chat/thread/{chatId}/message/{messageId}", headers=self.additional_headers())
         else: response = await self.session.post(f"/g/s/chat/thread/{chatId}/message/{messageId}/admin", headers=self.additional_headers(data=data), data=data)
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else:
             return response.status_code
 
@@ -1373,7 +1373,7 @@ class Client(Callbacks, SocketHandler):
         
         response = await self.session.post(f"/g/s/chat/thread/{chatId}/mark-as-read", headers=self.additional_headers(data=data), data=data)
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else:
             return response.status_code
 
@@ -1424,84 +1424,84 @@ class Client(Callbacks, SocketHandler):
                 data = dumps({"alertOption": 2, "timestamp": int(timestamp() * 1000)})
                 
                 response = await self.session.post(f"/g/s/chat/thread/{chatId}/member/{self.userId}/alert", data=data, headers=self.additional_headers(data=data))
-                if response.status_code != 200: res.append(exceptions.CheckException(response.text))
+                if response.status_code != 200: res.append(exceptions.CheckException(response))
                 else: res.append(response.status_code)
 
             if not doNotDisturb:
                 data = dumps({"alertOption": 1, "timestamp": int(timestamp() * 1000)})
                 
                 response = await self.session.post(f"/g/s/chat/thread/{chatId}/member/{self.userId}/alert", data=data, headers=self.additional_headers(data=data))
-                if response.status_code != 200: res.append(exceptions.CheckException(response.text))
+                if response.status_code != 200: res.append(exceptions.CheckException(response))
                 else: res.append(response.status_code)
 
         if pinChat is not None:
             if pinChat:
                 response = await self.session.post(f"/g/s/chat/thread/{chatId}/pin", data=data, headers=self.additional_headers())
-                if response.status_code != 200: res.append(exceptions.CheckException(response.text))
+                if response.status_code != 200: res.append(exceptions.CheckException(response))
                 else: res.append(response.status_code)
 
             if not pinChat:
                 response = await self.session.post(f"/g/s/chat/thread/{chatId}/unpin", data=data, headers=self.additional_headers())
-                if response.status_code != 200: res.append(exceptions.CheckException(response.text))
+                if response.status_code != 200: res.append(exceptions.CheckException(response))
                 else: res.append(response.status_code)
 
         if backgroundImage is not None:
             data = dumps({"media": [100, backgroundImage, None], "timestamp": int(timestamp() * 1000)})
             
             response = await self.session.post(f"/g/s/chat/thread/{chatId}/member/{self.userId}/background", data=data, headers=self.additional_headers(data=data))
-            if response.status_code != 200: res.append(exceptions.CheckException(response.text))
+            if response.status_code != 200: res.append(exceptions.CheckException(response))
             else: res.append(response.status_code)
 
         if coHosts is not None:
             data = dumps({"uidList": coHosts, "timestamp": int(timestamp() * 1000)})
             
             response = await self.session.post(f"/g/s/chat/thread/{chatId}/co-host", data=data, headers=self.additional_headers(data=data))
-            if response.status_code != 200: res.append(exceptions.CheckException(response.text))
+            if response.status_code != 200: res.append(exceptions.CheckException(response))
             else: res.append(response.status_code)
 
         if viewOnly is not None:
             if viewOnly:
                 
                 response = await self.session.post(f"/g/s/chat/thread/{chatId}/view-only/enable", headers=self.additional_headers())
-                if response.status_code != 200: res.append(exceptions.CheckException(response.text))
+                if response.status_code != 200: res.append(exceptions.CheckException(response))
                 else: res.append(response.status_code)
 
             if not viewOnly:
                 
                 response = await self.session.post(f"/g/s/chat/thread/{chatId}/view-only/disable", headers=self.additional_headers())
-                if response.status_code != 200: res.append(exceptions.CheckException(response.text))
+                if response.status_code != 200: res.append(exceptions.CheckException(response))
                 else: res.append(response.status_code)
 
         if canInvite is not None:
             if canInvite:
                 
                 response = await self.session.post(f"/g/s/chat/thread/{chatId}/members-can-invite/enable", data=data, headers=self.additional_headers(data=data))
-                if response.status_code != 200: res.append(exceptions.CheckException(response.text))
+                if response.status_code != 200: res.append(exceptions.CheckException(response))
                 else: res.append(response.status_code)
 
             if not canInvite:
                 
                 response = await self.session.post(f"/g/s/chat/thread/{chatId}/members-can-invite/disable", data=data, headers=self.additional_headers(data=data))
-                if response.status_code != 200: res.append(exceptions.CheckException(response.text))
+                if response.status_code != 200: res.append(exceptions.CheckException(response))
                 else: res.append(response.status_code)
 
         if canTip is not None:
             if canTip:
                 
                 response = await self.session.post(f"/g/s/chat/thread/{chatId}/tipping-perm-status/enable", data=data, headers=self.additional_headers(data=data))
-                if response.status_code != 200: res.append(exceptions.CheckException(response.text))
+                if response.status_code != 200: res.append(exceptions.CheckException(response))
                 else: res.append(response.status_code)
 
             if not canTip:
                 
                 response = await self.session.post(f"/g/s/chat/thread/{chatId}/tipping-perm-status/disable", data=data, headers=self.additional_headers(data=data))
-                if response.status_code != 200: res.append(exceptions.CheckException(response.text))
+                if response.status_code != 200: res.append(exceptions.CheckException(response))
                 else: res.append(response.status_code)
 
         data = dumps(data)
         
         response = await self.session.post(f"/g/s/chat/thread/{chatId}", headers=self.additional_headers(data=data), data=data)
-        if response.status_code != 200: res.append(exceptions.CheckException(response.text))
+        if response.status_code != 200: res.append(exceptions.CheckException(response))
         else: res.append(response.status_code)
 
         return res
@@ -1520,7 +1520,7 @@ class Client(Callbacks, SocketHandler):
         """
         response = await self.session.get(f"/g/s/user-profile/{userId}?action=visit", headers=self.additional_headers())
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else:
             return response.status_code
 
@@ -1546,7 +1546,7 @@ class Client(Callbacks, SocketHandler):
         data = dumps(data)
         response = await self.session.post(url, headers=self.additional_headers(data=data), data=data)
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else:
             return response.status_code
 
@@ -1573,7 +1573,7 @@ class Client(Callbacks, SocketHandler):
         else: raise exceptions.WrongType
 
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else:
             return response.status_code
 
@@ -1591,7 +1591,7 @@ class Client(Callbacks, SocketHandler):
         """
         response = await self.session.delete(f"/g/s/user-profile/{userId}/member/{self.userId}", headers=self.additional_headers())
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else:
             return response.status_code
 
@@ -1609,7 +1609,7 @@ class Client(Callbacks, SocketHandler):
         """
         response = await self.session.post(f"/g/s/block/{userId}", headers=self.additional_headers())
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else:
             return response.status_code
 
@@ -1627,7 +1627,7 @@ class Client(Callbacks, SocketHandler):
         """
         response = await self.session.delete(f"/g/s/block/{userId}", headers=self.additional_headers())
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else:
             return response.status_code
 
@@ -1650,7 +1650,7 @@ class Client(Callbacks, SocketHandler):
         data = dumps(data)
         response = await self.session.post(f"/x{comId}/s/community/join", data=data, headers=self.additional_headers(data=data))
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else:
             return response.status_code
 
@@ -1670,7 +1670,7 @@ class Client(Callbacks, SocketHandler):
         data = dumps({"message": message, "timestamp": int(timestamp() * 1000)})
         response = await self.session.post(f"/x{comId}/s/community/membership-request", data=data, headers=self.additional_headers(data=data))
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else:
             return response.status_code
 
@@ -1688,7 +1688,7 @@ class Client(Callbacks, SocketHandler):
         """
         response = await self.session.post(f"/x{comId}/s/community/leave", headers=self.additional_headers())
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else:
             return response.status_code
 
@@ -1722,7 +1722,7 @@ class Client(Callbacks, SocketHandler):
         
         response = await self.session.post(f"/x{comId}/s/{flg}", data=data, headers=self.additional_headers(data=data))
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else:
             return response.status_code
 
@@ -1762,7 +1762,7 @@ class Client(Callbacks, SocketHandler):
         data = dumps(data)
         response = await self.session.post(f"/g/s/user-profile/{self.userId}", headers=self.additional_headers(data=data), data=data)
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else:
             return response.status_code
 
@@ -1790,7 +1790,7 @@ class Client(Callbacks, SocketHandler):
         data = dumps(data)
         response = await self.session.post(f"/g/s/account/visit-settings", headers=self.additional_headers(data=data), data=data)
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else:
             return response.status_code
 
@@ -1809,7 +1809,7 @@ class Client(Callbacks, SocketHandler):
         data = dumps({"aminoId": aminoId, "timestamp": int(timestamp() * 1000)})
         response = await self.session.post(f"/g/s/account/change-amino-id", headers=self.additional_headers(data=data), data=data)
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else:
             return response.status_code
 
@@ -1827,7 +1827,7 @@ class Client(Callbacks, SocketHandler):
         """
         response = await self.session.get(f"/g/s/user-profile/{userId}/linked-community", headers=self.additional_headers())
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else:
             return objects.CommunityList(response.json()["linkedCommunityList"]).CommunityList
 
@@ -1845,7 +1845,7 @@ class Client(Callbacks, SocketHandler):
         """
         response = await self.session.get(f"/g/s/user-profile/{userId}/linked-community", headers=self.additional_headers())
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else:
             return objects.CommunityList(response.json()["unlinkedCommunityList"]).CommunityList
 
@@ -1864,7 +1864,7 @@ class Client(Callbacks, SocketHandler):
         data = dumps({"ndcIds": comIds, "timestamp": int(timestamp() * 1000)})
         response = await self.session.post(f"/g/s/user-profile/{self.userId}/linked-community/reorder", headers=self.additional_headers(data=data), data=data)
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else:
             return response.status_code
 
@@ -1882,7 +1882,7 @@ class Client(Callbacks, SocketHandler):
         """
         response = await self.session.post(f"/g/s/user-profile/{self.userId}/linked-community/{comId}", headers=self.additional_headers())
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else:
             return response.status_code
 
@@ -1900,7 +1900,7 @@ class Client(Callbacks, SocketHandler):
         """
         response = await self.session.delete(f"/g/s/user-profile/{self.userId}/linked-community/{comId}", headers=self.additional_headers())
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else:
             return response.status_code
 
@@ -1951,7 +1951,7 @@ class Client(Callbacks, SocketHandler):
 
         else: raise exceptions.SpecifyType
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else:
             return response.status_code
 
@@ -1976,7 +1976,7 @@ class Client(Callbacks, SocketHandler):
         else: raise exceptions.SpecifyType
 
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else:
             return response.status_code
 
@@ -2022,7 +2022,7 @@ class Client(Callbacks, SocketHandler):
         else: raise exceptions.SpecifyType()
 
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else:
             return response.status_code
 
@@ -2044,7 +2044,7 @@ class Client(Callbacks, SocketHandler):
         else: raise exceptions.SpecifyType
 
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else:
             return response.status_code
 
@@ -2089,7 +2089,7 @@ class Client(Callbacks, SocketHandler):
         else: raise exceptions.SpecifyType
 
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else:
             return response.status_code
 
@@ -2114,7 +2114,7 @@ class Client(Callbacks, SocketHandler):
         else: raise exceptions.SpecifyType
 
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else:
             return response.status_code
 
@@ -2132,7 +2132,7 @@ class Client(Callbacks, SocketHandler):
         """
         response = await self.session.get(f"/g/s/membership?force=true", headers=self.additional_headers())
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else:
             return objects.Membership(response.json()).Membership
 
@@ -2154,7 +2154,7 @@ class Client(Callbacks, SocketHandler):
         if language not in await self.get_supported_languages(): raise exceptions.UnsupportedLanguage(language)
         response = await self.session.get(f"/g/s/announcement?language={language}&start={start}&size={size}", headers=self.additional_headers())
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else:
             return objects.BlogList(response.json()["blogList"]).BlogList
 
@@ -2172,7 +2172,7 @@ class Client(Callbacks, SocketHandler):
         """
         response = await self.session.get(f"/g/s/wallet", headers=self.additional_headers())
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else:
             return objects.WalletInfo(response.json()["wallet"]).WalletInfo
 
@@ -2191,7 +2191,7 @@ class Client(Callbacks, SocketHandler):
         """
         response = await self.session.get(f"/g/s/wallet/coin/history?start={start}&size={size}", headers=self.additional_headers())
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else:
             return objects.WalletHistory(response.json()["coinHistoryList"]).WalletHistory
 
@@ -2209,7 +2209,7 @@ class Client(Callbacks, SocketHandler):
         """
         response = await self.session.get(f"/g/s/auid?deviceId={deviceId}")
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else:
             return response.json()["auid"]
 
@@ -2228,7 +2228,7 @@ class Client(Callbacks, SocketHandler):
         """
         response = await self.session.get(f"/g/s/link-resolution?q={code}", headers=self.additional_headers())
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else:
             return objects.FromCode(response.json()["linkInfoV2"]).FromCode
 
@@ -2256,7 +2256,7 @@ class Client(Callbacks, SocketHandler):
         if comId: response = await self.session.post(f"/g/s-x{comId}/link-resolution", headers=self.additional_headers(data=data), data=data)
         else: response = await self.session.post(f"/g/s/link-resolution", headers=self.additional_headers(data=data), data=data)
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else:
             return objects.FromCode(response.json()["linkInfoV2"]).FromCode
 
@@ -2274,7 +2274,7 @@ class Client(Callbacks, SocketHandler):
         """
         response = await self.session.get(f"/g/s/community-collection/supported-languages?start=0&size=100", headers=self.additional_headers())
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else:
             return response.json()["supportedLanguages"]
 
@@ -2292,7 +2292,7 @@ class Client(Callbacks, SocketHandler):
         """
         response = await self.session.post(f"/g/s/coupon/new-user-coupon/claim", headers=self.additional_headers())
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else:
             return response.status_code
 
@@ -2311,7 +2311,7 @@ class Client(Callbacks, SocketHandler):
         """
         response = await self.session.get(f"/g/s/store/subscription?objectType=122&start={start}&size={size}", headers=self.additional_headers())
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else:
             return response.json()["storeSubscriptionItemList"]
 
@@ -2330,7 +2330,7 @@ class Client(Callbacks, SocketHandler):
         """
         response = await self.session.get(f"/g/s/user-profile?type=recent&start={start}&size={size}", headers=self.additional_headers())
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else:
             return objects.UserProfileCountList(response.json()).UserProfileCountList
 
@@ -2338,7 +2338,7 @@ class Client(Callbacks, SocketHandler):
         data = dumps({})
         response = await self.session.post(f"/g/s/chat/thread/{chatId}/transfer-organizer/{requestId}/accept", headers=self.additional_headers(data=data), data=data)
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else:
             return response.status_code
 
@@ -2370,7 +2370,7 @@ class Client(Callbacks, SocketHandler):
 
         response = await self.session.post(f"/g/s/chat/thread/{chatId}/vvchat-presenter/invite", headers=self.additional_headers(data=data), data=data)
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else:
             return response.status_code
 
@@ -2395,7 +2395,7 @@ class Client(Callbacks, SocketHandler):
 
         response = await self.session.post(f"/g/s/wallet/ads/config", headers=self.additional_headers(data=data), data=data)
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else:
             return response.status_code
 
@@ -2431,6 +2431,6 @@ class Client(Callbacks, SocketHandler):
 
         response = await self.session.get(f"/g/s/topic/0/feed/community?language={language}&type=web-explore&categoryKey=recommendation&size={size}&pagingType=t", headers=self.additional_headers())
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else:
             return objects.CommunityList(response.json()["communityList"]).CommunityList

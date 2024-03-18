@@ -78,7 +78,7 @@ class SubClient(Client):
     def get_invite_codes(self, status: str = "normal", start: int = 0, size: int = 25) -> objects.InviteCodeList:
         response = self.session.get(f"/g/s-x{self.comId}/community/invitation?status={status}&start={start}&size={size}", headers=self.additional_headers())
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return objects.InviteCodeList(response.json()["communityInvitationList"]).InviteCodeList
 
     def generate_invite_code(self, duration: int = 0, force: bool = True) -> objects.InviteCode:
@@ -90,19 +90,19 @@ class SubClient(Client):
         
         response = self.session.post(f"/g/s-x{self.comId}/community/invitation", headers=self.additional_headers(data=data), data=data)
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return objects.InviteCode(response.json()["communityInvitation"]).InviteCode
 
     def get_vip_users(self) -> objects.UserProfileList:
         response = self.session.get(f"/{self.comId}/s/influencer", headers=self.additional_headers())
         if response.status_code != 200:
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return objects.UserProfileList(response.json()["userProfileList"]).UserProfileList
 
     def delete_invite_code(self, inviteId: str) -> int:
         response = self.session.delete(f"/g/s-x{self.comId}/community/invitation/{inviteId}", headers=self.additional_headers())
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return response.status_code
 
     def post_blog(self, title: str, content: str, imageList: list = None, captionList: list = None, categoriesList: list = None, backgroundColor: str = None, fansOnly: bool = False, extensions: dict = None, crash: bool = False) -> int:
@@ -137,7 +137,7 @@ class SubClient(Client):
         
         response = self.session.post(f"/x{self.comId}/s/blog", headers=self.additional_headers(data=data), data=data)
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return response.status_code
 
     def post_wiki(self, title: str, content: str, icon: str = None, imageList: list = None, keywords: str = None, backgroundColor: str = None, fansOnly: bool = False) -> int:
@@ -162,7 +162,7 @@ class SubClient(Client):
         
         response = self.session.post(f"/x{self.comId}/s/item", headers=self.additional_headers(data=data), data=data)
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return response.status_code
 
     def edit_blog(self, blogId: str, title: str = None, content: str = None, imageList: list = None, categoriesList: list = None, backgroundColor: str = None, fansOnly: bool = False) -> int:
@@ -189,19 +189,19 @@ class SubClient(Client):
         
         response = self.session.post(f"/x{self.comId}/s/blog/{blogId}", headers=self.additional_headers(data=data), data=data)
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return response.status_code
 
     def delete_blog(self, blogId: str) -> int:
         response = self.session.delete(f"/x{self.comId}/s/blog/{blogId}", headers=self.additional_headers())
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return response.status_code
 
     def delete_wiki(self, wikiId: str) -> int:
         response = self.session.delete(f"/x{self.comId}/s/item/{wikiId}", headers=self.additional_headers())
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return response.status_code
 
     def repost_blog(self, content: str = None, blogId: str = None, wikiId: str = None) -> int:
@@ -219,7 +219,7 @@ class SubClient(Client):
         
         response = self.session.post(f"/x{self.comId}/s/blog", headers=self.additional_headers(data=data), data=data)
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return response.status_code
 
     def check_in(self, tz: int = -timezone // 1000) -> int:
@@ -230,7 +230,7 @@ class SubClient(Client):
         
         response = self.session.post(f"/x{self.comId}/s/check-in", headers=self.additional_headers(data=data), data=data)
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return response.status_code
 
     def repair_check_in(self, method: int = 0) -> int:
@@ -242,7 +242,7 @@ class SubClient(Client):
         
         response = self.session.post(f"/x{self.comId}/s/check-in/repair", headers=self.additional_headers(data=data), data=data)
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return response.status_code
 
     def lottery(self, tz: int = -timezone // 1000) -> objects.LotteryLog:
@@ -253,7 +253,7 @@ class SubClient(Client):
         
         response = self.session.post(f"/x{self.comId}/s/check-in/lottery", headers=self.additional_headers(data=data), data=data)
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return objects.LotteryLog(response.json()["lotteryLog"]).LotteryLog
 
     def edit_profile(self, nickname: str = None, content: str = None, icon: BinaryIO = None, chatRequestPrivilege: str = None, imageList: list = None, captionList: list = None, backgroundImage: str = None, backgroundColor: str = None, titles: list = None, colors: list = None, defaultBubbleId: str = None) -> int:
@@ -293,7 +293,7 @@ class SubClient(Client):
         
         response = self.session.post(f"/x{self.comId}/s/user-profile/{self.profile.userId}", headers=self.additional_headers(data=data), data=data)
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return response.status_code
 
     def vote_poll(self, blogId: str, optionId: str) -> int:
@@ -305,7 +305,7 @@ class SubClient(Client):
         
         response = self.session.post(f"/x{self.comId}/s/blog/{blogId}/poll/option/{optionId}/vote", headers=self.additional_headers(data=data), data=data)
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return response.status_code
 
     def comment(self, message: str, userId: str = None, blogId: str = None, wikiId: str = None, replyTo: str = None, isGuest: bool = False) -> int:
@@ -341,7 +341,7 @@ class SubClient(Client):
 
         else: raise exceptions.SpecifyType()
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return response.status_code
 
     def delete_comment(self, commentId: str, userId: str = None, blogId: str = None, wikiId: str = None) -> int:
@@ -351,7 +351,7 @@ class SubClient(Client):
         else: raise exceptions.SpecifyType()
 
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return response.status_code
 
     def like_blog(self, blogId: Union[str, list] = None, wikiId: str = None) -> int:
@@ -395,7 +395,7 @@ class SubClient(Client):
 
         else: raise exceptions.SpecifyType()
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return response.status_code
 
     def unlike_blog(self, blogId: str = None, wikiId: str = None) -> int:
@@ -404,7 +404,7 @@ class SubClient(Client):
         else: raise exceptions.SpecifyType()
 
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return response.status_code
 
     def like_comment(self, commentId: str, userId: str = None, blogId: str = None, wikiId: str = None) -> int:
@@ -433,7 +433,7 @@ class SubClient(Client):
 
         else: raise exceptions.SpecifyType()
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return response.status_code
 
     def unlike_comment(self, commentId: str, userId: str = None, blogId: str = None, wikiId: str = None) -> int:
@@ -443,7 +443,7 @@ class SubClient(Client):
         else: raise exceptions.SpecifyType()
 
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return response.status_code
 
     def upvote_comment(self, blogId: str, commentId: str):
@@ -455,7 +455,7 @@ class SubClient(Client):
         
         response = self.session.post(f"/x{self.comId}/s/blog/{blogId}/comment/{commentId}/vote?cv=1.2&value=1", headers=self.additional_headers(data=data), data=data)
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return response.status_code
 
     def downvote_comment(self, blogId: str, commentId: str):
@@ -467,13 +467,13 @@ class SubClient(Client):
         
         response = self.session.post(f"/x{self.comId}/s/blog/{blogId}/comment/{commentId}/vote?cv=1.2&value=-1", headers=self.additional_headers(data=data), data=data)
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return response.status_code
 
     def unvote_comment(self, blogId: str, commentId: str):
         response = self.session.delete(f"/x{self.comId}/s/blog/{blogId}/comment/{commentId}/vote?eventSource=PostDetailView", headers=self.additional_headers())
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return response.status_code
 
     def reply_wall(self, userId: str, commentId: str, message: str):
@@ -488,7 +488,7 @@ class SubClient(Client):
         
         response = self.session.post(f"/x{self.comId}/s/user-profile/{userId}/comment", headers=self.additional_headers(data=data), data=data)
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return response.status_code
 
     def send_active_obj(self, startTime: int = None, endTime: int = None, optInAdsFlags: int = 2147483647, tz: int = -timezone // 1000, timers: list = None, timestamp: int = int(timestamp() * 1000)): 
@@ -498,7 +498,7 @@ class SubClient(Client):
         
         response = self.session.post(f"/x{self.comId}/s/community/stats/user-active-time", headers=self.additional_headers(data=data), data=data) 
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text) 
+            return exceptions.CheckException(response) 
         else: return response.status_code
 
     def activity_status(self, status: str):
@@ -514,32 +514,32 @@ class SubClient(Client):
         
         response = self.session.post(f"/x{self.comId}/s/user-profile/{self.profile.userId}/online-status", headers=self.additional_headers(data=data), data=data)
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return response.status_code
 
     # TODO : Finish this
     def watch_ad(self):
         response = self.session.post(f"/g/s/wallet/ads/video/start", headers=self.additional_headers())
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return response.status_code
 
     def check_notifications(self):
         response = self.session.post(f"/x{self.comId}/s/notification/checked", headers=self.additional_headers())
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return response.status_code
 
     def delete_notification(self, notificationId: str):
         response = self.session.delete(f"/x{self.comId}/s/notification/{notificationId}", headers=self.additional_headers())
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return response.status_code
 
     def clear_notifications(self):
         response = self.session.delete(f"/x{self.comId}/s/notification", headers=self.additional_headers())
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return response.status_code
 
     def start_chat(self, userId: Union[str, list], message: str, title: str = None, content: str = None, isGlobal: bool = False, publishToGlobal: bool = False):
@@ -565,7 +565,7 @@ class SubClient(Client):
         
         response = self.session.post(f"/x{self.comId}/s/chat/thread", data=data, headers=self.additional_headers(data=data))
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return objects.Thread(response.json()["thread"]).Thread
 
     def invite_to_chat(self, userId: Union[str, list], chatId: str):
@@ -580,13 +580,13 @@ class SubClient(Client):
         
         response = self.session.post(f"/x{self.comId}/s/chat/thread/{chatId}/member/invite", headers=self.additional_headers(data=data), data=data)
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return response.status_code
 
     def add_to_favorites(self, userId: str):
         response = self.session.post(f"/x{self.comId}/s/user-group/quick-access/{userId}", headers=self.additional_headers())
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return response.status_code
 
     def send_coins(self, coins: int, blogId: str = None, chatId: str = None, objectId: str = None, transactionId: str = None):
@@ -612,13 +612,13 @@ class SubClient(Client):
         
         response = self.session.post(url, headers=self.additional_headers(data=data), data=data)
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return response.status_code
 
     def thank_tip(self, chatId: str, userId: str):
         response = self.session.post(f"/x{self.comId}/s/chat/thread/{chatId}/tipping/tipped-users/{userId}/thank", headers=self.additional_headers())
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return response.status_code
 
     def follow(self, userId: Union[str, list]):
@@ -644,7 +644,7 @@ class SubClient(Client):
         else: raise exceptions.WrongType(type(userId))
 
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return response.status_code
 
     def unfollow(self, userId: str):
@@ -661,7 +661,7 @@ class SubClient(Client):
         """
         response = self.session.delete(f"/x{self.comId}/s/user-profile/{self.profile.userId}/joined/{userId}", headers=self.additional_headers())
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return response.status_code
 
     def block(self, userId: str):
@@ -678,7 +678,7 @@ class SubClient(Client):
         """
         response = self.session.post(f"/x{self.comId}/s/block/{userId}", headers=self.additional_headers())
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return response.status_code
 
     def unblock(self, userId: str):
@@ -695,7 +695,7 @@ class SubClient(Client):
         """
         response = self.session.delete(f"/x{self.comId}/s/block/{userId}", headers=self.additional_headers())
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return response.status_code
 
     def visit(self, userId: str):
@@ -712,7 +712,7 @@ class SubClient(Client):
         """
         response = self.session.get(f"/x{self.comId}/s/user-profile/{userId}?action=visit", headers=self.additional_headers())
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return response.status_code
 
     def flag(self, reason: str, flagType: int, userId: str = None, blogId: str = None, wikiId: str = None, asGuest: bool = False):
@@ -762,7 +762,7 @@ class SubClient(Client):
         
         response = self.session.post(f"/x{self.comId}/s/{flg}", data=data, headers=self.additional_headers(data=data))
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return response.status_code
 
     def send_message(
@@ -884,7 +884,7 @@ class SubClient(Client):
 
         response = self.session.post(f"/x{self.comId}/s/chat/thread/{chatId}/message", headers=self.additional_headers(data=data), data=data)
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return response.status_code
 
     def delete_message(self, chatId: str, messageId: str, asStaff: bool = False, reason: str = None):
@@ -915,7 +915,7 @@ class SubClient(Client):
         if not asStaff: response = self.session.delete(f"/x{self.comId}/s/chat/thread/{chatId}/message/{messageId}", headers=self.additional_headers())
         else: response = self.session.post(f"/x{self.comId}/s/chat/thread/{chatId}/message/{messageId}/admin", headers=self.additional_headers(data=data), data=data)
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return response.status_code
 
     def mark_as_read(self, chatId: str, messageId: str):
@@ -938,7 +938,7 @@ class SubClient(Client):
         
         response = self.session.post(f"/x{self.comId}/s/chat/thread/{chatId}/mark-as-read", headers=self.additional_headers(data=data), data=data)
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return response.status_code
 
     def edit_chat(self, chatId: str, doNotDisturb: bool = None, pinChat: bool = None, title: str = None, icon: str = None, backgroundImage: str = None, content: str = None, announcement: str = None, coHosts: list = None, keywords: list = None, pinAnnouncement: bool = None, publishToGlobal: bool = None, canTip: bool = None, viewOnly: bool = None, canInvite: bool = None, fansOnly: bool = None):
@@ -988,78 +988,78 @@ class SubClient(Client):
                 data = dumps({"alertOption": 2, "timestamp": int(timestamp() * 1000)})
                 
                 response = self.session.post(f"/x{self.comId}/s/chat/thread/{chatId}/member/{self.profile.userId}/alert", data=data, headers=self.additional_headers(data=data))
-                if response.status_code != 200: res.append(exceptions.CheckException(response.text))
+                if response.status_code != 200: res.append(exceptions.CheckException(response))
                 else: res.append(response.status_code)
 
             if not doNotDisturb:
                 data = dumps({"alertOption": 1, "timestamp": int(timestamp() * 1000)})
                 
                 response = self.session.post(f"/x{self.comId}/s/chat/thread/{chatId}/member/{self.profile.userId}/alert", data=data, headers=self.additional_headers(data=data))
-                if response.status_code != 200: res.append(exceptions.CheckException(response.text))
+                if response.status_code != 200: res.append(exceptions.CheckException(response))
                 else: res.append(response.status_code)
 
         if pinChat is not None:
             if pinChat:
                 response = self.session.post(f"/x{self.comId}/s/chat/thread/{chatId}/pin", data=data, headers=self.additional_headers())
-                if response.status_code != 200: res.append(exceptions.CheckException(response.text))
+                if response.status_code != 200: res.append(exceptions.CheckException(response))
                 else: res.append(response.status_code)
 
             if not pinChat:
                 response = self.session.post(f"/x{self.comId}/s/chat/thread/{chatId}/unpin", data=data, headers=self.additional_headers())
-                if response.status_code != 200: res.append(exceptions.CheckException(response.text))
+                if response.status_code != 200: res.append(exceptions.CheckException(response))
                 else: res.append(response.status_code)
 
         if backgroundImage is not None:
             data = dumps({"media": [100, backgroundImage, None], "timestamp": int(timestamp() * 1000)})
             
             response = self.session.post(f"/x{self.comId}/s/chat/thread/{chatId}/member/{self.profile.userId}/background", data=data, headers=self.additional_headers(data=data))
-            if response.status_code != 200: res.append(exceptions.CheckException(response.text))
+            if response.status_code != 200: res.append(exceptions.CheckException(response))
             else: res.append(response.status_code)
 
         if coHosts is not None:
             data = dumps({"uidList": coHosts, "timestamp": int(timestamp() * 1000)})
             
             response = self.session.post(f"/x{self.comId}/s/chat/thread/{chatId}/co-host", data=data, headers=self.additional_headers(data=data))
-            if response.status_code != 200: res.append(exceptions.CheckException(response.text))
+            if response.status_code != 200: res.append(exceptions.CheckException(response))
             else: res.append(response.status_code)
 
         if viewOnly is not None:
             if viewOnly:
                 response = self.session.post(f"/x{self.comId}/s/chat/thread/{chatId}/view-only/enable", headers=self.additional_headers())
-                if response.status_code != 200: res.append(exceptions.CheckException(response.text))
+                if response.status_code != 200: res.append(exceptions.CheckException(response))
                 else: res.append(response.status_code)
 
             if not viewOnly:
                 response = self.session.post(f"/x{self.comId}/s/chat/thread/{chatId}/view-only/disable", headers=self.additional_headers())
-                if response.status_code != 200: res.append(exceptions.CheckException(response.text))
+                if response.status_code != 200: res.append(exceptions.CheckException(response))
                 else: res.append(response.status_code)
 
         if canInvite is not None:
             if canInvite:
                 response = self.session.post(f"/x{self.comId}/s/chat/thread/{chatId}/members-can-invite/enable", data=data, headers=self.additional_headers(data=data))
-                if response.status_code != 200: res.append(exceptions.CheckException(response.text))
+                if response.status_code != 200: res.append(exceptions.CheckException(response))
                 else: res.append(response.status_code)
 
             if not canInvite:
                 response = self.session.post(f"/x{self.comId}/s/chat/thread/{chatId}/members-can-invite/disable", data=data, headers=self.additional_headers(data=data))
-                if response.status_code != 200: res.append(exceptions.CheckException(response.text))
+                if response.status_code != 200: res.append(exceptions.CheckException(response))
                 else: res.append(response.status_code)
 
         if canTip is not None:
             if canTip:
                 response = self.session.post(f"/x{self.comId}/s/chat/thread/{chatId}/tipping-perm-status/enable", data=data, headers=self.additional_headers(data=data))
-                if response.status_code != 200: res.append(exceptions.CheckException(response.text))
+                if response.status_code != 200: res.append(exceptions.CheckException(response))
                 else: res.append(response.status_code)
 
             if not canTip:
                 response = self.session.post(f"/x{self.comId}/s/chat/thread/{chatId}/tipping-perm-status/disable", data=data, headers=self.additional_headers(data=data))
-                if response.status_code != 200: res.append(exceptions.CheckException(response.text))
+                if response.status_code != 200: res.append(exceptions.CheckException(response))
                 else: res.append(response.status_code)
 
         data = dumps(data)
         
         response = self.session.post(f"/x{self.comId}/s/chat/thread/{chatId}", headers=self.additional_headers(data=data), data=data)
-        if response.status_code != 200: res.append(exceptions.CheckException(response.text))
+        if response.status_code != 200: res.append(exceptions.CheckException(response))
         else: res.append(response.status_code)
 
         return res
@@ -1072,7 +1072,7 @@ class SubClient(Client):
         
         response = self.session.post(f"/x{self.comId}/s/chat/thread/{chatId}/transfer-organizer", headers=self.additional_headers(data=data), data=data)
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return response.status_code
 
     def transfer_organizer(self, chatId: str, userIds: list):
@@ -1083,7 +1083,7 @@ class SubClient(Client):
         
         response = self.session.post(f"/x{self.comId}/s/chat/thread/{chatId}/transfer-organizer/{requestId}/accept", headers=self.additional_headers(data=data), data=data)
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return response.status_code
 
     def accept_organizer(self, chatId: str, requestId: str):
@@ -1094,7 +1094,7 @@ class SubClient(Client):
         if not allowRejoin: allowRejoin = 0
         response = self.session.delete(f"/x{self.comId}/s/chat/thread/{chatId}/member/{userId}?allowRejoin={allowRejoin}", headers=self.additional_headers())
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return response.status_code
 
     def join_chat(self, chatId: str):
@@ -1111,7 +1111,7 @@ class SubClient(Client):
         """
         response = self.session.post(f"/x{self.comId}/s/chat/thread/{chatId}/member/{self.profile.userId}", headers=self.additional_headers())
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return response.status_code
 
     def leave_chat(self, chatId: str):
@@ -1128,7 +1128,7 @@ class SubClient(Client):
         """
         response = self.session.delete(f"/x{self.comId}/s/chat/thread/{chatId}/member/{self.profile.userId}", headers=self.additional_headers())
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return response.status_code
         
     def delete_chat(self, chatId: str):
@@ -1145,7 +1145,7 @@ class SubClient(Client):
         """
         response = self.session.delete(f"/x{self.comId}/s/chat/thread/{chatId}", headers=self.additional_headers())
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return response.status_code
         
     def subscribe(self, userId: str, autoRenew: str = False, transactionId: str = None):
@@ -1161,13 +1161,13 @@ class SubClient(Client):
         
         response = self.session.post(f"/x{self.comId}/s/influencer/{userId}/subscribe", headers=self.additional_headers(data=data), data=data)
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return response.status_code
 
     def promotion(self, noticeId: str, type: str = "accept"):
         response = self.session.post(f"/x{self.comId}/s/notice/{noticeId}/{type}", headers=self.additional_headers())
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return response.status_code
 
     def play_quiz_raw(self, quizId: str, quizAnswerList: list, quizMode: int = 0):
@@ -1179,7 +1179,7 @@ class SubClient(Client):
         
         response = self.session.post(f"/x{self.comId}/s/blog/{quizId}/quiz/result", headers=self.additional_headers(data=data), data=data)
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return response.status_code
 
     def play_quiz(self, quizId: str, questionIdsList: list, answerIdsList: list, quizMode: int = 0):
@@ -1202,7 +1202,7 @@ class SubClient(Client):
         
         response = self.session.post(f"/x{self.comId}/s/blog/{quizId}/quiz/result", headers=self.additional_headers(data=data), data=data)
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return response.status_code
 
     def vc_permission(self, chatId: str, permission: int):
@@ -1218,19 +1218,19 @@ class SubClient(Client):
         
         response = self.session.post(f"/x{self.comId}/s/chat/thread/{chatId}/vvchat-permission", headers=self.additional_headers(data=data), data=data)
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return response.status_code
 
     def get_vc_reputation_info(self, chatId: str):
         response = self.session.get(f"/x{self.comId}/s/chat/thread/{chatId}/avchat-reputation", headers=self.additional_headers())
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return objects.VcReputation(response.json()).VcReputation
 
     def claim_vc_reputation(self, chatId: str):
         response = self.session.post(f"/x{self.comId}/s/chat/thread/{chatId}/avchat-reputation", headers=self.additional_headers())
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return objects.VcReputation(response.json()).VcReputation
 
     def get_all_users(self, type: str = "recent", start: int = 0, size: int = 25):
@@ -1242,19 +1242,19 @@ class SubClient(Client):
         else: raise exceptions.WrongType(type)
 
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return objects.UserProfileCountList(response.json()).UserProfileCountList
 
     def get_online_users(self, start: int = 0, size: int = 25):
         response = self.session.get(f"/x{self.comId}/s/live-layer?topic=ndtopic:x{self.comId}:online-members&start={start}&size={size}", headers=self.additional_headers())
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return objects.UserProfileCountList(response.json()).UserProfileCountList
 
     def get_online_favorite_users(self, start: int = 0, size: int = 25):
         response = self.session.get(f"/x{self.comId}/s/user-group/quick-access?type=online&start={start}&size={size}", headers=self.additional_headers())
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return objects.UserProfileCountList(response.json()).UserProfileCountList
 
     def get_user_info(self, userId: str):
@@ -1271,7 +1271,7 @@ class SubClient(Client):
         """
         response = self.session.get(f"/x{self.comId}/s/user-profile/{userId}", headers=self.additional_headers())
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return objects.UserProfile(response.json()["userProfile"]).UserProfile
 
     def get_user_following(self, userId: str, start: int = 0, size: int = 25):
@@ -1290,7 +1290,7 @@ class SubClient(Client):
         """
         response = self.session.get(f"/x{self.comId}/s/user-profile/{userId}/joined?start={start}&size={size}", headers=self.additional_headers())
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return objects.UserProfileList(response.json()["userProfileList"]).UserProfileList
 
     def get_user_followers(self, userId: str, start: int = 0, size: int = 25):
@@ -1309,7 +1309,7 @@ class SubClient(Client):
         """
         response = self.session.get(f"/x{self.comId}/s/user-profile/{userId}/member?start={start}&size={size}", headers=self.additional_headers())
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return objects.UserProfileList(response.json()["userProfileList"]).UserProfileList
 
     def get_user_visitors(self, userId: str, start: int = 0, size: int = 25):
@@ -1328,37 +1328,37 @@ class SubClient(Client):
         """
         response = self.session.get(f"/x{self.comId}/s/user-profile/{userId}/visitors?start={start}&size={size}", headers=self.additional_headers())
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return objects.VisitorsList(response.json()).VisitorsList
 
     def get_user_checkins(self, userId: str):
         response = self.session.get(f"/x{self.comId}/s/check-in/stats/{userId}?timezone={-timezone // 1000}", headers=self.additional_headers())
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return objects.UserCheckIns(response.json()).UserCheckIns
 
     def get_user_blogs(self, userId: str, start: int = 0, size: int = 25):
         response = self.session.get(f"/x{self.comId}/s/blog?type=user&q={userId}&start={start}&size={size}", headers=self.additional_headers())
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return objects.BlogList(response.json()["blogList"]).BlogList
 
     def get_user_wikis(self, userId: str, start: int = 0, size: int = 25):
         response = self.session.get(f"/x{self.comId}/s/item?type=user-all&start={start}&size={size}&cv=1.2&uid={userId}", headers=self.additional_headers())
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return objects.WikiList(response.json()["itemList"]).WikiList
 
     def get_user_achievements(self, userId: str):
         response = self.session.get(f"/x{self.comId}/s/user-profile/{userId}/achievements", headers=self.additional_headers())
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return objects.UserAchievements(response.json()["achievements"]).UserAchievements
 
     def get_influencer_fans(self, userId: str, start: int = 0, size: int = 25):
         response = self.session.get(f"/x{self.comId}/s/influencer/{userId}/fans?start={start}&size={size}", headers=self.additional_headers())
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return objects.InfluencerFans(response.json()).InfluencerFans
 
     def get_blocked_users(self, start: int = 0, size: int = 25):
@@ -1376,7 +1376,7 @@ class SubClient(Client):
         """
         response = self.session.get(f"/x{self.comId}/s/block?start={start}&size={size}", headers=self.additional_headers())
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return objects.UserProfileList(response.json()["userProfileList"]).UserProfileList
 
     def get_blocker_users(self, start: int = 0, size: int = 25):
@@ -1395,19 +1395,19 @@ class SubClient(Client):
 
         response = self.session.get(f"/x{self.comId}/s/block?start={start}&size={size}", headers=self.additional_headers())
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return response.json()["blockerUidList"]
 
     def search_users(self, nickname: str, start: int = 0, size: int = 25):
         response = self.session.get(f"/x{self.comId}/s/user-profile?type=name&q={nickname}&start={start}&size={size}", headers=self.additional_headers())
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return objects.UserProfileList(response.json()["userProfileList"]).UserProfileList
 
     def get_saved_blogs(self, start: int = 0, size: int = 25):
         response = self.session.get(f"/x{self.comId}/s/bookmark?start={start}&size={size}", headers=self.additional_headers())
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return objects.UserSavedBlogs(response.json()["bookmarkList"]).UserSavedBlogs
 
     def get_leaderboard_info(self, type: str, start: int = 0, size: int = 25):
@@ -1418,31 +1418,31 @@ class SubClient(Client):
         elif "quiz" in type: response = self.session.get(f"/g/s-x{self.comId}/community/leaderboard?rankingType=5&start={start}&size={size}", headers=self.additional_headers())
         else: raise exceptions.WrongType(type)
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return objects.UserProfileList(response.json()["userProfileList"]).UserProfileList
 
     def get_wiki_info(self, wikiId: str):
         response = self.session.get(f"/x{self.comId}/s/item/{wikiId}", headers=self.additional_headers())
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return objects.GetWikiInfo(response.json()).GetWikiInfo
 
     def get_recent_wiki_items(self, start: int = 0, size: int = 25):
         response = self.session.get(f"/x{self.comId}/s/item?type=catalog-all&start={start}&size={size}", headers=self.additional_headers())
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return objects.WikiList(response.json()["itemList"]).WikiList
 
     def get_wiki_categories(self, start: int = 0, size: int = 25):
         response = self.session.get(f"/x{self.comId}/s/item-category?start={start}&size={size}", headers=self.additional_headers())
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return objects.WikiCategoryList(response.json()["itemCategoryList"]).WikiCategoryList
 
     def get_wiki_category(self, categoryId: str, start: int = 0, size: int = 25):
         response = self.session.get(f"/x{self.comId}/s/item-category/{categoryId}?start={start}&size={size}", headers=self.additional_headers())
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return objects.WikiCategory(response.json()).WikiCategory
 
     def get_tipped_users(self, blogId: str = None, wikiId: str = None, quizId: str = None, fileId: str = None, chatId: str = None, start: int = 0, size: int = 25):
@@ -1454,7 +1454,7 @@ class SubClient(Client):
         elif fileId: response = self.session.get(f"/x{self.comId}/s/shared-folder/files/{fileId}/tipping/tipped-users-summary?start={start}&size={size}", headers=self.additional_headers())
         else: raise exceptions.SpecifyType()
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return objects.TippedUsersSummary(response.json()).TippedUsersSummary
 
     def get_chat_threads(self, start: int = 0, size: int = 25):
@@ -1472,7 +1472,7 @@ class SubClient(Client):
         """
         response = self.session.get(f"/x{self.comId}/s/chat/thread?type=joined-me&start={start}&size={size}", headers=self.additional_headers())
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return objects.ThreadList(response.json()["threadList"]).ThreadList
 
     def get_public_chat_threads(self, type: str = "recommended", start: int = 0, size: int = 25):
@@ -1490,7 +1490,7 @@ class SubClient(Client):
         """
         response = self.session.get(f"/x{self.comId}/s/chat/thread?type=public-all&filterType={type}&start={start}&size={size}", headers=self.additional_headers())
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return objects.ThreadList(response.json()["threadList"]).ThreadList
 
     def get_chat_thread(self, chatId: str):
@@ -1507,7 +1507,7 @@ class SubClient(Client):
         """
         response = self.session.get(f"/x{self.comId}/s/chat/thread/{chatId}", headers=self.additional_headers())
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return objects.Thread(response.json()["thread"]).Thread
 
     def get_chat_messages(self, chatId: str, size: int = 25, pageToken: str = None):
@@ -1530,7 +1530,7 @@ class SubClient(Client):
 
         response = self.session.get(url, headers=self.additional_headers())
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return objects.GetMessages(response.json()).GetMessages
 
     def get_message_info(self, chatId: str, messageId: str):
@@ -1548,7 +1548,7 @@ class SubClient(Client):
         """
         response = self.session.get(f"/x{self.comId}/s/chat/thread/{chatId}/message/{messageId}", headers=self.additional_headers())
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return objects.Message(response.json()["message"]).Message
 
     def get_blog_info(self, blogId: str = None, wikiId: str = None, quizId: str = None, fileId: str = None):
@@ -1556,19 +1556,19 @@ class SubClient(Client):
             if quizId is not None: blogId = quizId
             response = self.session.get(f"/x{self.comId}/s/blog/{blogId}", headers=self.additional_headers())
             if response.status_code != 200: 
-                return exceptions.CheckException(response.text)
+                return exceptions.CheckException(response)
             else: return objects.GetBlogInfo(response.json()).GetBlogInfo
 
         elif wikiId:
             response = self.session.get(f"/x{self.comId}/s/item/{wikiId}", headers=self.additional_headers())
             if response.status_code != 200: 
-                return exceptions.CheckException(response.text)
+                return exceptions.CheckException(response)
             else: return objects.GetWikiInfo(response.json()).GetWikiInfo
 
         elif fileId:
             response = self.session.get(f"/x{self.comId}/s/shared-folder/files/{fileId}", headers=self.additional_headers())
             if response.status_code != 200: 
-                return exceptions.CheckException(response.text)
+                return exceptions.CheckException(response)
             else: return objects.SharedFolderFile(response.json()["file"]).SharedFolderFile
 
         else: raise exceptions.SpecifyType()
@@ -1586,25 +1586,25 @@ class SubClient(Client):
         else: raise exceptions.SpecifyType()
 
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return objects.CommentList(response.json()["commentList"]).CommentList
 
     def get_blog_categories(self, size: int = 25):
         response = self.session.get(f"/x{self.comId}/s/blog-category?size={size}", headers=self.additional_headers())
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return objects.BlogCategoryList(response.json()["blogCategoryList"]).BlogCategoryList
 
     def get_blogs_by_category(self, categoryId: str,start: int = 0, size: int = 25):
         response = self.session.get(f"/x{self.comId}/s/blog-category/{categoryId}/blog-list?start={start}&size={size}", headers=self.additional_headers())
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return objects.BlogList(response.json()["blogList"]).BlogList
 
     def get_quiz_rankings(self, quizId: str, start: int = 0, size: int = 25):
         response = self.session.get(f"/x{self.comId}/s/blog/{quizId}/quiz/result?start={start}&size={size}", headers=self.additional_headers())
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return objects.QuizRankings(response.json()).QuizRankings
 
     def get_wall_comments(self, userId: str, sorting: str, start: int = 0, size: int = 25):
@@ -1630,7 +1630,7 @@ class SubClient(Client):
 
         response = self.session.get(f"/x{self.comId}/s/user-profile/{userId}/comment?sort={sorting}&start={start}&size={size}", headers=self.additional_headers())
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return objects.CommentList(response.json()["commentList"]).CommentList
 
     def get_recent_blogs(self, pageToken: str = None, start: int = 0, size: int = 25):
@@ -1639,19 +1639,19 @@ class SubClient(Client):
 
         response = self.session.get(url, headers=self.additional_headers())
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return objects.RecentBlogs(response.json()).RecentBlogs
 
     def get_chat_users(self, chatId: str, start: int = 0, size: int = 25):
         response = self.session.get(f"/x{self.comId}/s/chat/thread/{chatId}/member?start={start}&size={size}&type=default&cv=1.2", headers=self.additional_headers())
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return objects.UserProfileList(response.json()["memberList"]).UserProfileList
 
     def get_notifications(self, start: int = 0, size: int = 25):
         response = self.session.get(f"/x{self.comId}/s/notification?pagingType=t&start={start}&size={size}", headers=self.additional_headers())
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return objects.NotificationList(response.json()["notificationList"]).NotificationList
 
     def get_notices(self, start: int = 0, size: int = 25):
@@ -1662,26 +1662,26 @@ class SubClient(Client):
         """
         response = self.session.get(f"/x{self.comId}/s/notice?type=usersV2&status=1&start={start}&size={size}", headers=self.additional_headers())
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return objects.NoticeList(response.json()["noticeList"]).NoticeList
 
     def get_sticker_pack_info(self, sticker_pack_id: str):
         response = self.session.get(f"/x{self.comId}/s/sticker-collection/{sticker_pack_id}?includeStickers=true", headers=self.additional_headers())
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return objects.StickerCollection(response.json()["stickerCollection"]).StickerCollection
 
     def get_sticker_packs(self):
         response = self.session.get(f"/x{self.comId}/s/sticker-collection?includeStickers=false&type=my-active-collection", headers=self.additional_headers())
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         return objects.StickerCollection(response.json()["stickerCollection"]).StickerCollection
 
     # TODO : Finish this
     def get_store_chat_bubbles(self, start: int = 0, size: int = 25):
         response = self.session.get(f"/x{self.comId}/s/store/items?sectionGroupId=chat-bubble&start={start}&size={size}", headers=self.additional_headers())
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else:
             response = response.json()
             del response["api:message"], response["api:statuscode"], response["api:duration"], response["api:timestamp"]
@@ -1691,7 +1691,7 @@ class SubClient(Client):
     def get_store_stickers(self, start: int = 0, size: int = 25):
         response = self.session.get(f"/x{self.comId}/s/store/items?sectionGroupId=sticker&start={start}&size={size}", headers=self.additional_headers())
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else:
             response = response.json()
             del response["api:message"], response["api:statuscode"], response["api:duration"], response["api:timestamp"]
@@ -1700,25 +1700,25 @@ class SubClient(Client):
     def get_community_stickers(self):
         response = self.session.get(f"/x{self.comId}/s/sticker-collection?type=community-shared", headers=self.additional_headers())
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return objects.CommunityStickerCollection(response.json()).CommunityStickerCollection
 
     def get_sticker_collection(self, collectionId: str):
         response = self.session.get(f"/x{self.comId}/s/sticker-collection/{collectionId}?includeStickers=true", headers=self.additional_headers())
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return objects.StickerCollection(response.json()["stickerCollection"]).StickerCollection
 
     def get_shared_folder_info(self):
         response = self.session.get(f"/x{self.comId}/s/shared-folder/stats", headers=self.additional_headers())
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return objects.GetSharedFolderInfo(response.json()["stats"]).GetSharedFolderInfo
 
     def get_shared_folder_files(self, type: str = "latest", start: int = 0, size: int = 25):
         response = self.session.get(f"/x{self.comId}/s/shared-folder/files?type={type}&start={start}&size={size}", headers=self.additional_headers())
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return objects.SharedFolderFileList(response.json()["fileList"]).SharedFolderFileList
 
     #
@@ -1733,7 +1733,7 @@ class SubClient(Client):
         elif fileId: response = self.session.get(f"/x{self.comId}/s/admin/operation?objectId={fileId}&objectType=109&pagingType=t&size={size}", headers=self.additional_headers())
         else: response = self.session.get(f"/x{self.comId}/s/admin/operation?pagingType=t&size={size}", headers=self.additional_headers())
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return objects.AdminLogList(response.json()["adminLogList"]).AdminLogList
 
     def feature(self, time: int, userId: str = None, chatId: str = None, blogId: str = None, wikiId: str = None):
@@ -1778,7 +1778,7 @@ class SubClient(Client):
 
         else: raise exceptions.SpecifyType()
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return response.json()
 
     def unfeature(self, userId: str = None, chatId: str = None, blogId: str = None, wikiId: str = None):
@@ -1810,7 +1810,7 @@ class SubClient(Client):
 
         else: raise exceptions.SpecifyType()
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return response.json()
 
     def hide(self, userId: str = None, chatId: str = None, blogId: str = None, wikiId: str = None, quizId: str = None, fileId: str = None, reason: str = None):
@@ -1858,7 +1858,7 @@ class SubClient(Client):
 
         else: raise exceptions.SpecifyType()
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return response.json()
 
     def unhide(self, userId: str = None, chatId: str = None, blogId: str = None, wikiId: str = None, quizId: str = None, fileId: str = None, reason: str = None):
@@ -1906,7 +1906,7 @@ class SubClient(Client):
 
         else: raise exceptions.SpecifyType()
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return response.json()
 
     def edit_titles(self, userId: str, titles: list, colors: list):
@@ -1924,7 +1924,7 @@ class SubClient(Client):
 
         response = self.session.post(f"/x{self.comId}/s/user-profile/{userId}/admin", headers=self.additional_headers(data=data), data=data)
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return response.json()
 
     # TODO : List all warning texts
@@ -1945,7 +1945,7 @@ class SubClient(Client):
 
         response = self.session.post(f"/x{self.comId}/s/notice", headers=self.additional_headers(data=data), data=data)
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return response.json()
 
     # TODO : List all strike texts
@@ -1974,7 +1974,7 @@ class SubClient(Client):
 
         response = self.session.post(f"/x{self.comId}/s/notice", headers=self.additional_headers(data=data), data=data)
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return response.json()
 
     def ban(self, userId: str, reason: str, banType: int = None):
@@ -1988,7 +1988,7 @@ class SubClient(Client):
 
         response = self.session.post(f"/x{self.comId}/s/user-profile/{userId}/ban", headers=self.additional_headers(data=data), data=data)
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return response.json()
 
     def unban(self, userId: str, reason: str):
@@ -2001,7 +2001,7 @@ class SubClient(Client):
 
         response = self.session.post(f"/x{self.comId}/s/user-profile/{userId}/unban", headers=self.additional_headers(data=data), data=data)
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return response.json()
 
     def reorder_featured_users(self, userIds: list):
@@ -2012,43 +2012,43 @@ class SubClient(Client):
 
         response = self.session.post(f"/x{self.comId}/s/user-profile/featured/reorder", headers=self.additional_headers(data=data), data=data)
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return response.json()
 
     def get_hidden_blogs(self, start: int = 0, size: int = 25):
         response = self.session.get(f"/x{self.comId}/s/feed/blog-disabled?start={start}&size={size}", headers=self.additional_headers())
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return objects.BlogList(response.json()["blogList"]).BlogList
 
     def get_featured_users(self, start: int = 0, size: int = 25):
         response = self.session.get(f"/x{self.comId}/s/user-profile?type=featured&start={start}&size={size}", headers=self.additional_headers())
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return objects.UserProfileCountList(response.json()).UserProfileCountList
 
     def review_quiz_questions(self, quizId: str):
         response = self.session.get(f"/x{self.comId}/s/blog/{quizId}?action=review", headers=self.additional_headers())
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return objects.QuizQuestionList(response.json()["blog"]["quizQuestionList"]).QuizQuestionList
 
     def get_recent_quiz(self, start: int = 0, size: int = 25):
         response = self.session.get(f"/x{self.comId}/s/blog?type=quizzes-recent&start={start}&size={size}", headers=self.additional_headers())
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return objects.BlogList(response.json()["blogList"]).BlogList
 
     def get_trending_quiz(self, start: int = 0, size: int = 25):
         response = self.session.get(f"/x{self.comId}/s/feed/quiz-trending?start={start}&size={size}", headers=self.additional_headers())
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return objects.BlogList(response.json()["blogList"]).BlogList
 
     def get_best_quiz(self, start: int = 0, size: int = 25):
         response = self.session.get(f"/x{self.comId}/s/feed/quiz-best-quizzes?start={start}&size={size}", headers=self.additional_headers())
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return objects.BlogList(response.json()["blogList"]).BlogList
 
     def send_action(self, actions: list, blogId: str = None, quizId: str = None, lastAction: bool = False):
@@ -2089,7 +2089,7 @@ class SubClient(Client):
         data = dumps(data)
         response = self.session.post(f"/x{self.comId}/s/store/purchase", headers=self.additional_headers(data=data), data=data)
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return response.status_code
 
     # Provided by "spectrum#4691"
@@ -2117,7 +2117,7 @@ class SubClient(Client):
         data = dumps(data)
         response = self.session.post(f"/x{self.comId}/s/avatar-frame/apply", headers=self.additional_headers(data=data), data=data)
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return response.status_code
 
     def invite_to_vc(self, chatId: str, userId: str):
@@ -2140,7 +2140,7 @@ class SubClient(Client):
 
         response = self.session.post(f"/x{self.comId}/s/chat/thread/{chatId}/vvchat-presenter/invite/", headers=self.additional_headers(data=data), data=data)
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return response.status_code
 
     def add_poll_option(self, blogId: str, question: str):
@@ -2153,7 +2153,7 @@ class SubClient(Client):
 
         response = self.session.post(f"/x{self.comId}/s/blog/{blogId}/poll/option", headers=self.additional_headers(data=data), data=data)
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return response.status_code
 
     def create_wiki_category(self, title: str, parentCategoryId: str, content: str = None):
@@ -2168,7 +2168,7 @@ class SubClient(Client):
 
         response = self.session.post(f"/x{self.comId}/s/item-category", headers=self.additional_headers(data=data), data=data)
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return response.status_code
 
     def create_shared_folder(self,title: str):
@@ -2178,7 +2178,7 @@ class SubClient(Client):
             })
         response = self.session.post(f"/x{self.comId}/s/shared-folder/folders", headers=self.additional_headers(data=data),data=data)
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return response.status_code
 
     def submit_to_wiki(self, wikiId: str, message: str):
@@ -2190,7 +2190,7 @@ class SubClient(Client):
 
         response = self.session.post(f"/x{self.comId}/s/knowledge-base-request", headers=self.additional_headers(data=data), data=data)
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return response.status_code
 
     def accept_wiki_request(self, requestId: str, destinationCategoryIdList: list):
@@ -2202,7 +2202,7 @@ class SubClient(Client):
 
         response = self.session.post(f"/x{self.comId}/s/knowledge-base-request/{requestId}/approve", headers=self.additional_headers(data=data), data=data)
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return response.status_code
 
     def reject_wiki_request(self, requestId: str):
@@ -2210,19 +2210,19 @@ class SubClient(Client):
 
         response = self.session.post(f"/x{self.comId}/s/knowledge-base-request/{requestId}/reject", headers=self.additional_headers(data=data), data=data)
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return response.status_code
 
     def get_wiki_submissions(self, start: int = 0, size: int = 25):
         response = self.session.get(f"/x{self.comId}/s/knowledge-base-request?type=all&start={start}&size={size}", headers=self.additional_headers())
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return objects.WikiRequestList(response.json()["knowledgeBaseRequestList"]).WikiRequestList
 
     def get_live_layer(self):
         response = self.session.get(f"/x{self.comId}/s/live-layer/homepage?v=2", headers=self.additional_headers())
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return objects.LiveLayer(response.json()["liveLayerList"]).LiveLayer
 
     def apply_bubble(self, bubbleId: str, chatId: str, applyToAll: bool = False):
@@ -2239,7 +2239,7 @@ class SubClient(Client):
         data = dumps(data)
         response = self.session.post(f"/x{self.comId}/s/chat/thread/apply-bubble", headers=self.additional_headers(data=data), data=data)
         if response.status_code != 200: 
-            return exceptions.CheckException(response.text)
+            return exceptions.CheckException(response)
         else: return response.status_code
 
     def send_video(self, chatId: str, videoFile: BinaryIO, imageFile: BinaryIO, message: str = None, mediaUhqEnabled: bool = False):
@@ -2284,5 +2284,5 @@ class SubClient(Client):
             files=files
         )
         
-        if response.status_code != 200: return exceptions.CheckException(response.text)
+        if response.status_code != 200: return exceptions.CheckException(response)
         else: return response.status_code

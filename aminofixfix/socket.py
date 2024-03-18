@@ -7,6 +7,7 @@ from time import sleep
 from random import randint
 from json import loads, dumps
 from time import time as timestamp
+from datetime import datetime as dt
 
 from threading import Thread
 from sys import _getframe as getframe
@@ -44,6 +45,13 @@ class SocketHandler:
 
         websocket.enableTrace(socket_trace)
 
+    def new_socket_url(self):
+        self.socket_url = f"wss://ws{randint(1,4)}.aminoapps.com"
+
+    def socket_log(self, text, status: str = "INFO"):
+        if self.debug is True:
+            print("[SOCKET: {}] ({})".format(status, dt.now().strftime('%Y-%m-%d %H:%M:%S')), text)
+
     def reconnect_handler(self):
         # Made by enchart#3410 thx
         # Fixed by The_Phoenix#3967
@@ -51,10 +59,9 @@ class SocketHandler:
             sleep(self.reconnectTime)
 
             if self.active:
-                if self.debug is True:
-                    print(f"[socket][reconnect_handler] Reconnecting Socket")
-
                 self.close()
+                self.socket_log("Reconnecting...")
+                
                 self.run_amino_socket()
 
     def ws_run_forever(self):
@@ -70,8 +77,7 @@ class SocketHandler:
         return
 
     def send(self, data):
-        if self.debug is True:
-            print(f"[socket][send] Sending Data : {data}")
+        self.socket_log(f"Sending data: {data}")
         
         if not self.socket_thread:
             self.run_amino_socket()
@@ -79,19 +85,23 @@ class SocketHandler:
 
         self.socket.send(data)
     def handle_error(self, ws, err):
-        print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n" +
-                "CRITICAL SOCKET ERROR: " + str(err) +
-                f"\nSOCKET INFO: {self.socket_url}\n" +
-                "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+        self.socket_log(
+            "Critical error in socket/lib/your code: {} | Socket URL: {}".format(
+                str(err).replace("\n",""), self.socket_url
+            ),
+            "ERROR"
+        )
                 
     def handle_close(self, ws, close_code, close_msg):
-        print(f"! Socket {self.socket_url} closed: '{close_code} = {close_msg}'!")
+        self.socket_log(
+            "Socket {} closed: '{} = {}'!".format(
+                self.socket_url, close_code, close_msg
+            ),
+            "WARNING"
+        )
 
     def run_amino_socket(self):
         try:
-            if self.debug is True:
-                print(f"[socket][start] Starting Socket")
-
             if self.client.sid is None:
                 return
 
@@ -103,6 +113,7 @@ class SocketHandler:
                 "NDC-MSG-SIG": helpers.signature(final)
             }
 
+            self.new_socket_url()
             self.socket = websocket.WebSocketApp(
                 f"{self.socket_url}/?signbody={final.replace('|', '%7C')}",
                 on_message = self.handle_message,
@@ -119,21 +130,20 @@ class SocketHandler:
                 self.reconnect_thread = Thread(target=self.reconnect_handler)
                 self.reconnect_thread.start()
             
-            if self.debug is True:
-                print(f"[socket][start] Socket Started")
+            self.socket_log(f"Connected to {self.socket_url}")
         except Exception as e:
             print(e)
 
     def close(self):
-        if self.debug is True:
-            print(f"[socket][close] Closing Socket")
-
         self.active = False
         try:
             self.socket.close()
+            self.socket_log(f"Closed {self.socket_url}")
         except Exception as closeError:
-            if self.debug is True:
-                print(f"[socket][close] Error while closing Socket : {closeError}")
+            self.socket_log(
+                "Can't close connection to {}: {}".format( self.socket_url, str(closeError).replace("\n", " ") ),
+                "ERROR"
+            )
 
         return
 
