@@ -1,7 +1,7 @@
 # Amino.fix.fix
 
 [![PyPi Version](https://img.shields.io/pypi/v/amino.fix.fix.svg)](https://pypi.python.org/pypi/amino.fix.fix/)
-![PyPi Preview](https://img.shields.io/badge/pypi_pre-v1.0.5b6-blue)
+[![PyPi Preview](https://img.shields.io/badge/pypi_pre-v1.0.5b6-blue)](https://pypi.org/project/amino.fix.fix/#history)
 ![Python Version](https://img.shields.io/badge/python-%3E%3D3.9-orange)
 [![Issues](https://img.shields.io/github/issues-raw/imperialwool/amino.fix.fix.svg?maxAge=25000)](https://github.com/imperialwool/Amino.fix.fix/issues)
 [![GitHub pull requests](https://img.shields.io/github/issues-pr/imperialwool/amino.fix.fix.svg?style=flat)](https://github.com/imperialwool/Amino.fix.fix/pulls)
@@ -42,4 +42,4 @@ This library is [MIT licensed](https://github.com/imperialwool/Amino.fix.fix/blo
 
 ## Astericks
 
-¹ So there is things becoming tricky. Python3.10 officially added `|` between types and None. HTTPX supporting python3.8+, `__future__` solved problems for python3.9x at least (i tested). So *maybe* lib is compactable with python3.8+, but I just never tested this and I need your help.
+¹ So here's things becoming tricky: python3.10 officially added `|` between types and None, HTTPX supporting python3.8+ and `__future__` solved problems at least for python3.9x (i tested). But I didn't tested on python3.8x. So, I need help here.
