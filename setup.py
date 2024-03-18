@@ -1,5 +1,5 @@
 from setuptools import setup, find_packages
-LIBRARY_VERSION = "1.0.5b5"
+LIBRARY_VERSION = "1.0.5b6"
 
 requirements = [
     "httpx>=0.27.0",
@@ -39,5 +39,5 @@ setup(
     long_description_content_type="text/markdown",
     install_requires=requirements,
     keywords=keywords,
-    python_requires='>=3.9',
+    python_requires='>=3.8',
 )
