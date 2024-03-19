@@ -35,7 +35,7 @@ setup(
     description="Library for Aminoapps",
     url="https://github.com/imperialwool/Amino.fix.fix",
     packages=find_packages(),
-    long_description=open("README.md").read(),
+    long_description=open("README.md", encoding="utf-8").read(),
     long_description_content_type="text/markdown",
     install_requires=requirements,
     keywords=keywords,
