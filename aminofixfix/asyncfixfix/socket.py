@@ -105,11 +105,17 @@ class SocketHandler:
             if self.client.sid is None:
                 return
 
-            final = f"{self.client.device_id}|{int(timestamp() * 1000)}"
+            device = gen_deviceId() if self.client.autoDevice else self.client.device_id
+
+            final = f"{device}|{int(timestamp() * 1000)}"
 
             self.headers = {
-                "NDCDEVICEID": gen_deviceId() if self.client.autoDevice else self.client.device_id,
+                "Accept-Encoding": "gzip, deflate, br",
+                "Connection": "Upgrade",
+                "AUID": self.client.userId,
                 "NDCAUTH": f"sid={self.client.sid}",
+                "NDCLANG": "en",
+                "NDCDEVICEID": device,
                 "NDC-MSG-SIG": helpers.signature(final)
             }
 
