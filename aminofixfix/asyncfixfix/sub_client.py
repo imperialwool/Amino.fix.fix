@@ -34,14 +34,16 @@ class SubClient(Client):
     def __init__(
         self, mainClient: Client,
         comId: str = None, aminoId: str = None, *,
-        deviceId: str = None, autoDevice: bool | None = None, proxies: dict = None
+        deviceId: str = None, autoDevice: bool | None = None, proxies: dict = None,
+        api_library: objects.APILibraries | None = None
     ):
         Client.__init__(
             self, deviceId=deviceId, proxies=proxies,
             autoDevice=autoDevice or mainClient.autoDevice, userAgent=mainClient.user_agent,
             http2_enabled=mainClient.http2_enabled,
             own_timeout=mainClient.timeout_settings,
-            socket_enabled=False
+            socket_enabled=False,
+            api_library=api_library or mainClient.api_library or objects.APILibraries.HTTPX
         )
         self.comId = comId
         self.aminoId = aminoId

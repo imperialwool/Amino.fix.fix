@@ -3,8 +3,26 @@
 from enum import Enum
 
 class EmbedTypes(Enum):
+    """
+    Enum, containing all possible values for Embed.
+
+    - LINK_SNIPPET (1)
+    - ATTACHED_OBJECT (2)
+    """
     LINK_SNIPPET = 1
     ATTACHED_OBJECT = 2
+
+class APILibraries(Enum):
+    """
+    Enum, containing all possible values for API libraries.
+
+    - HTTPX (1)
+    - AIOHTTP (2)
+    - REQUESTS (3)
+    """
+    HTTPX = 1
+    AIOHTTP = 2
+    REQUESTS = 3
 
 # Objects
 
@@ -14,6 +32,91 @@ class Objects:
         news_feed = "000000000-0000-0000-0000-000000000001"
 
 class UserProfile:
+    '''
+    User Profile object.
+
+    Fields that can be available:
+        - accountMembershipStatus
+        - activation
+        - activePublicLiveThreadId
+        - age
+        - aminoId
+        - aminoIdEditable
+        - appleId
+        - avatarFrame
+        - avatarFrameId
+        - backgroundImage
+        - backgroundColor
+        - blogsCount
+        - commentsCount
+        - content
+        - coverAnimation
+        - createdTime
+        - customTitles
+        - dateOfBirth
+        - defaultBubbleId
+        - disabledLevel
+        - disabledStatus
+        - disabledTime
+        - email
+        - extensions
+        - facebookId
+        - fansCount
+        - followersCount
+        - followingCount
+        - followingStatus
+        - gender
+        - globalStrikeCount
+        - googleId
+        - icon
+        - influencerCreatedTime
+        - influencerInfo
+        - influencerMonthlyFee
+        - influencerPinned
+        - isGlobal
+        - isMemberOfTeamAmino
+        - isNicknameVerified
+        - itemsCount
+        - lastStrikeTime
+        - lastWarningTime
+        - level
+        - mediaList
+        - membershipStatus
+        - modifiedTime
+        - mood
+        - moodSticker
+        - nickname
+        - notificationSubscriptionStatus
+        - onlineStatus
+        - onlineStatus2
+        - phoneNumber
+        - postsCount
+        - privilegeOfChatInviteRequest
+        - privilegeOfCommentOnUserProfile
+        - pushEnabled
+        - race
+        - reputation
+        - role
+        - securityLevel
+        - staffInfo
+        - status
+        - storiesCount
+        - strikeCount
+        - tagList
+        - twitterId
+        - userId
+        - verified
+        - visitPrivacy
+        - visitorsCount
+        - warningCount
+        - totalQuizHighestScore
+        - totalQuizPlayedTimes
+        - requestId
+        - message
+        - applicant
+        - avgDailySpendTimeIn7Days
+        - adminLogCountIn7Days
+    '''
     def __init__(self, data):
         self.json = data
 
@@ -267,6 +370,91 @@ class UserProfile:
         return self
 
 class UserProfileList:
+    '''
+    List of User Profiles.
+
+    Fields that can be available:
+        - accountMembershipStatus
+        - activation
+        - activePublicLiveThreadId
+        - age
+        - aminoId
+        - aminoIdEditable
+        - appleId
+        - avatarFrame
+        - avatarFrameId
+        - backgroundImage
+        - backgroundColor
+        - blogsCount
+        - commentsCount
+        - content
+        - coverAnimation
+        - createdTime
+        - customTitles
+        - dateOfBirth
+        - defaultBubbleId
+        - disabledLevel
+        - disabledStatus
+        - disabledTime
+        - email
+        - extensions
+        - facebookId
+        - fansCount
+        - followersCount
+        - followingCount
+        - followingStatus
+        - gender
+        - globalStrikeCount
+        - googleId
+        - icon
+        - influencerCreatedTime
+        - influencerInfo
+        - influencerMonthlyFee
+        - influencerPinned
+        - isGlobal
+        - isMemberOfTeamAmino
+        - isNicknameVerified
+        - itemsCount
+        - lastStrikeTime
+        - lastWarningTime
+        - level
+        - mediaList
+        - membershipStatus
+        - modifiedTime
+        - mood
+        - moodSticker
+        - nickname
+        - notificationSubscriptionStatus
+        - onlineStatus
+        - onlineStatus2
+        - phoneNumber
+        - postsCount
+        - privilegeOfChatInviteRequest
+        - privilegeOfCommentOnUserProfile
+        - pushEnabled
+        - race
+        - reputation
+        - role
+        - securityLevel
+        - staffInfo
+        - status
+        - storiesCount
+        - strikeCount
+        - tagList
+        - twitterId
+        - userId
+        - verified
+        - visitPrivacy
+        - visitorsCount
+        - warningCount
+        - totalQuizHighestScore
+        - totalQuizPlayedTimes
+        - requestId
+        - message
+        - applicant
+        - avgDailySpendTimeIn7Days
+        - adminLogCountIn7Days
+    '''
     def __init__(self, data):
         _fanClub = []
 

@@ -15,10 +15,9 @@ from httpx import Timeout as TimeoutConfig
 from locale import getdefaultlocale as locale
 
 from .lib.helpers import gen_deviceId
+from .lib.facades import RequestsClient
 from .socket import Callbacks, SocketHandler
 from .lib import exceptions, headers, objects, helpers
-
-#@dorthegra/IDörthe#8835 thanks for support!
 
 class Client(Callbacks, SocketHandler):
     def __init__(
@@ -31,7 +30,9 @@ class Client(Callbacks, SocketHandler):
         default_timeout: int | None = 30, own_timeout: TimeoutConfig | None = None,
 
         connect_timeout: int | None = None, pool_timeout: int | None = None,
-        read_timeout: int | None = None, write_timeout: int | None= None
+        read_timeout: int | None = None, write_timeout: int | None = None,
+
+        api_library: objects.APILibraries = objects.APILibraries.HTTPX
     ):
         self.api = "https://service.aminoapps.com/api/v1"
         self.proxies = proxies
@@ -42,6 +43,7 @@ class Client(Callbacks, SocketHandler):
         self.socket_enabled = socket_enabled
         self.device_id = deviceId if deviceId else gen_deviceId()
         self.user_agent = userAgent if userAgent else helpers.gen_userAgent()
+        self.api_library = api_library
 
         if disable_timeout:
             self.timeout_settings = TimeoutConfig(None)
@@ -57,13 +59,24 @@ class Client(Callbacks, SocketHandler):
         else:
             self.timeout_settings = TimeoutConfig(default_timeout or 60)
 
-        self.session = HttpxClient(
-            headers=headers.BASIC_HEADERS,
-            http2=http2_enabled,
-            base_url=self.api,
-            proxies=proxies,
-            timeout=self.timeout_settings
-        )
+        if self.api_library == objects.APILibraries.HTTPX:
+            self.session = HttpxClient(
+                headers=headers.BASIC_HEADERS,
+                http2=http2_enabled,
+                base_url=self.api,
+                proxies=proxies,
+                timeout=self.timeout_settings
+            )
+        elif self.api_library == objects.APILibraries.AIOHTTP:
+            raise Exception("You cant use aiohttp in sync client. Aiohttp is async library.")
+        elif self.api_library == objects.APILibraries.REQUESTS:
+            self.session = RequestsClient(
+                headers=headers.BASIC_HEADERS,
+                http2=http2_enabled,
+                base_url=self.api,
+                proxies=proxies,
+                timeout=self.timeout_settings
+            )
 
         SocketHandler.__init__(self, self, socket_trace=socket_trace, debug=socketDebugging)
         Callbacks.__init__(self, self)
@@ -1236,7 +1249,16 @@ class Client(Callbacks, SocketHandler):
         else:
             return response.status_code
 
-    def send_message(self, chatId: str, message: str = None, messageType: int = 0, file: BinaryIO = None, fileType: str = None, replyTo: str = None, mentionUserIds: list = None, stickerId: str = None, embedId: str = None, embedType: int = None, embedLink: str = None, embedTitle: str = None, embedContent: str = None, embedImage: BinaryIO = None):
+    def send_message(
+            self,
+            chatId: str, message: str = None, messageType: int = 0,
+            file: BinaryIO = None, fileType: str = None,
+            replyTo: str = None, mentionUserIds: list = None,
+            stickerId: str = None,
+        
+            embedId: str = None, embedObjectType: int = None, embedLink: str = None, embedTitle: str = None, embedContent: str = None, embedImage: BinaryIO = None,
+            embedType: objects.EmbedTypes = objects.EmbedTypes.LINK_SNIPPET
+        ):
         """
         Send a Message to a Chat.
 
@@ -1250,11 +1272,13 @@ class Client(Callbacks, SocketHandler):
             - **mentionUserIds** : List of User IDS to mention. '@' needed in the Message.
             - **replyTo** : Message ID to reply to.
             - **stickerId** : Sticker ID to be sent.
-            - **embedTitle** : Title of the Embed.
-            - **embedContent** : Content of the Embed.
+            - **embedType** : Type of the Embed. Can be aminofixfix.lib.objects.EmbedTypes only. By default it's LinkSnippet one.
             - **embedLink** : Link of the Embed.
-            - **embedImage** : Image of the Embed.
-            - **embedId** : ID of the Embed.
+            - **embedImage** : Image of the Embed. Required to send Embed.
+            - **embedId** : ID of the Embed. Works only in AttachedObject Embeds.
+            - **embedType** : Type of the AttachedObject Embed. Works only in AttachedObject Embeds.
+            - **embedTitle** : Title of the Embed. Works only in AttachedObject Embeds.
+            - **embedContent** : Content of the Embed. Works only in AttachedObject Embeds.
 
         **Returns**
             - **Success** : 200 (int)
@@ -1267,27 +1291,51 @@ class Client(Callbacks, SocketHandler):
 
         mentions = []
         if mentionUserIds:
-            for mention_uid in mentionUserIds:
-                mentions.append({"uid": mention_uid})
+            mentions = [{"uid": mention_uid} for mention_uid in mentionUserIds]
 
-        if embedImage:
-            embedImage = [[100, self.upload_media(embedImage, "image"), None]]
+        if not isinstance(embedImage, BinaryIO):
+            embedType = None
 
-        data = {
-            "type": messageType,
-            "content": message,
-            "clientRefId": int(timestamp() / 10 % 1000000000),
-            "attachedObject": {
-                "objectId": embedId,
-                "objectType": embedType,
-                "link": embedLink,
-                "title": embedTitle,
-                "content": embedContent,
-                "mediaList": embedImage
-            },
-            "extensions": {"mentionedArray": mentions},
-            "timestamp": int(timestamp() * 1000)
-        }
+        if embedType == objects.EmbedTypes.LINK_SNIPPET:
+            data = {
+                "type": messageType,
+                "content": message,
+                "clientRefId": int(timestamp() / 10 % 1000000000),
+                "extensions": {
+                    "linkSnippetList": [{
+                        "link": embedLink,
+                        "mediaType": 100,
+                        "mediaUploadValue": b64encode(embedImage.read()).decode(),
+                        "mediaUploadValueContentType": "image/png"
+                    }],
+                    "mentionedArray": mentions
+                },
+                "timestamp": int(timestamp() * 1000)
+            }
+        elif embedType == objects.EmbedTypes.ATTACHED_OBJECT:
+            data = {
+                "type": messageType,
+                "content": message,
+                "clientRefId": int(timestamp() / 10 % 1000000000),
+                "attachedObject": {
+                    "objectId": embedId,
+                    "objectType": embedObjectType,
+                    "link": embedLink,
+                    "title": embedTitle,
+                    "content": embedContent,
+                    "mediaList": [[100, self.upload_media(embedImage, "image"), None]]
+                },
+                "extensions": {"mentionedArray": mentions},
+                "timestamp": int(timestamp() * 1000)
+            }
+        else:
+            data = {
+                "type": messageType,
+                "content": message,
+                "clientRefId": int(timestamp() / 10 % 1000000000),
+                "extensions": {"mentionedArray": mentions},
+                "timestamp": int(timestamp() * 1000)
+            }
 
         if replyTo: data["replyMessageId"] = replyTo
 
@@ -1312,7 +1360,7 @@ class Client(Callbacks, SocketHandler):
                 data["mediaUploadValueContentType"] = "image/gif"
                 data["mediaUhqEnabled"] = True
 
-            else: raise exceptions.SpecifyType
+            else: raise exceptions.SpecifyType(fileType)
 
             data["mediaUploadValue"] = b64encode(file.read()).decode()
 
@@ -1321,8 +1369,7 @@ class Client(Callbacks, SocketHandler):
         response = self.session.post(f"/g/s/chat/thread/{chatId}/message", headers=self.additional_headers(data=data), data=data)
         if response.status_code != 200: 
             return exceptions.CheckException(response)
-        else:
-            return response.status_code
+        else: return response.status_code
 
     def delete_message(self, chatId: str, messageId: str, asStaff: bool = False, reason: str = None):
         """
