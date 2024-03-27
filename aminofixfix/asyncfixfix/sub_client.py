@@ -374,7 +374,7 @@ class SubClient(Client):
         **Returns**
             - **Success** : 200 (int)
 
-            - **Fail** : :meth:`Exceptions <aminofix.lib.util.exceptions>`
+            - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
         data = {
             "value": 4,
@@ -640,7 +640,7 @@ class SubClient(Client):
         **Returns**
             - **Success** : 200 (int)
 
-            - **Fail** : :meth:`Exceptions <aminofix.lib.util.exceptions>`
+            - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
         if isinstance(userId, str):
             response = await self.session.post(f"/x{self.comId}/s/user-profile/{userId}/member", headers=self.additional_headers())
@@ -666,7 +666,7 @@ class SubClient(Client):
         **Returns**
             - **Success** : 200 (int)
 
-            - **Fail** : :meth:`Exceptions <aminofix.lib.util.exceptions>`
+            - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
         response = await self.session.delete(f"/x{self.comId}/s/user-profile/{self.profile.userId}/joined/{userId}", headers=self.additional_headers())
         if response.status_code != 200: 
@@ -683,7 +683,7 @@ class SubClient(Client):
         **Returns**
             - **Success** : 200 (int)
 
-            - **Fail** : :meth:`Exceptions <aminofix.lib.util.exceptions>`
+            - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
         response = await self.session.post(f"/x{self.comId}/s/block/{userId}", headers=self.additional_headers())
         if response.status_code != 200: 
@@ -700,7 +700,7 @@ class SubClient(Client):
         **Returns**
             - **Success** : 200 (int)
 
-            - **Fail** : :meth:`Exceptions <aminofix.lib.util.exceptions>`
+            - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
         response = await self.session.delete(f"/x{self.comId}/s/block/{userId}", headers=self.additional_headers())
         if response.status_code != 200: 
@@ -717,7 +717,7 @@ class SubClient(Client):
         **Returns**
             - **Success** : 200 (int)
 
-            - **Fail** : :meth:`Exceptions <aminofix.lib.util.exceptions>`
+            - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
         response = await self.session.get(f"/x{self.comId}/s/user-profile/{userId}?action=visit", headers=self.additional_headers())
         if response.status_code != 200: 
@@ -739,7 +739,7 @@ class SubClient(Client):
         **Returns**
             - **Success** : 200 (int)
 
-            - **Fail** : :meth:`Exceptions <aminofix.lib.util.exceptions>`
+            - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
         if reason is None: raise exceptions.ReasonNeeded()
         if flagType is None: raise exceptions.FlagTypeNeeded()
@@ -808,7 +808,7 @@ class SubClient(Client):
         **Returns**
             - **Success** : 200 (int)
 
-            - **Fail** : :meth:`Exceptions <aminofix.lib.util.exceptions>`
+            - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
 
         if message is not None and file is None:
@@ -931,7 +931,7 @@ class SubClient(Client):
         **Returns**
             - **Success** : 200 (int)
 
-            - **Fail** : :meth:`Exceptions <aminofix.lib.util.exceptions>`
+            - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
         data = {
             "adminOpName": 102,
@@ -960,7 +960,7 @@ class SubClient(Client):
         **Returns**
             - **Success** : 200 (int)
 
-            - **Fail** : :meth:`Exceptions <aminofix.lib.util.exceptions>`
+            - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
         data = dumps({
             "messageId": messageId,
@@ -997,7 +997,7 @@ class SubClient(Client):
         **Returns**
             - **Success** : 200 (int)
 
-            - **Fail** : :meth:`Exceptions <aminofix.lib.util.exceptions>`
+            - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
         data = {"timestamp": int(timestamp() * 1000)}
 
@@ -1138,7 +1138,7 @@ class SubClient(Client):
         **Returns**
             - **Success** : 200 (int)
 
-            - **Fail** : :meth:`Exceptions <aminofix.lib.util.exceptions>`
+            - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
         response = await self.session.post(f"/x{self.comId}/s/chat/thread/{chatId}/member/{self.profile.userId}", headers=self.additional_headers())
         if response.status_code != 200: 
@@ -1155,7 +1155,7 @@ class SubClient(Client):
         **Returns**
             - **Success** : 200 (int)
 
-            - **Fail** : :meth:`Exceptions <aminofix.lib.util.exceptions>`
+            - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
         response = await self.session.delete(f"/x{self.comId}/s/chat/thread/{chatId}/member/{self.profile.userId}", headers=self.additional_headers())
         if response.status_code != 200: 
@@ -1172,7 +1172,7 @@ class SubClient(Client):
         **Returns**
             - **Success** : 200 (int)
 
-            - **Fail** : :meth:`Exceptions <aminofix.lib.util.exceptions>`
+            - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
         response = await self.session.delete(f"/x{self.comId}/s/chat/thread/{chatId}", headers=self.additional_headers())
         if response.status_code != 200: 
@@ -1298,7 +1298,7 @@ class SubClient(Client):
         **Returns**
             - **Success** : :meth:`User Object <amino.lib.util.objects.UserProfile>`
 
-            - **Fail** : :meth:`Exceptions <aminofix.lib.util.exceptions>`
+            - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
         response = await self.session.get(f"/x{self.comId}/s/user-profile/{userId}", headers=self.additional_headers())
         if response.status_code != 200: 
@@ -1317,7 +1317,7 @@ class SubClient(Client):
         **Returns**
             - **Success** : :meth:`User List <amino.lib.util.objects.UserProfileList>`
 
-            - **Fail** : :meth:`Exceptions <aminofix.lib.util.exceptions>`
+            - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
         response = await self.session.get(f"/x{self.comId}/s/user-profile/{userId}/joined?start={start}&size={size}", headers=self.additional_headers())
         if response.status_code != 200: 
@@ -1336,7 +1336,7 @@ class SubClient(Client):
         **Returns**
             - **Success** : :meth:`User List <amino.lib.util.objects.UserProfileList>`
 
-            - **Fail** : :meth:`Exceptions <aminofix.lib.util.exceptions>`
+            - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
         response = await self.session.get(f"/x{self.comId}/s/user-profile/{userId}/member?start={start}&size={size}", headers=self.additional_headers())
         if response.status_code != 200: 
@@ -1355,7 +1355,7 @@ class SubClient(Client):
         **Returns**
             - **Success** : :meth:`Visitors List <amino.lib.util.objects.visitorsList>`
 
-            - **Fail** : :meth:`Exceptions <aminofix.lib.util.exceptions>`
+            - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
         response = await self.session.get(f"/x{self.comId}/s/user-profile/{userId}/visitors?start={start}&size={size}", headers=self.additional_headers())
         if response.status_code != 200: 
@@ -1403,7 +1403,7 @@ class SubClient(Client):
         **Returns**
             - **Success** : :meth:`Users List <amino.lib.util.objects.UserProfileList>`
 
-            - **Fail** : :meth:`Exceptions <aminofix.lib.util.exceptions>`
+            - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
         response = await self.session.get(f"/x{self.comId}/s/block?start={start}&size={size}", headers=self.additional_headers())
         if response.status_code != 200: 
@@ -1421,7 +1421,7 @@ class SubClient(Client):
         **Returns**
             - **Success** : :meth:`List of User IDs <List>`
 
-            - **Fail** : :meth:`Exceptions <aminofix.lib.util.exceptions>`
+            - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
 
         response = await self.session.get(f"/x{self.comId}/s/block?start={start}&size={size}", headers=self.additional_headers())
@@ -1499,7 +1499,7 @@ class SubClient(Client):
         **Returns**
             - **Success** : :meth:`Chat List <amino.lib.util.objects.ThreadList>`
 
-            - **Fail** : :meth:`Exceptions <aminofix.lib.util.exceptions>`
+            - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
         response = await self.session.get(f"/x{self.comId}/s/chat/thread?type=joined-me&start={start}&size={size}", headers=self.additional_headers())
         if response.status_code != 200: 
@@ -1517,7 +1517,7 @@ class SubClient(Client):
         **Returns**
             - **Success** : :meth:`Chat List <amino.lib.util.objects.ThreadList>`
 
-            - **Fail** : :meth:`Exceptions <aminofix.lib.util.exceptions>`
+            - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
         response = await self.session.get(f"/x{self.comId}/s/chat/thread?type=public-all&filterType={type}&start={start}&size={size}", headers=self.additional_headers())
         if response.status_code != 200: 
@@ -1534,7 +1534,7 @@ class SubClient(Client):
         **Returns**
             - **Success** : :meth:`Chat Object <amino.lib.util.objects.Thread>`
 
-            - **Fail** : :meth:`Exceptions <aminofix.lib.util.exceptions>`
+            - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
         response = await self.session.get(f"/x{self.comId}/s/chat/thread/{chatId}", headers=self.additional_headers())
         if response.status_code != 200: 
@@ -1553,7 +1553,7 @@ class SubClient(Client):
         **Returns**
             - **Success** : :meth:`Message List <amino.lib.util.objects.MessageList>`
 
-            - **Fail** : :meth:`Exceptions <aminofix.lib.util.exceptions>`
+            - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
 
         if pageToken is not None: url = f"/x{self.comId}/s/chat/thread/{chatId}/message?v=2&pagingType=t&pageToken={pageToken}&size={size}"
@@ -1575,7 +1575,7 @@ class SubClient(Client):
         **Returns**
             - **Success** : :meth:`Message Object <amino.lib.util.objects.Message>`
 
-            - **Fail** : :meth:`Exceptions <aminofix.lib.util.exceptions>`
+            - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
         response = await self.session.get(f"/x{self.comId}/s/chat/thread/{chatId}/message/{messageId}", headers=self.additional_headers())
         if response.status_code != 200: 
@@ -1652,7 +1652,7 @@ class SubClient(Client):
         **Returns**
             - **Success** : :meth:`Comments List <amino.lib.util.objects.CommentList>`
 
-            - **Fail** : :meth:`Exceptions <aminofix.lib.util.exceptions>`
+            - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
         if sorting == "newest": sorting = "newest"
         elif sorting == "oldest": sorting = "oldest"
@@ -2135,7 +2135,7 @@ class SubClient(Client):
         **Returns**
             - **Success** : 200 (int)
 
-            - **Fail** : :meth:`Exceptions <aminofix.lib.util.exceptions>`
+            - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
 
         """
 
@@ -2162,7 +2162,7 @@ class SubClient(Client):
         **Returns**
             - **Success** : 200 (int)
 
-            - **Fail** : :meth:`Exceptions <aminofix.lib.util.exceptions>`
+            - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
 
         data = dumps({

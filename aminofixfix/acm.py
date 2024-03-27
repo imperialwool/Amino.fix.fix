@@ -5,19 +5,72 @@ from typing import BinaryIO
 from json import loads, dumps
 from time import time as timestamp
 
-from . import client
+from .client import Client
 from .lib import exceptions, headers, objects
 
-class ACM(client.Client):
-    def __init__(self, profile: objects.UserProfile, comId: str = None, proxies: dict = None):
-        client.Client.__init__(self)
+class ACM(Client):
+    """
+    ACM is community manager.
 
-        self.profile = profile
-        self.comId = comId
-        self.proxies = proxies
+    If you have leader or agent rights, you can edit your community.
+    """
+    def __init__(
+            self, mainClient: Client,
+            comId: str = None, aminoId: str = None, **kwargs
+        ):
+        """
+        Init subclient.
+
+        Accepting:
+        - mainClient: aminofixfix.Client
+        - comId: str | int | None
+        - aminoId: str | None
+            - you can pass only one thing
+            - comId will be taken first
+
+    
+        
+        \- imperialwool, where is another fields of subclient??? ;-;
+
+        \- its in main client lol why you need to pass them again
+        """
+        Client.__init__(
+            self, deviceId=mainClient.device_id, proxies=mainClient.proxies,
+            autoDevice=mainClient.autoDevice, userAgent=mainClient.user_agent,
+            http2_enabled=mainClient.http2_enabled,
+            own_timeout=mainClient.timeout_settings,
+            socket_enabled=False,
+            api_library=mainClient.api_library or objects.APILibraries.HTTPX
+        )
+
+        self.profile = mainClient.profile
+        if comId is not None:
+            self.comId = comId
+
+        if aminoId is not None:
+            link = "http://aminoapps.com/c/"
+            self.comId = self.get_from_code(link + aminoId).comId
 
     # TODO : Finish the imaging sizing, might not work for every picture...
     def create_community(self, name: str, tagline: str, icon: BinaryIO, themeColor: str, joinType: int = 0, primaryLanguage: str = "en"):
+        """
+        Creating community.
+
+        Accepting:
+        - name: str
+        - tagline: str
+        - icon: BinaryIO
+        - themeColor: str
+        - joinType: int = 0
+            - 0 is open
+            - 1 is semi-closed (you can request to be added in community)
+            - 2 is fully closed (UNAVAILABLE AT ALL FOR ALL APPROVED COMMUNITIES)
+        - primaryLanguage: str = "en"
+
+        Recieving:
+        - object `int` (200)
+        - on exception, some exception from `aminofixfix.lib.exceptions`
+        """
         data = dumps({
             "icon": {
                 "height": 512.0,
@@ -36,11 +89,25 @@ class ACM(client.Client):
             "timestamp": int(timestamp() * 1000)
         })
 
-        response = self.session.post(f"/g/s/community", headers=self.parse_headers(data=data), data=data, proxies=self.proxies)
+        response = self.session.post(f"/g/s/community", headers=self.additional_headers(data=data), data=data, proxies=self.proxies)
         if response.status_code != 200: return exceptions.CheckException(response)
         else: return response.status_code
 
     def delete_community(self, email: str, password: str, verificationCode: str):
+        """
+        Deleting community.
+
+        ...Why you need that?
+
+        Accepting:
+        - email: str
+        - password: str
+        - verificationCode: str
+
+        Recieving:
+        - object `int` (200)
+        - on exception, some exception from `aminofixfix.lib.exceptions`
+        """
         data = dumps({
             "secret": f"0 {password}",
             "validationContext": {
@@ -54,39 +121,80 @@ class ACM(client.Client):
         })
 
         if self.comId is None: raise exceptions.CommunityNeeded()
-        response = self.session.post(f"/g/s-x{self.comId}/community/delete-request", headers=self.parse_headers(data=data), data=data, proxies=self.proxies)
+        response = self.session.post(f"/g/s-x{self.comId}/community/delete-request", headers=self.additional_headers(data=data), data=data, proxies=self.proxies)
         if response.status_code != 200: return exceptions.CheckException(response)
         else: return response.status_code
 
     def list_communities(self, start: int = 0, size: int = 25):
-        response = self.session.get(f"/g/s/community/managed?start={start}&size={size}", headers=self.parse_headers(), proxies=self.proxies)
+        """
+        Getting all communities where you are leader.
+
+        Accepting:
+        - start: int = 0
+            - start pos
+        - size: int = 25
+            - how much you want to get
+
+        Recieving:
+        - object `dict`
+        - on exception, some exception from `aminofixfix.lib.exceptions`
+        """
+        response = self.session.get(f"/g/s/community/managed?start={start}&size={size}", headers=self.additional_headers(), proxies=self.proxies)
         if response.status_code != 200: return exceptions.CheckException(response)
         else: return objects.CommunityList(loads(response.text)["communityList"]).CommunityList
 
     def get_categories(self, start: int = 0, size: int = 25):
+        """
+        Getting categories of communities.
+
+        Accepting:
+        - start: int = 0
+            - start pos
+        - size: int = 25
+            - how much you want to get
+
+        Recieving:
+        - object `dict`
+        - on exception, some exception from `aminofixfix.lib.exceptions`
+        """
         if self.comId is None: raise exceptions.CommunityNeeded()
-        response = self.session.get(f"/x{self.comId}/s/blog-category?start={start}&size={size}", headers=self.parse_headers(), proxies=self.proxies)
+        response = self.session.get(f"/x{self.comId}/s/blog-category?start={start}&size={size}", headers=self.additional_headers(), proxies=self.proxies)
         if response.status_code != 200: return exceptions.CheckException(response)
         else: return loads(response.text)
 
     def change_sidepanel_color(self, color: str):
+        """
+        Change sidepanel color.
+
+        Accepting:
+        - color: str
+            - should be hex color like "#123ABC"
+
+        Recieving:
+        - object `int` (200)
+        - on exception, some exception from `aminofixfix.lib.exceptions`
+        """
         data = dumps({
             "path": "appearance.leftSidePanel.style.iconColor",
-            "value": color,
+            "value": color if len(color) == 7 else "#000000",
             "timestamp": int(timestamp() * 1000)
         })
 
         if self.comId is None: raise exceptions.CommunityNeeded()
-        response = self.session.post(f"/x{self.comId}/s/community/configuration", headers=self.parse_headers(data=data), data=data, proxies=self.proxies)
+        response = self.session.post(f"/x{self.comId}/s/community/configuration", headers=self.additional_headers(data=data), data=data, proxies=self.proxies)
         if response.status_code != 200: return response.status_code
         else: return loads(response.text)
 
-    def get_themepack_info(self, file: BinaryIO):
+    def get_themepack_info(self):
         """
         This method can be used for getting info about current themepack of community.
+
+        Recieving:
+        - object
+        - on exception, some exception from `aminofixfix.lib.exceptions`
         """
         if self.comId is None: raise exceptions.CommunityNeeded()
-        response = self.session.get(f"/g/s-x{self.comId}/community/info?withTopicList=1&withInfluencerList=1&influencerListOrderStrategy=fansCount", data=file.read(), headers=headers.Headers(data=file.read()).s_headers, proxies=self.proxies)
+        response = self.session.get(f"/g/s-x{self.comId}/community/info?withTopicList=1&withInfluencerList=1&influencerListOrderStrategy=fansCount", headers=self.additional_headers(), proxies=self.proxies)
         if response.status_code != 200: return exceptions.CheckException(response)
         else: return response.json()['community']['themePack']
     
@@ -157,6 +265,13 @@ class ACM(client.Client):
                 - h = 64
         - you *can* specify "x" and "y" if you want
         - theoretically you can provide different "w" and "h"
+
+        Accepting:
+        - file: BinaryIO
+
+        Recieving:
+        - object
+        - on exception, some exception from `aminofixfix.lib.exceptions`
         """
         if self.comId is None: raise exceptions.CommunityNeeded()
         response = self.session.post(f"/x{self.comId}/s/media/upload/target/community-theme-pack", data=file.read(), headers=headers.Headers(data=file.read()).s_headers, proxies=self.proxies)
@@ -164,58 +279,150 @@ class ACM(client.Client):
         else: return loads(response.text)
 
     def promote(self, userId: str, rank: str):
+        """
+        Promote user to curator, leader or agent.
+
+        Accepting:
+        - userId: str
+        - rank: str
+            - can be only "agent"/"transfer-agent", "leader" or "curator"
+
+        Recieving:
+        - object `int` (200)
+        - on exception, some exception from `aminofixfix.lib.exceptions`
+        """
         rank = rank.lower().replace("agent", "transfer-agent")
 
         if rank.lower() not in ["transfer-agent", "leader", "curator"]:
             raise exceptions.WrongType(rank)
 
         if self.comId is None: raise exceptions.CommunityNeeded()
-        response = self.session.post(f"/x{self.comId}/s/user-profile/{userId}/{rank}", headers=self.parse_headers(), proxies=self.proxies)
+        response = self.session.post(f"/x{self.comId}/s/user-profile/{userId}/{rank}", headers=self.additional_headers(), proxies=self.proxies)
         if response.status_code != 200: return exceptions.CheckException(response)
         else: return response.status_code
 
     def get_join_requests(self, start: int = 0, size: int = 25):
+        """
+        Get all requests to join your precious community.
+
+        Accepting:
+        - start: int = 0
+            - start pos
+        - size: int = 25
+            - how much you want to get
+
+        Recieving:
+        - object `JoinRequest`
+        - on exception, some exception from `aminofixfix.lib.exceptions`
+        """
         if self.comId is None: raise exceptions.CommunityNeeded()
 
-        response = self.session.get(f"/x{self.comId}/s/community/membership-request?status=pending&start={start}&size={size}", headers=self.parse_headers(), proxies=self.proxies)
+        response = self.session.get(f"/x{self.comId}/s/community/membership-request?status=pending&start={start}&size={size}", headers=self.additional_headers(), proxies=self.proxies)
         if response.status_code != 200: return exceptions.CheckException(response)
         else: return objects.JoinRequest(loads(response.text)).JoinRequest
 
     def accept_join_request(self, userId: str):
+        """
+        Accept user to join your precious community.
+
+        "Congratulations!
+
+        Your REQUEST TO JOIN has been approved."
+
+        https://www.youtube.com/watch?v=LabIat9t-uY
+
+        Accepting:
+        - userId: str
+
+        Recieving:
+        - object `int` (200)
+        - on exception, some exception from `aminofixfix.lib.exceptions`
+        """
         data = dumps({})
 
         if self.comId is None: raise exceptions.CommunityNeeded()
-        response = self.session.post(f"/x{self.comId}/s/community/membership-request/{userId}/accept", headers=self.parse_headers(data=data), data=data, proxies=self.proxies)
+        response = self.session.post(f"/x{self.comId}/s/community/membership-request/{userId}/accept", headers=self.additional_headers(data=data), data=data, proxies=self.proxies)
         if response.status_code != 200: return exceptions.CheckException(response)
         else: return response.status_code
 
     def reject_join_request(self, userId: str):
+        """
+        Reject user to join your precious community.
+
+        "Congratulations!
+
+        Your REQUEST TO JOIN has been denied.
+
+        Don't even bother trying again."
+
+        https://www.youtube.com/watch?v=3vH6GBbeAgA
+
+        Accepting:
+        - userId: str
+
+        Recieving:
+        - object `int` (200)
+        - on exception, some exception from `aminofixfix.lib.exceptions`
+        """
         data = dumps({})
 
         if self.comId is None: raise exceptions.CommunityNeeded()
-        response = self.session.post(f"/x{self.comId}/s/community/membership-request/{userId}/reject", headers=self.parse_headers(data=data), data=data, proxies=self.proxies)
+        response = self.session.post(f"/x{self.comId}/s/community/membership-request/{userId}/reject", headers=self.additional_headers(data=data), data=data, proxies=self.proxies)
         if response.status_code != 200: return exceptions.CheckException(response)
         else: return response.status_code
 
     def get_community_stats(self):
+        """
+        Get community statistics.
+
+        Recieving:
+        - object `CommunityStats`
+        - on exception, some exception from `aminofixfix.lib.exceptions`
+        """
         if self.comId is None: raise exceptions.CommunityNeeded()
 
-        response = self.session.get(f"/x{self.comId}/s/community/stats", headers=self.parse_headers(), proxies=self.proxies)
+        response = self.session.get(f"/x{self.comId}/s/community/stats", headers=self.additional_headers(), proxies=self.proxies)
         if response.status_code != 200: return exceptions.CheckException(response)
         else: return objects.CommunityStats(loads(response.text)["communityStats"]).CommunityStats
 
     def get_community_user_stats(self, type: str, start: int = 0, size: int = 25):
+        """
+        Get community user statistics.
+
+        Accepting:
+        - type: str
+            - can be only "leader" or "curator"
+        - start: int = 0
+            - start pos
+        - size: int = 25
+            - how much you want to get
+
+        Recieving:
+        - object `UserProfileList`
+        - on exception, some exception from `aminofixfix.lib.exceptions`
+        """
         if self.comId is None: raise exceptions.CommunityNeeded()
 
         if type.lower() == "leader": target = "leader"
         elif type.lower() == "curator": target = "curator"
         else: raise exceptions.WrongType(type)
 
-        response = self.session.get(f"/x{self.comId}/s/community/stats/moderation?type={target}&start={start}&size={size}", headers=self.parse_headers(), proxies=self.proxies)
+        response = self.session.get(f"/x{self.comId}/s/community/stats/moderation?type={target}&start={start}&size={size}", headers=self.additional_headers(), proxies=self.proxies)
         if response.status_code != 200: return exceptions.CheckException(response)
         else: return objects.UserProfileList(loads(response.text)["userProfileList"]).UserProfileList
 
     def change_welcome_message(self, message: str, isEnabled: bool = True):
+        """
+        Change welcome message of community.
+
+        Accepting:
+        - message: str
+        - isEnabled: bool = True
+
+        Recieving:
+        - object `int` (200)
+        - on exception, some exception from `aminofixfix.lib.exceptions`
+        """
         data = dumps({
             "path": "general.welcomeMessage",
             "value": {
@@ -226,33 +433,68 @@ class ACM(client.Client):
         })
 
         if self.comId is None: raise exceptions.CommunityNeeded()
-        response = self.session.post(f"/x{self.comId}/s/community/configuration", headers=self.parse_headers(data=data), data=data, proxies=self.proxies)
+        response = self.session.post(f"/x{self.comId}/s/community/configuration", headers=self.additional_headers(data=data), data=data, proxies=self.proxies)
         if response.status_code != 200: return exceptions.CheckException(response)
         else: return response.status_code
 
     def change_amino_id(self, aminoId: str):
+        """
+        Change AminoID of community.
+
+        Accepting:
+        - aminoId: str
+
+        Recieving:
+        - object `int` (200)
+        - on exception, some exception from `aminofixfix.lib.exceptions`
+        """
         data = dumps({
             "endpoint": aminoId,
             "timestamp": int(timestamp() * 1000)
         })
 
         if self.comId is None: raise exceptions.CommunityNeeded()
-        response = self.session.post(f"/x{self.comId}/s/community/settings", headers=self.parse_headers(data=data), data=data, proxies=self.proxies)
+        response = self.session.post(f"/x{self.comId}/s/community/settings", headers=self.additional_headers(data=data), data=data, proxies=self.proxies)
         if response.status_code != 200: return exceptions.CheckException(response)
         else: return response.status_code
 
     def change_guidelines(self, message: str):
+        """
+        Change rules of community.
+
+        Accepting:
+        - message: str
+
+        Recieving:
+        - object `int` (200)
+        - on exception, some exception from `aminofixfix.lib.exceptions`
+        """
         data = dumps({
             "content": message,
             "timestamp": int(timestamp() * 1000)
         })
 
         if self.comId is None: raise exceptions.CommunityNeeded()
-        response = self.session.post(f"/x{self.comId}/s/community/guideline", headers=self.parse_headers(data=data), data=data, proxies=self.proxies)
+        response = self.session.post(f"/x{self.comId}/s/community/guideline", headers=self.additional_headers(data=data), data=data, proxies=self.proxies)
         if response.status_code != 200: return exceptions.CheckException(response)
         else: return response.status_code
 
     def edit_community(self, name: str = None, description: str = None, aminoId: str = None, primaryLanguage: str = None, themePackUrl: str = None):
+        """
+        Edit community.
+
+        Accepting:
+        - name: str = None
+        - description: str = None
+        - aminoId: str = None
+        - primaryLanguage: str = None
+        - themePackUrl: str = None
+
+        Recieving:
+        - object `int` (200)
+        - on exception, some exception from `aminofixfix.lib.exceptions`
+        """
+        
         data = {"timestamp": int(timestamp() * 1000)}
 
         if name is not None: data["name"] = name
@@ -264,11 +506,26 @@ class ACM(client.Client):
         data = dumps(data)
 
         if self.comId is None: raise exceptions.CommunityNeeded()
-        response = self.session.post(f"/x{self.comId}/s/community/settings", data=data, headers=self.parse_headers(data=data), proxies=self.proxies)
+        response = self.session.post(f"/x{self.comId}/s/community/settings", data=data, headers=self.additional_headers(data=data), proxies=self.proxies)
         if response.status_code != 200: return exceptions.CheckException(response)
         else: return response.status_code
 
     def change_module(self, module: str, isEnabled: bool):
+        """
+        Enable or disable module.
+
+        Accepting:
+        - module: str
+            - can be only "chat", "livechat", "screeningroom", "publicchats", "posts",
+              "ranking", "leaderboards", "featured", "featuredposts", "featuredusers",
+              "featuredchats", "sharedfolder", "influencer", "catalog",
+              "externalcontent" or "topiccategories"
+        - isEnabled: bool
+
+        Recieving:
+        - object `int` (200)
+        - on exception, some exception from `aminofixfix.lib.exceptions`
+        """
         if module.lower() == "chat": mod = "module.chat.enabled"
         elif module.lower() == "livechat": mod = "module.chat.avChat.videoEnabled"
         elif module.lower() == "screeningroom": mod = "module.chat.avChat.screeningRoomEnabled"
@@ -294,35 +551,80 @@ class ACM(client.Client):
         })
 
         if self.comId is None: raise exceptions.CommunityNeeded()
-        response = self.session.post(f"/x{self.comId}/s/community/configuration", headers=self.parse_headers(data=data), data=data, proxies=self.proxies)
+        response = self.session.post(f"/x{self.comId}/s/community/configuration", headers=self.additional_headers(data=data), data=data, proxies=self.proxies)
         if response.status_code != 200: return exceptions.CheckException(response)
         else: return response.status_code
 
     def add_influencer(self, userId: str, monthlyFee: int):
+        """
+        Create fanclub.
+
+        Accepting:
+        - userId: str
+        - monthlyFee: int
+            - can be maximum 500 coins per month
+
+        Recieving:
+        - object `int` (200)
+        - on exception, some exception from `aminofixfix.lib.exceptions`
+        """
         data = dumps({
             "monthlyFee": monthlyFee,
             "timestamp": int(timestamp() * 1000)
         })
 
         if self.comId is None: raise exceptions.CommunityNeeded()
-        response = self.session.post(f"/x{self.comId}/s/influencer/{userId}", headers=self.parse_headers(data=data), data=data, proxies=self.proxies)
+        response = self.session.post(f"/x{self.comId}/s/influencer/{userId}", headers=self.additional_headers(data=data), data=data, proxies=self.proxies)
         if response.status_code != 200: return exceptions.CheckException(response)
         else: return response.status_code
 
     def remove_influencer(self, userId: str):
+        """
+        Delete fanclub.
+
+        Accepting:
+        - userId: str
+
+        Recieving:
+        - object `int` (200)
+        - on exception, some exception from `aminofixfix.lib.exceptions`
+        """
         if self.comId is None: raise exceptions.CommunityNeeded()
-        response = self.session.delete(f"/x{self.comId}/s/influencer/{userId}", headers=self.parse_headers(), proxies=self.proxies)
+        response = self.session.delete(f"/x{self.comId}/s/influencer/{userId}", headers=self.additional_headers(), proxies=self.proxies)
         if response.status_code != 200: return exceptions.CheckException(response)
         else: return response.status_code
 
     def get_notice_list(self, start: int = 0, size: int = 25):
+        """
+        Get notices list.
+
+        Accepting:
+        - start: int = 0
+            - start pos
+        - size: int = 25
+            - how much you want to get
+
+        Recieving:
+        - object `NoticeList`
+        - on exception, some exception from `aminofixfix.lib.exceptions`
+        """
         if self.comId is None: raise exceptions.CommunityNeeded()
-        response = self.session.get(f"/x{self.comId}/s/notice?type=management&status=1&start={start}&size={size}", headers=self.parse_headers(), proxies=self.proxies)
+        response = self.session.get(f"/x{self.comId}/s/notice?type=management&status=1&start={start}&size={size}", headers=self.additional_headers(), proxies=self.proxies)
         if response.status_code != 200: return exceptions.CheckException(response)
         else: return objects.NoticeList(loads(response.text)["noticeList"]).NoticeList
 
     def delete_pending_role(self, noticeId: str):
+        """
+        Delete pending role.
+
+        Accepting:
+        - noticeId: str
+
+        Recieving:
+        - object `int` (200)
+        - on exception, some exception from `aminofixfix.lib.exceptions`
+        """
         if self.comId is None: raise exceptions.CommunityNeeded()
-        response = self.session.delete(f"/x{self.comId}/s/notice/{noticeId}", headers=self.parse_headers(), proxies=self.proxies)
+        response = self.session.delete(f"/x{self.comId}/s/notice/{noticeId}", headers=self.additional_headers(), proxies=self.proxies)
         if response.status_code != 200: return exceptions.CheckException(response)
         else: return response.status_code

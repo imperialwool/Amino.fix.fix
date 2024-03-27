@@ -20,11 +20,15 @@ from .socket import Callbacks, SocketHandler
 from .lib import exceptions, headers, objects, helpers
 
 class Client(Callbacks, SocketHandler):
+    """
+        Client to work with global in Amino.
+        (aminoapps.com)
+    """
     def __init__(
         self,
-        deviceId: str = None, userAgent: str = None, proxies: dict = None,
-        socket_trace = False, socketDebugging = False, socket_enabled = True,
-        autoDevice = False, http2_enabled: bool = True,
+        deviceId: str = None, userAgent: str = None, proxies: str | dict = None,
+        socket_trace: bool = False, socketDebugging: bool = False, socket_enabled: bool = True,
+        autoDevice: bool = False, http2_enabled: bool = True,
         
         disable_timeout: bool = False,
         default_timeout: int | None = 30, own_timeout: TimeoutConfig | None = None,
@@ -34,6 +38,56 @@ class Client(Callbacks, SocketHandler):
 
         api_library: objects.APILibraries = objects.APILibraries.HTTPX
     ):
+        """
+        Init client.
+
+        Accepting:
+        - deviceId: str
+        - userAgent: str
+        - proxies: str | dict 
+            - str support in beta
+        - socket_trace: bool = False
+            - recieving all things that socket doing
+        - socketDebugging: bool = False
+            - socket printing results of its work
+        - socket_enabled: bool = True
+            - enabling socket or not
+            - useful for scripts
+        - autoDevice: bool = False
+            - changing deviceId every request
+            - *can* or *can not* help with "too many requests" bypass
+        - http2_enabled: bool = True
+            - only for HTTPX
+            - just in case if Amino servers will some day support it
+        - disable_timeout: bool = False
+            - only for HTTPX (for now)
+            - completely disable timeouts if true
+            - **can cause issues!**
+        - default_timeout: int | None = 30
+            - only for HTTPX (for now)
+            - default timeout in seconds
+        - own_timeout: TimeoutConfig | None = None
+            - only for HTTPX (for now)
+            - own timeout configs
+        - connect_timeout: int | None = None
+            - only for HTTPX (for now)
+            - connect timeout (if you want configure timeout like this)
+        - pool_timeout: int | None = None
+            - only for HTTPX (for now)
+            - pool timeout (if you want configure timeout like this)
+        - read_timeout: int | None = None
+            - only for HTTPX (for now)
+            - read timeout (if you want configure timeout like this)
+        - write_timeout: int | None = None
+            - only for HTTPX (for now)
+            - write timeout (if you want configure timeout like this)
+        - api_library: objects.APILibraries = objects.APILibraries.HTTPX
+            - choicing library for API requests
+            - can be useful if you have troubles with HTTPX
+            - *can* be not so stable as HTTPX
+            - you can choice library like `aminofixfix.lib.objects.APILibraries.HTTPX`,
+              but you probably want to import `objects` from `aminofixfix.lib`
+        """
         self.api = "https://service.aminoapps.com/api/v1"
         self.proxies = proxies
         self.configured = False
@@ -91,6 +145,16 @@ class Client(Callbacks, SocketHandler):
         self.active_live_chats = []
 
     def additional_headers(self, data: str = None, content_type: str = None):
+        """
+        Function to make additional headers, that API needs.
+
+        Accepting:
+        - data: str
+        - content_type: str
+
+        Recieving:
+        - object `dict`
+        """
         return headers.additionals(
             data=data,
             content_type=content_type,
@@ -101,6 +165,17 @@ class Client(Callbacks, SocketHandler):
         )
 
     def activity_status(self, status: str):
+        """
+        Sets your activity status to offline or online.
+
+        Accepting:
+        - status: str
+            - only "on" or "off"
+
+        Recieving:
+        - object `int` (200)
+        - on exception, some exception from `aminofixfix.lib.exceptions`
+        """
         if "on" in status.lower(): status = 1
         elif "off" in status.lower(): status = 2
         else: raise exceptions.WrongType(status)
@@ -162,6 +237,12 @@ class Client(Callbacks, SocketHandler):
         self.send(data)
 
     def join_video_chat_as_viewer(self, comId: str, chatId: str):
+        """
+        Joins a Video Chat
+        **Parameters**
+            - **comId** : ID of the Community
+            - **chatId** : ID of the Chat
+        """
         data = {
             "o":
                 {
@@ -177,10 +258,22 @@ class Client(Callbacks, SocketHandler):
     
     # Fixed by vedansh#4039
     def leave_from_live_chat(self, chatId: str):
+        """
+        Leaves from a Live Chat
+        **Parameters**
+            - **chatId** : ID of the Chat
+        """
         if chatId in self.active_live_chats:
             self.active_live_chats.remove(chatId)
 
-    def run_vc(self, comId: str, chatId: str, joinType: str):
+    def run_vc(self, comId: str, chatId: str, joinType: str = 1):
+        """
+        Run a Video Chat
+        **Parameters**
+            - **comId** : ID of the Community
+            - **chatId** : ID of the Chat
+            - **joinType** : Join Type
+        """
         while chatId in self.active_live_chats and not self.stop_loop:
             data = {
                 "o": {
@@ -198,6 +291,13 @@ class Client(Callbacks, SocketHandler):
                 break
 
     def start_vc(self, comId: str, chatId: str, joinType: int = 1):
+        """
+        Start a Video Chat
+        **Parameters**
+            - **comId** : ID of the Community
+            - **chatId** : ID of the Chat
+            - **joinType** : Join Type
+        """
         data = {
             "o": {
                 "ndcId": int(comId),
@@ -224,6 +324,13 @@ class Client(Callbacks, SocketHandler):
         Thread(target=lambda: self.run_vc(comId, chatId, joinType)).start()
 
     def end_vc(self, comId: str, chatId: str, joinType: int = 2):
+        """
+        End a Video Chat
+        **Parameters**
+            - **comId** : ID of the Community
+            - **chatId** : ID of the Chat
+            - **joinType** : Join Type
+        """
         self.leave_from_live_chat(chatId)
         data = {
             "o": {
@@ -268,7 +375,7 @@ class Client(Callbacks, SocketHandler):
         **Returns**
             - **Success** : 200 (int)
 
-            - **Fail** : :meth:`Exceptions <aminofix.lib.util.exceptions>`
+            - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
 
         data = dumps({
@@ -308,7 +415,7 @@ class Client(Callbacks, SocketHandler):
         **Returns**
             - **Success** : 200 (int)
 
-            - **Fail** : :meth:`Exceptions <aminofix.lib.util.exceptions>`
+            - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
         data = dumps({
             "phoneNumber": phoneNumber,
@@ -349,7 +456,7 @@ class Client(Callbacks, SocketHandler):
         **Returns**
             - **Success** : 200 (int)
 
-            - **Fail** : :meth:`Exceptions <aminofix.lib.util.exceptions>`
+            - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
         data = dumps({
             "v": 2,
@@ -392,7 +499,7 @@ class Client(Callbacks, SocketHandler):
         **Returns**
             - **Success** : 200 (int)
 
-            - **Fail** : :meth:`Exceptions <aminofix.lib.util.exceptions>`
+            - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
 
         if deviceId == None: deviceId = self.device_id
@@ -436,7 +543,7 @@ class Client(Callbacks, SocketHandler):
         **Returns**
             - **Success** : 200 (int)
 
-            - **Fail** : :meth:`Exceptions <aminofix.lib.util.exceptions>`
+            - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
         data = dumps({
             "secret": f"0 {password}",
@@ -461,7 +568,7 @@ class Client(Callbacks, SocketHandler):
         **Returns**
             - **Success** : 200 (int)
 
-            - **Fail** : :meth:`Exceptions <aminofix.lib.util.exceptions>`
+            - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
         data = dumps({
             "deviceID": self.device_id,
@@ -498,7 +605,7 @@ class Client(Callbacks, SocketHandler):
         **Returns**
             - **Success** : 200 (int)
 
-            - **Fail** : :meth:`Exceptions <aminofix.lib.util.exceptions>`
+            - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
         if gender.lower() == "male": gender = 1
         elif gender.lower() == "female": gender = 2
@@ -530,7 +637,7 @@ class Client(Callbacks, SocketHandler):
         **Returns**
             - **Success** : 200 (int)
 
-            - **Fail** : :meth:`Exceptions <aminofix.lib.util.exceptions>`
+            - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
         data = dumps({
             "validationContext": {
@@ -558,7 +665,7 @@ class Client(Callbacks, SocketHandler):
         **Returns**
             - **Success** : 200 (int)
 
-            - **Fail** : :meth:`Exceptions <aminofix.lib.util.exceptions>`
+            - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
         data = {
             "identity": email,
@@ -588,7 +695,7 @@ class Client(Callbacks, SocketHandler):
         **Returns**
             - **Success** : 200 (int)
 
-            - **Fail** : :meth:`Exceptions <aminofix.lib.util.exceptions>`
+            - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
 
         data = dumps({
@@ -615,7 +722,7 @@ class Client(Callbacks, SocketHandler):
         **Returns**
             - **Success** : 200 (int)
 
-            - **Fail** : :meth:`Exceptions <aminofix.lib.util.exceptions>`
+            - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
 
         data = dumps({
@@ -641,7 +748,7 @@ class Client(Callbacks, SocketHandler):
         **Returns**
             - **Success** : 200 (int)
 
-            - **Fail** : :meth:`Exceptions <aminofix.lib.util.exceptions>`
+            - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
 
         data = dumps({
@@ -675,7 +782,7 @@ class Client(Callbacks, SocketHandler):
         **Returns**
             - **Success** : 200 (int)
 
-            - **Fail** : :meth:`Exceptions <aminofix.lib.util.exceptions>`
+            - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
         data = dumps({
             "deviceID": deviceId,
@@ -694,6 +801,13 @@ class Client(Callbacks, SocketHandler):
             self.configured = True; return response.status_code
 
     def get_account_info(self):
+        """
+        Getting account info about you.
+
+        Recieving:
+        - object `UserProfile`
+        - on exception, some exception from `aminofixfix.lib.exceptions`
+        """
         response = self.session.get(f"/g/s/account", headers=self.additional_headers())
         if response.status_code != 200: 
             return exceptions.CheckException(response)
@@ -710,7 +824,7 @@ class Client(Callbacks, SocketHandler):
         **Returns**
             - **Success** : Url of the file uploaded to the server.
 
-            - **Fail** : :meth:`Exceptions <aminofix.lib.util.exceptions>`
+            - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
         if fileType == "audio":
             t = "audio/aac"
@@ -747,7 +861,7 @@ class Client(Callbacks, SocketHandler):
         **Returns**
             - **Success** : :meth:`Community List <amino.lib.util.objects.CommunityList>`
 
-            - **Fail** : :meth:`Exceptions <aminofix.lib.util.exceptions>`
+            - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
         if not self.authenticated: raise exceptions.NotLoggedIn()
         response = self.session.get(f"/g/s/community/joined?v=1&start={start}&size={size}", headers=self.additional_headers())
@@ -757,6 +871,19 @@ class Client(Callbacks, SocketHandler):
             return objects.CommunityList(response.json()["communityList"]).CommunityList
 
     def sub_clients_profile(self, start: int = 0, size: int = 25):
+        """
+        Getting your profiles in communities.
+
+        Accepting:
+        - start: int = 0
+            - start pos
+        - size: int = 25
+            - how much you want to get
+
+        Recieving:
+        - object `dict`
+        - on exception, some exception from `aminofixfix.lib.exceptions`
+        """
         if not self.authenticated: raise exceptions.NotLoggedIn()
         response = self.session.get(f"/g/s/community/joined?v=1&start={start}&size={size}", headers=self.additional_headers())
         if response.status_code != 200: 
@@ -774,7 +901,7 @@ class Client(Callbacks, SocketHandler):
         **Returns**
             - **Success** : :meth:`User Object <amino.lib.util.objects.UserProfile>`
 
-            - **Fail** : :meth:`Exceptions <aminofix.lib.util.exceptions>`
+            - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
         response = self.session.get(f"/g/s/user-profile/{userId}", headers=self.additional_headers())
         if response.status_code != 200: 
@@ -783,6 +910,9 @@ class Client(Callbacks, SocketHandler):
             return objects.UserProfile(response.json()["userProfile"]).UserProfile
 
     def watch_ad(self, userId: str = None):
+        """
+        Is this funcction even works?
+        """
         data = dumps(headers.Tapjoy(userId if userId else self.userId).data) 
         response = self.session.post("https://ads.tapdaq.com/v4/analytics/reward", data=data, headers=headers.Tapjoy().headers)
         if response.status_code != 204: return exceptions.CheckException(response)
@@ -799,7 +929,7 @@ class Client(Callbacks, SocketHandler):
         **Returns**
             - **Success** : :meth:`Chat List <amino.lib.util.objects.ThreadList>`
 
-            - **Fail** : :meth:`Exceptions <aminofix.lib.util.exceptions>`
+            - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
         response = self.session.get(f"/g/s/chat/thread?type=joined-me&start={start}&size={size}", headers=self.additional_headers())
         if response.status_code != 200: 
@@ -817,7 +947,7 @@ class Client(Callbacks, SocketHandler):
         **Returns**
             - **Success** : :meth:`Chat Object <amino.lib.util.objects.Thread>`
 
-            - **Fail** : :meth:`Exceptions <aminofix.lib.util.exceptions>`
+            - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
         response = self.session.get(f"/g/s/chat/thread/{chatId}", headers=self.additional_headers())
         if response.status_code != 200: 
@@ -826,6 +956,20 @@ class Client(Callbacks, SocketHandler):
             return objects.Thread(response.json()["thread"]).Thread
 
     def get_chat_users(self, chatId: str, start: int = 0, size: int = 25):
+        """
+        Getting users in chat.
+
+        Accepting:
+        - chatId: str
+        - start: int = 0
+            - start pos
+        - size: int = 25
+            - how much you want to get
+
+        Recieving:
+        - object `UserProfileList`
+        - on exception, some exception from `aminofixfix.lib.exceptions`
+        """
         response = self.session.get(f"/g/s/chat/thread/{chatId}/member?start={start}&size={size}&type=default&cv=1.2", headers=self.additional_headers())
         if response.status_code != 200: 
             return exceptions.CheckException(response)
@@ -842,7 +986,7 @@ class Client(Callbacks, SocketHandler):
         **Returns**
             - **Success** : 200 (int)
 
-            - **Fail** : :meth:`Exceptions <aminofix.lib.util.exceptions>`
+            - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
         response = self.session.post(f"/g/s/chat/thread/{chatId}/member/{self.userId}", headers=self.additional_headers())
         if response.status_code != 200: 
@@ -860,7 +1004,7 @@ class Client(Callbacks, SocketHandler):
         **Returns**
             - **Success** : 200 (int)
 
-            - **Fail** : :meth:`Exceptions <aminofix.lib.util.exceptions>`
+            - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
         response = self.session.delete(f"/g/s/chat/thread/{chatId}/member/{self.userId}", headers=self.additional_headers())
         if response.status_code != 200: 
@@ -883,7 +1027,7 @@ class Client(Callbacks, SocketHandler):
         **Returns**
             - **Success** : 200 (int)
 
-            - **Fail** : :meth:`Exceptions <aminofix.lib.util.exceptions>`
+            - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
         if isinstance(userId, str): userIds = [userId]
         elif isinstance(userId, list): userIds = userId
@@ -923,7 +1067,7 @@ class Client(Callbacks, SocketHandler):
         **Returns**
             - **Success** : 200 (int)
 
-            - **Fail** : :meth:`Exceptions <aminofix.lib.util.exceptions>`
+            - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
         if isinstance(userId, str): userIds = [userId]
         elif isinstance(userId, list): userIds = userId
@@ -941,6 +1085,19 @@ class Client(Callbacks, SocketHandler):
             return response.status_code
 
     def kick(self, userId: str, chatId: str, allowRejoin: bool = True):
+        """
+        Kick/ban user from/in chat.
+
+        Accepting:
+        - userId: str
+        - chatId: str
+        - allowRejoin: bool = True
+            - if False, it will ban user in chat
+
+        Recieving:
+        - object `dict`
+        - on exception, some exception from `aminofixfix.lib.exceptions`
+        """
         if allowRejoin: allowRejoin = 1
         if not allowRejoin: allowRejoin = 0
         response = self.session.delete(f"/g/s/chat/thread/{chatId}/member/{userId}?allowRejoin={allowRejoin}", headers=self.additional_headers())
@@ -962,7 +1119,7 @@ class Client(Callbacks, SocketHandler):
         **Returns**
             - **Success** : :meth:`Message List <amino.lib.util.objects.MessageList>`
 
-            - **Fail** : :meth:`Exceptions <aminofix.lib.util.exceptions>`
+            - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
         if pageToken is not None: url = f"/g/s/chat/thread/{chatId}/message?v=2&pagingType=t&pageToken={pageToken}&size={size}"
         else: url = f"/g/s/chat/thread/{chatId}/message?v=2&pagingType=t&size={size}"
@@ -984,7 +1141,7 @@ class Client(Callbacks, SocketHandler):
         **Returns**
             - **Success** : :meth:`Message Object <amino.lib.util.objects.Message>`
 
-            - **Fail** : :meth:`Exceptions <aminofix.lib.util.exceptions>`
+            - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
         response = self.session.get(f"/g/s/chat/thread/{chatId}/message/{messageId}", headers=self.additional_headers())
         if response.status_code != 200: 
@@ -1002,7 +1159,7 @@ class Client(Callbacks, SocketHandler):
         **Returns**
             - **Success** : :meth:`Community Object <amino.lib.util.objects.Community>`
 
-            - **Fail** : :meth:`Exceptions <aminofix.lib.util.exceptions>`
+            - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
         response = self.session.get(f"/g/s-x{comId}/community/info?withInfluencerList=1&withTopicList=true&influencerListOrderStrategy=fansCount", headers=self.additional_headers())
         if response.status_code != 200: 
@@ -1020,7 +1177,7 @@ class Client(Callbacks, SocketHandler):
         **Returns**
             - **Success** : :meth:`Community List <amino.lib.util.objects.CommunityList>`
 
-            - **Fail** : :meth:`Exceptions <aminofix.lib.util.exceptions>`
+            - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
         response = self.session.get(f"/g/s/search/amino-id-and-link?q={aminoId}", headers=self.additional_headers())
         if response.status_code != 200: 
@@ -1043,7 +1200,7 @@ class Client(Callbacks, SocketHandler):
         **Returns**
             - **Success** : :meth:`User List <amino.lib.util.objects.UserProfileList>`
 
-            - **Fail** : :meth:`Exceptions <aminofix.lib.util.exceptions>`
+            - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
         response = self.session.get(f"/g/s/user-profile/{userId}/joined?start={start}&size={size}", headers=self.additional_headers())
         if response.status_code != 200: 
@@ -1063,7 +1220,7 @@ class Client(Callbacks, SocketHandler):
         **Returns**
             - **Success** : :meth:`User List <amino.lib.util.objects.UserProfileList>`
 
-            - **Fail** : :meth:`Exceptions <aminofix.lib.util.exceptions>`
+            - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
         response = self.session.get(f"/g/s/user-profile/{userId}/member?start={start}&size={size}", headers=self.additional_headers())
         if response.status_code != 200: 
@@ -1083,7 +1240,7 @@ class Client(Callbacks, SocketHandler):
         **Returns**
             - **Success** : :meth:`Visitors List <amino.lib.util.objects.VisitorsList>`
 
-            - **Fail** : :meth:`Exceptions <aminofix.lib.util.exceptions>`
+            - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
         response = self.session.get(f"/g/s/user-profile/{userId}/visitors?start={start}&size={size}", headers=self.additional_headers())
         if response.status_code != 200: 
@@ -1102,7 +1259,7 @@ class Client(Callbacks, SocketHandler):
         **Returns**
             - **Success** : :meth:`Users List <amino.lib.util.objects.UserProfileList>`
 
-            - **Fail** : :meth:`Exceptions <aminofix.lib.util.exceptions>`
+            - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
         response = self.session.get(f"/g/s/block?start={start}&size={size}", headers=self.additional_headers())
         if response.status_code != 200: 
@@ -1111,6 +1268,22 @@ class Client(Callbacks, SocketHandler):
             return objects.UserProfileList(response.json()["userProfileList"]).UserProfileList
 
     def get_blog_info(self, blogId: str = None, wikiId: str = None, quizId: str = None, fileId: str = None):
+        """
+        Getting blog info.
+
+        Accepting:
+        - blogId: str = None
+        - wikiId: str = None
+        - quizId: str = None
+        - fileId: str = None
+            - if all fields are None, exception will be raised
+            - if more than one field not empty, it will return only one object using priority like this:
+                - blogId -> quizId -> wikiId -> fileId
+
+        Recieving:
+        - object `GetBlogInfo`/`SharedFolderFile`
+        - on exception, some exception from `aminofixfix.lib.exceptions`
+        """
         if blogId or quizId:
             if quizId is not None: blogId = quizId
             response = self.session.get(f"/g/s/blog/{blogId}", headers=self.additional_headers())
@@ -1136,6 +1309,22 @@ class Client(Callbacks, SocketHandler):
         else: raise exceptions.SpecifyType()
 
     def get_blog_comments(self, blogId: str = None, wikiId: str = None, quizId: str = None, fileId: str = None, sorting: str = "newest", start: int = 0, size: int = 25):
+        """
+        Getting blog comments.
+
+        Accepting:
+        - blogId: str = None
+        - wikiId: str = None
+        - quizId: str = None
+        - fileId: str = None
+            - if all fields are None, exception will be raised
+            - if more than one field not empty, it will return only one object using priority like this:
+                - blogId -> quizId -> wikiId -> fileId
+
+        Recieving:
+        - object `CommentList`
+        - on exception, some exception from `aminofixfix.lib.exceptions`
+        """
         if sorting == "newest": sorting = "newest"
         elif sorting == "oldest": sorting = "oldest"
         elif sorting == "top": sorting = "vote"
@@ -1164,7 +1353,7 @@ class Client(Callbacks, SocketHandler):
         **Returns**
             - **Success** : :meth:`List of User IDs <None>`
 
-            - **Fail** : :meth:`Exceptions <aminofix.lib.util.exceptions>`
+            - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
         response = self.session.get(f"/g/s/block/full-list?start={start}&size={size}", headers=self.additional_headers())
         if response.status_code != 200: 
@@ -1186,7 +1375,7 @@ class Client(Callbacks, SocketHandler):
         **Returns**
             - **Success** : :meth:`Comments List <amino.lib.util.objects.CommentList>`
 
-            - **Fail** : :meth:`Exceptions <aminofix.lib.util.exceptions>`
+            - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
         if sorting.lower() == "newest": sorting = "newest"
         elif sorting.lower() == "oldest": sorting = "oldest"
@@ -1214,7 +1403,7 @@ class Client(Callbacks, SocketHandler):
         **Returns**
             - **Success** : 200 (int)
 
-            - **Fail** : :meth:`Exceptions <aminofix.lib.util.exceptions>`
+            - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
         if reason is None: raise exceptions.ReasonNeeded
         if flagType is None: raise exceptions.FlagTypeNeeded
@@ -1283,7 +1472,7 @@ class Client(Callbacks, SocketHandler):
         **Returns**
             - **Success** : 200 (int)
 
-            - **Fail** : :meth:`Exceptions <aminofix.lib.util.exceptions>`
+            - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
 
         if message is not None and file is None:
@@ -1384,7 +1573,7 @@ class Client(Callbacks, SocketHandler):
         **Returns**
             - **Success** : 200 (int)
 
-            - **Fail** : :meth:`Exceptions <aminofix.lib.util.exceptions>`
+            - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
         data = {
             "adminOpName": 102,
@@ -1412,7 +1601,7 @@ class Client(Callbacks, SocketHandler):
         **Returns**
             - **Success** : 200 (int)
 
-            - **Fail** : :meth:`Exceptions <aminofix.lib.util.exceptions>`
+            - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
         data = dumps({
             "messageId": messageId,
@@ -1450,7 +1639,7 @@ class Client(Callbacks, SocketHandler):
         **Returns**
             - **Success** : 200 (int)
 
-            - **Fail** : :meth:`Exceptions <aminofix.lib.util.exceptions>`
+            - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
         data = {"timestamp": int(timestamp() * 1000)}
 
@@ -1564,7 +1753,7 @@ class Client(Callbacks, SocketHandler):
         **Returns**
             - **Success** : 200 (int)
 
-            - **Fail** : :meth:`Exceptions <aminofix.lib.util.exceptions>`
+            - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
         response = self.session.get(f"/g/s/user-profile/{userId}?action=visit", headers=self.additional_headers())
         if response.status_code != 200: 
@@ -1573,6 +1762,19 @@ class Client(Callbacks, SocketHandler):
             return response.status_code
 
     def send_coins(self, coins: int, blogId: str = None, chatId: str = None, objectId: str = None, transactionId: str = None):
+        """
+        Sending coins.
+
+        **Parameters**
+            - **blogId** : ID of the Blog.
+            - **chatId** : ID of the Chat.
+            - **objectId** : ID of ...some object.
+
+        **Returns**
+            - **Success** : 200 (int)
+
+            - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
+        """
         url = None
         if transactionId is None: transactionId = str(UUID(hexlify(urandom(16)).decode('ascii')))
 
@@ -1608,7 +1810,7 @@ class Client(Callbacks, SocketHandler):
         **Returns**
             - **Success** : 200 (int)
 
-            - **Fail** : :meth:`Exceptions <aminofix.lib.util.exceptions>`
+            - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
         if isinstance(userId, str):
             response = self.session.post(f"/g/s/user-profile/{userId}/member", headers=self.additional_headers())
@@ -1635,7 +1837,7 @@ class Client(Callbacks, SocketHandler):
         **Returns**
             - **Success** : 200 (int)
 
-            - **Fail** : :meth:`Exceptions <aminofix.lib.util.exceptions>`
+            - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
         response = self.session.delete(f"/g/s/user-profile/{userId}/member/{self.userId}", headers=self.additional_headers())
         if response.status_code != 200: 
@@ -1653,7 +1855,7 @@ class Client(Callbacks, SocketHandler):
         **Returns**
             - **Success** : 200 (int)
 
-            - **Fail** : :meth:`Exceptions <aminofix.lib.util.exceptions>`
+            - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
         response = self.session.post(f"/g/s/block/{userId}", headers=self.additional_headers())
         if response.status_code != 200: 
@@ -1671,7 +1873,7 @@ class Client(Callbacks, SocketHandler):
         **Returns**
             - **Success** : 200 (int)
 
-            - **Fail** : :meth:`Exceptions <aminofix.lib.util.exceptions>`
+            - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
         response = self.session.delete(f"/g/s/block/{userId}", headers=self.additional_headers())
         if response.status_code != 200: 
@@ -1690,7 +1892,7 @@ class Client(Callbacks, SocketHandler):
         **Returns**
             - **Success** : 200 (int)
 
-            - **Fail** : :meth:`Exceptions <aminofix.lib.util.exceptions>`
+            - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
         data = {"timestamp": int(timestamp() * 1000)}
         if invitationId: data["invitationId"] = invitationId
@@ -1713,7 +1915,7 @@ class Client(Callbacks, SocketHandler):
         **Returns**
             - **Success** : 200 (int)
 
-            - **Fail** : :meth:`Exceptions <aminofix.lib.util.exceptions>`
+            - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
         data = dumps({"message": message, "timestamp": int(timestamp() * 1000)})
         response = self.session.post(f"/x{comId}/s/community/membership-request", data=data, headers=self.additional_headers(data=data))
@@ -1732,7 +1934,7 @@ class Client(Callbacks, SocketHandler):
         **Returns**
             - **Success** : 200 (int)
 
-            - **Fail** : :meth:`Exceptions <aminofix.lib.util.exceptions>`
+            - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
         response = self.session.post(f"/x{comId}/s/community/leave", headers=self.additional_headers())
         if response.status_code != 200: 
@@ -1752,7 +1954,7 @@ class Client(Callbacks, SocketHandler):
         **Returns**
             - **Success** : 200 (int)
 
-            - **Fail** : :meth:`Exceptions <aminofix.lib.util.exceptions>`
+            - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
         if reason is None: raise exceptions.ReasonNeeded
         if flagType is None: raise exceptions.FlagTypeNeeded
@@ -1789,7 +1991,7 @@ class Client(Callbacks, SocketHandler):
         **Returns**
             - **Success** : 200 (int)
 
-            - **Fail** : :meth:`Exceptions <aminofix.lib.util.exceptions>`
+            - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
         data = {
             "address": None,
@@ -1825,7 +2027,7 @@ class Client(Callbacks, SocketHandler):
         **Returns**
             - **Success** : 200 (int)
 
-            - **Fail** : :meth:`Exceptions <aminofix.lib.util.exceptions>`
+            - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
 
         data = {"timestamp": int(timestamp() * 1000)}
@@ -1852,7 +2054,7 @@ class Client(Callbacks, SocketHandler):
         **Returns**
             - **Success** : 200 (int)
 
-            - **Fail** : :meth:`Exceptions <aminofix.lib.util.exceptions>`
+            - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
         data = dumps({"aminoId": aminoId, "timestamp": int(timestamp() * 1000)})
         response = self.session.post(f"/g/s/account/change-amino-id", headers=self.additional_headers(data=data), data=data)
@@ -1871,7 +2073,7 @@ class Client(Callbacks, SocketHandler):
         **Returns**
             - **Success** : :meth:`Community List <amino.lib.util.objects.CommunityList>`
 
-            - **Fail** : :meth:`Exceptions <aminofix.lib.util.exceptions>`
+            - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
         response = self.session.get(f"/g/s/user-profile/{userId}/linked-community", headers=self.additional_headers())
         if response.status_code != 200: 
@@ -1889,7 +2091,7 @@ class Client(Callbacks, SocketHandler):
         **Returns**
             - **Success** : :meth:`Community List <amino.lib.util.objects.CommunityList>`
 
-            - **Fail** : :meth:`Exceptions <aminofix.lib.util.exceptions>`
+            - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
         response = self.session.get(f"/g/s/user-profile/{userId}/linked-community", headers=self.additional_headers())
         if response.status_code != 200: 
@@ -1907,7 +2109,7 @@ class Client(Callbacks, SocketHandler):
         **Returns**
             - **Success** : 200 (int)
 
-            - **Fail** : :meth:`Exceptions <aminofix.lib.util.exceptions>`
+            - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
         data = dumps({"ndcIds": comIds, "timestamp": int(timestamp() * 1000)})
         response = self.session.post(f"/g/s/user-profile/{self.userId}/linked-community/reorder", headers=self.additional_headers(data=data), data=data)
@@ -1926,7 +2128,7 @@ class Client(Callbacks, SocketHandler):
         **Returns**
             - **Success** : 200 (int)
 
-            - **Fail** : :meth:`Exceptions <aminofix.lib.util.exceptions>`
+            - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
         response = self.session.post(f"/g/s/user-profile/{self.userId}/linked-community/{comId}", headers=self.additional_headers())
         if response.status_code != 200: 
@@ -1944,7 +2146,7 @@ class Client(Callbacks, SocketHandler):
         **Returns**
             - **Success** : 200 (int)
 
-            - **Fail** : :meth:`Exceptions <aminofix.lib.util.exceptions>`
+            - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
         response = self.session.delete(f"/g/s/user-profile/{self.userId}/linked-community/{comId}", headers=self.additional_headers())
         if response.status_code != 200: 
@@ -1966,7 +2168,7 @@ class Client(Callbacks, SocketHandler):
         **Returns**
             - **Success** : 200 (int)
 
-            - **Fail** : :meth:`Exceptions <aminofix.lib.util.exceptions>`
+            - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
         if message is None: raise exceptions.MessageNeeded
 
@@ -2016,7 +2218,7 @@ class Client(Callbacks, SocketHandler):
         **Returns**
             - **Success** : 200 (int)
 
-            - **Fail** : :meth:`Exceptions <aminofix.lib.util.exceptions>`
+            - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
         if userId: response = self.session.delete(f"/g/s/user-profile/{userId}/g-comment/{commentId}", headers=self.additional_headers())
         elif blogId: response = self.session.delete(f"/g/s/blog/{blogId}/g-comment/{commentId}", headers=self.additional_headers())
@@ -2039,7 +2241,7 @@ class Client(Callbacks, SocketHandler):
         **Returns**
             - **Success** : 200 (int)
 
-            - **Fail** : :meth:`Exceptions <aminofix.lib.util.exceptions>`
+            - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
         data = {
             "value": 4,
@@ -2085,7 +2287,7 @@ class Client(Callbacks, SocketHandler):
         **Returns**
             - **Success** : 200 (int)
 
-            - **Fail** : :meth:`Exceptions <aminofix.lib.util.exceptions>`
+            - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
         if blogId: response = self.session.delete(f"/g/s/blog/{blogId}/g-vote?eventSource=UserProfileView", headers=self.additional_headers())
         elif wikiId: response = self.session.delete(f"/g/s/item/{wikiId}/g-vote?eventSource=PostDetailView", headers=self.additional_headers())
@@ -2109,7 +2311,7 @@ class Client(Callbacks, SocketHandler):
         **Returns**
             - **Success** : 200 (int)
 
-            - **Fail** : :meth:`Exceptions <aminofix.lib.util.exceptions>`
+            - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
         data = {
             "value": 4,
@@ -2154,7 +2356,7 @@ class Client(Callbacks, SocketHandler):
         **Returns**
             - **Success** : 200 (int)
 
-            - **Fail** : :meth:`Exceptions <aminofix.lib.util.exceptions>`
+            - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
         if userId: response = self.session.delete(f"/g/s/user-profile/{userId}/comment/{commentId}/g-vote?eventSource=UserProfileView", headers=self.additional_headers())
         elif blogId: response = self.session.delete(f"/g/s/blog/{blogId}/comment/{commentId}/g-vote?eventSource=PostDetailView", headers=self.additional_headers())
@@ -2176,7 +2378,7 @@ class Client(Callbacks, SocketHandler):
         **Returns**
             - **Success** : :meth:`Membership Object <amino.lib.util.objects.Membership>`
 
-            - **Fail** : :meth:`Exceptions <aminofix.lib.util.exceptions>`
+            - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
         response = self.session.get(f"/g/s/membership?force=true", headers=self.additional_headers())
         if response.status_code != 200: 
@@ -2197,7 +2399,7 @@ class Client(Callbacks, SocketHandler):
         **Returns**
             - **Success** : :meth:`Blogs List <amino.lib.util.objects.BlogList>`
 
-            - **Fail** : :meth:`Exceptions <aminofix.lib.util.exceptions>`
+            - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
         if language not in self.get_supported_languages(): raise exceptions.UnsupportedLanguage(language)
         response = self.session.get(f"/g/s/announcement?language={language}&start={start}&size={size}", headers=self.additional_headers())
@@ -2216,7 +2418,7 @@ class Client(Callbacks, SocketHandler):
         **Returns**
             - **Success** : :meth:`Wallet Object <amino.lib.util.objects.WalletInfo>`
 
-            - **Fail** : :meth:`Exceptions <aminofix.lib.util.exceptions>`
+            - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
         response = self.session.get(f"/g/s/wallet", headers=self.additional_headers())
         if response.status_code != 200: 
@@ -2235,7 +2437,7 @@ class Client(Callbacks, SocketHandler):
         **Returns**
             - **Success** : :meth:`Wallet Object <amino.lib.util.objects.WalletInfo>`
 
-            - **Fail** : :meth:`Exceptions <aminofix.lib.util.exceptions>`
+            - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
         response = self.session.get(f"/g/s/wallet/coin/history?start={start}&size={size}", headers=self.additional_headers())
         if response.status_code != 200: 
@@ -2253,7 +2455,7 @@ class Client(Callbacks, SocketHandler):
         **Returns**
             - **Success** : :meth:`User ID <amino.lib.util.objects.UserProfile.userId>`
 
-            - **Fail** : :meth:`Exceptions <aminofix.lib.util.exceptions>`
+            - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
         response = self.session.get(f"/g/s/auid?deviceId={deviceId}")
         if response.status_code != 200: 
@@ -2272,7 +2474,7 @@ class Client(Callbacks, SocketHandler):
         **Returns**
             - **Success** : :meth:`From Code Object <amino.lib.util.objects.FromCode>`
 
-            - **Fail** : :meth:`Exceptions <aminofix.lib.util.exceptions>`
+            - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
         response = self.session.get(f"/g/s/link-resolution?q={code}", headers=self.additional_headers())
         if response.status_code != 200: 
@@ -2292,7 +2494,7 @@ class Client(Callbacks, SocketHandler):
         **Returns**
             - **Success** : :meth:`From Code Object <amino.lib.util.objects.FromCode>`
 
-            - **Fail** : :meth:`Exceptions <aminofix.lib.util.exceptions>`
+            - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
         data = dumps({
             "objectId": objectId,
@@ -2318,7 +2520,7 @@ class Client(Callbacks, SocketHandler):
         **Returns**
             - **Success** : :meth:`List of Supported Languages <List>`
 
-            - **Fail** : :meth:`Exceptions <aminofix.lib.util.exceptions>`
+            - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
         response = self.session.get(f"/g/s/community-collection/supported-languages?start=0&size=100", headers=self.additional_headers())
         if response.status_code != 200: 
@@ -2336,7 +2538,7 @@ class Client(Callbacks, SocketHandler):
         **Returns**
             - **Success** : 200 (int)
 
-            - **Fail** : :meth:`Exceptions <aminofix.lib.util.exceptions>`
+            - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
         response = self.session.post(f"/g/s/coupon/new-user-coupon/claim", headers=self.additional_headers())
         if response.status_code != 200: 
@@ -2355,7 +2557,7 @@ class Client(Callbacks, SocketHandler):
         **Returns**
             - **Success** : :meth:`List <List>`
 
-            - **Fail** : :meth:`Exceptions <aminofix.lib.util.exceptions>`
+            - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
         response = self.session.get(f"/g/s/store/subscription?objectType=122&start={start}&size={size}", headers=self.additional_headers())
         if response.status_code != 200: 
@@ -2374,7 +2576,7 @@ class Client(Callbacks, SocketHandler):
         **Returns**
             - **Success** : :meth:`User Profile Count List Object <amino.lib.util.objects.UserProfileCountList>`
 
-            - **Fail** : :meth:`Exceptions <aminofix.lib.util.exceptions>`
+            - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
         response = self.session.get(f"/g/s/user-profile?type=recent&start={start}&size={size}", headers=self.additional_headers())
         if response.status_code != 200: 
@@ -2383,6 +2585,17 @@ class Client(Callbacks, SocketHandler):
             return objects.UserProfileCountList(response.json()).UserProfileCountList
 
     def accept_host(self, chatId: str, requestId: str):
+        """
+        Accepting host in chat.
+
+        Accepting:
+        - chatId: str
+        - requestId: str
+
+        Recieving:
+        - object `int` (200)
+        - on exception, some exception from `aminofixfix.lib.exceptions`
+        """
         data = dumps({})
         response = self.session.post(f"/g/s/chat/thread/{chatId}/transfer-organizer/{requestId}/accept", headers=self.additional_headers(data=data), data=data)
         if response.status_code != 200: 
@@ -2391,12 +2604,37 @@ class Client(Callbacks, SocketHandler):
             return response.status_code
 
     def accept_organizer(self, chatId: str, requestId: str):
+        """
+        Accepting host in chat. (Alias to function `accept_host`.)
+
+        Accepting:
+        - chatId: str
+        - requestId: str
+
+        Recieving:
+        - object `int` (200)
+        - on exception, some exception from `aminofixfix.lib.exceptions`
+        """
         self.accept_host(chatId, requestId)
 
     # Contributed by 'https://github.com/LynxN1'
     def link_identify(self, code: str):
+        """
+        Getting info about invite from code. 
+
+        Accepting:
+        - code: str
+            - *code* is thing *after* http://aminoapps.com/invite/
+
+        Recieving:
+        - object `dict`
+        - on exception, some exception from `aminofixfix.lib.exceptions`
+        """
         response = self.session.get(f"/g/s/community/link-identify?q=http%3A%2F%2Faminoapps.com%2Finvite%2F{code}", headers=self.additional_headers())
-        return response.json()
+        if response.status_code != 200: 
+            return exceptions.CheckException(response)
+        else:
+            return response.json()
 
     def invite_to_vc(self, chatId: str, userId: str):
         """
@@ -2409,7 +2647,7 @@ class Client(Callbacks, SocketHandler):
         **Returns**
             - **Success** : 200 (int)
 
-            - **Fail** : :meth:`Exceptions <aminofix.lib.util.exceptions>`
+            - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
 
         data = dumps({
@@ -2433,7 +2671,7 @@ class Client(Callbacks, SocketHandler):
         **Returns**
             - **Success** : 200 (int)
 
-            - **Fail** : :meth:`Exceptions <aminofix.lib.util.exceptions>`
+            - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
 
         data = dumps({
@@ -2448,6 +2686,21 @@ class Client(Callbacks, SocketHandler):
             return response.status_code
 
     def purchase(self, objectId: str, isAutoRenew: bool = False):
+        """
+        Purchasing... something... from store...
+
+        You probably want to catch objectIds by yourself using HTTP Toolkit.
+
+        Accepting:
+        - objectId: str
+            - id of object that you wanna buy
+        - isAutoRenew: bool = False
+            - do you wanna auto renew your purchase?
+
+        Recieving:
+        - object `int` (200)
+        - on exception, some exception from `aminofixfix.lib.exceptions`
+        """
         data = dumps({
             "objectId": objectId,
             "objectType": 114,
@@ -2474,7 +2727,7 @@ class Client(Callbacks, SocketHandler):
         **Returns**
             - **Success** : :meth:`Community List <amino.lib.util.objects.CommunityList>`
 
-            - **Fail** : :meth:`Exceptions <aminofix.lib.util.exceptions>`
+            - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
 
         response = self.session.get(f"/g/s/topic/0/feed/community?language={language}&type=web-explore&categoryKey=recommendation&size={size}&pagingType=t", headers=self.additional_headers())
