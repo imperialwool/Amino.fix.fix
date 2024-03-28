@@ -31,6 +31,8 @@ Also instead HTTPX you can use aiohttp, Requests or Urllib3. Just install additi
 - `pip install amino.fix.fix[requests]` # only sync
 - `pip install amino.fix.fix[aiohttp]` # only async
 
+Please report any issues and bugs that Request and aiohttp are causing when you use them instead of HTTPX! This feature in beta and not tested well.
+
 Example:
 
 ```python

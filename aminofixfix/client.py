@@ -364,13 +364,14 @@ class Client(Callbacks, SocketHandler):
         if self.socket_enabled:
             self.run_amino_socket()
 
-    def login(self, email: str, password: str):
+    def login(self, email: str, password: str, client_type: int = 100):
         """
         Login into an account.
 
         **Parameters**
             - **email** : Email of the account.
             - **password** : Password of the account.
+            - **client_type**: Type of Client.
 
         **Returns**
             - **Success** : 200 (int)
@@ -383,7 +384,7 @@ class Client(Callbacks, SocketHandler):
             "v": 2,
             "secret": f"0 {password}",
             "deviceID": self.device_id,
-            "clientType": 300,
+            "clientType": client_type,
             "action": "normal",
             "timestamp": int(timestamp() * 1000)
         })
@@ -404,13 +405,14 @@ class Client(Callbacks, SocketHandler):
 
             return response.json()
 
-    def login_phone(self, phoneNumber: str, password: str):
+    def login_phone(self, phoneNumber: str, password: str, client_type: int = 100):
         """
         Login into an account.
 
         **Parameters**
             - **phoneNumber** : Phone number of the account.
             - **password** : Password of the account.
+            - **client_type**: Type of Client.
 
         **Returns**
             - **Success** : 200 (int)
@@ -422,7 +424,7 @@ class Client(Callbacks, SocketHandler):
             "v": 2,
             "secret": f"0 {password}",
             "deviceID": self.device_id,
-            "clientType": 300,
+            "clientType": client_type,
             "action": "normal",
             "timestamp": int(timestamp() * 1000)
         })
