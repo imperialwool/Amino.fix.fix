@@ -1303,8 +1303,8 @@ class SubClient(Client):
         if mentionUserIds:
             mentions = [{"uid": mention_uid} for mention_uid in mentionUserIds]
 
-        if not isinstance(embedImage, BinaryIO):
-            embedType = None
+        try: readEmbed = embedImage.read()
+        except: embedType = None
 
         if embedType == objects.EmbedTypes.LINK_SNIPPET:
             data = {
@@ -1315,7 +1315,7 @@ class SubClient(Client):
                     "linkSnippetList": [{
                         "link": embedLink,
                         "mediaType": 100,
-                        "mediaUploadValue": b64encode(embedImage.read()).decode(),
+                        "mediaUploadValue": b64encode(readEmbed).decode(),
                         "mediaUploadValueContentType": "image/png"
                     }],
                     "mentionedArray": mentions

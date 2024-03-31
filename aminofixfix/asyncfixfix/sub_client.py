@@ -818,8 +818,8 @@ class SubClient(Client):
         if mentionUserIds:
             mentions = [{"uid": mention_uid} for mention_uid in mentionUserIds]
 
-        if not isinstance(embedImage, BinaryIO):
-            embedType = None
+        try: readEmbed = embedImage.read()
+        except: embedType = None
 
         if embedType == objects.EmbedTypes.LINK_SNIPPET:
             data = {
