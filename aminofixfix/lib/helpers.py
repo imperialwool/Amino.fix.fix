@@ -11,7 +11,7 @@ from json import loads
 from hmac import new
 import re
 
-LIBRARY_VERSION = "1.0.6.1"
+LIBRARY_VERSION = "1.0.6.2"
 
 PREFIX = bytes.fromhex("19")
 SIG_KEY = bytes.fromhex("DFA5ED192DDA6E88A12FE12130DC6206B1251E44")
@@ -32,9 +32,8 @@ IOS_VERSIONS = [
     "17.0", "17.0.1", "17.0.2", "17.0.3", "17.1", "17.1.1", "17.1.2", "17.2", "17.2.1", "17.3", "17.3.1", "17.4"
 ]
 APP_VERSIONS = [
-    "3.22.0", "3.21.0", "3.20.0", "3.19.0", "3.18.0"
+    "3.23.0", "3.22.0", "3.21.0", "3.20.0"
 ]
-
 
 def gen_deviceId(data: bytes = None) -> str:
     identifier = PREFIX + ((data if isinstance(data, bytes) else bytes(data, 'utf-8')) if data else urandom(20))
@@ -61,9 +60,11 @@ def sid_to_ip_address(SID: str) -> str: return decode_sid(SID)["4"]
 
 def json_minify(string, strip_space=True):
     '''
-        Took from: https://github.com/getify/JSON.minify/
+        Took from: https://github.com/getify/JSON.minify/tree/python
+        Library under MIT license.
         
-        I think install library to just minify json is stupid sorry
+        I think install library to just minify json is stupid,
+        so I copied function, sorry.
     '''
     tokenizer = re.compile(r'"|(/\*)|(\*/)|(//)|\n|\r')
     end_slashes_re = re.compile(r'(\\)*$')

@@ -12,6 +12,20 @@ class EmbedTypes(Enum):
     LINK_SNIPPET = 1
     ATTACHED_OBJECT = 2
 
+class AttachedObjectTypes(Enum):
+    """
+    Enum, containing all possible values for Embed.
+
+    - PROFILE (0)
+    - POST (1)
+    - WIKI (2)
+    - PUBLIC_CHAT (12)
+    """
+    PROFILE = 0
+    POST = 1
+    WIKI = 2
+    PUBLIC_CHAT = 12
+    
 class APILibraries(Enum):
     """
     Enum, containing all possible values for API libraries.

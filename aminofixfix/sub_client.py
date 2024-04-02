@@ -1266,8 +1266,13 @@ class SubClient(Client):
             replyTo: str = None, mentionUserIds: list = None,
             stickerId: str = None,
         
-            embedId: str = None, embedObjectType: int = None, embedLink: str = None, embedTitle: str = None, embedContent: str = None, embedImage: BinaryIO = None,
-            embedType: objects.EmbedTypes = objects.EmbedTypes.LINK_SNIPPET
+            embedId: str = None,
+            embedLink: str = None,
+            embedTitle: str = None,
+            embedContent: str = None,
+            embedImage: BinaryIO = None,
+            embedType: objects.EmbedTypes = None,
+            embedObjectType: objects.AttachedObjectTypes = None
         ):
         """
         Send a Message to a Chat.
@@ -1283,12 +1288,12 @@ class SubClient(Client):
             - **replyTo** : Message ID to reply to.
             - **stickerId** : Sticker ID to be sent.
             - **embedType** : Type of the Embed. Can be aminofixfix.lib.objects.EmbedTypes only. By default it's LinkSnippet one.
-            - **embedLink** : Link of the Embed.
-            - **embedImage** : Image of the Embed. Required to send Embed.
-            - **embedId** : ID of the Embed. Works only in AttachedObject Embeds.
-            - **embedType** : Type of the AttachedObject Embed. Works only in AttachedObject Embeds.
-            - **embedTitle** : Title of the Embed. Works only in AttachedObject Embeds.
-            - **embedContent** : Content of the Embed. Works only in AttachedObject Embeds.
+            - **embedLink** : Link of the Embed. Can be only "ndc://" link if its AttachedObject.
+            - **embedImage** : Image of the Embed. Required to send Embed, if its LinkSnippet. Can be only 1024x1024 max. Can be string to existing image uploaded to Amino or it can be opened (not readed) file.
+            - **embedId** : ID of the Embed. Works only in AttachedObject Embeds. It can be any ID, just gen it using str(uuid4()).
+            - **embedType** : Type of the AttachedObject Embed. Works only in AttachedObject Embeds. Just look what values AttachedObjectTypes enum contains.
+            - **embedTitle** : Title of the Embed. Works only in AttachedObject Embeds. Can be empty.
+            - **embedContent** : Content of the Embed. Works only in AttachedObject Embeds. Can be empty.
 
         **Returns**
             - **Success** : 200 (int)
@@ -1303,8 +1308,9 @@ class SubClient(Client):
         if mentionUserIds:
             mentions = [{"uid": mention_uid} for mention_uid in mentionUserIds]
 
-        try: readEmbed = embedImage.read()
-        except: embedType = None
+        if embedImage and not isinstance(embedImage, str):
+            try: readEmbed = embedImage.read()
+            except: embedType = None
 
         if embedType == objects.EmbedTypes.LINK_SNIPPET:
             data = {
@@ -1323,17 +1329,27 @@ class SubClient(Client):
                 "timestamp": int(timestamp() * 1000)
             }
         elif embedType == objects.EmbedTypes.ATTACHED_OBJECT:
+            try: embedObjectType.value
+            except: raise Exception("You SHOULD pass AttachedEmbedTypes.")
+
+            if isinstance(embedImage, str):
+                image = [[100, embedImage, None]]
+            elif embedImage:
+                image = [[100, self.upload_media(embedImage, "image"), None]]
+            else:
+                image = None
+
             data = {
                 "type": messageType,
                 "content": message,
                 "clientRefId": int(timestamp() / 10 % 1000000000),
                 "attachedObject": {
                     "objectId": embedId,
-                    "objectType": embedObjectType,
+                    "objectType": embedObjectType.value,
                     "link": embedLink,
                     "title": embedTitle,
                     "content": embedContent,
-                    "mediaList": [[100, self.upload_media(embedImage, "image"), None]]
+                    "mediaList": image
                 },
                 "extensions": {"mentionedArray": mentions},
                 "timestamp": int(timestamp() * 1000)
@@ -1375,6 +1391,7 @@ class SubClient(Client):
             data["mediaUploadValue"] = b64encode(file.read()).decode()
 
         data = dumps(data)
+        print(data)
 
         response = self.session.post(f"/x{self.comId}/s/chat/thread/{chatId}/message", headers=self.additional_headers(data=data), data=data)
         if response.status_code != 200: 
