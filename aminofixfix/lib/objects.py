@@ -2,6 +2,40 @@
 
 from enum import Enum
 
+class PostFeatureDays(Enum):
+    """
+    Enum, containing all possible day values for post featuring.
+
+    - ONE_DAY (1)
+    - TWO_DAYS (2)
+    - THREE_DAYS (3)
+    """
+    ONE_DAY = 1
+    TWO_DAYS = 2
+    THREE_DAYS = 3
+
+class ChatFeatureDays(Enum):
+    """
+    Enum, containing all possible day values for chat featuring.
+
+    - ONE_HOUR (1)
+    - TWO_HOURS (2)
+    - THREE_HOURS (3)
+    """
+    ONE_DAY = 1
+    TWO_DAYS = 2
+    THREE_DAYS = 3
+
+class UserFeatureDays(Enum):
+    """
+    Enum, containing all possible day values for user featuring.
+
+    - ONE_DAY (1)
+    - TWO_DAYS (2)
+    """
+    ONE_DAY = 1
+    TWO_DAYS = 2
+
 class EmbedTypes(Enum):
     """
     Enum, containing all possible values for Embed.

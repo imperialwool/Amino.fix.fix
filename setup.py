@@ -1,5 +1,5 @@
 from setuptools import setup, find_packages
-LIBRARY_VERSION = "1.0.6.2"
+LIBRARY_VERSION = "1.0.6.3"
 
 # REQUIREMENTS
 
@@ -44,20 +44,23 @@ keywords = [
 
 setup(
     license="MIT",
+
     name="amino.fix.fix",
-    version=LIBRARY_VERSION,
     description="Library for Aminoapps",
+    
+    version=LIBRARY_VERSION,
     url="https://github.com/imperialwool/Amino.fix.fix",
-    long_description=open("README.md", encoding="utf-8").read(),
+
     long_description_content_type="text/markdown",
+    long_description=open("README.md", encoding="utf-8").read(),
 
     author="imperialwool",
     author_email="hi@iwool.dev",
     
     python_requires='>=3.8',
     packages=find_packages(),
-    keywords=keywords,
 
+    keywords=keywords,
     install_requires=requirements,
     extras_require={
         "requests": requests_requirements,

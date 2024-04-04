@@ -1,11 +1,11 @@
 from __future__ import annotations
 # ^ this thing should fix problem for python3.9 and lower(?)
 
+from json import dumps
 from typing import BinaryIO
-from json import loads, dumps
-from time import time as timestamp
 
 from . import client
+from ..lib.helpers import inttime
 from ..lib import exceptions, headers, objects
 
 class ACM(client.Client):
@@ -33,7 +33,7 @@ class ACM(client.Client):
             "tagline": tagline,
             "templateId": 9,
             "themeColor": themeColor,
-            "timestamp": int(timestamp() * 1000)
+            "timestamp": inttime()
         })
 
         response = await self.session.post(f"/g/s/community", headers=self.additional_headers(data=data), data=data, proxies=self.proxies)
@@ -61,25 +61,25 @@ class ACM(client.Client):
     async def list_communities(self, start: int = 0, size: int = 25):
         response = await self.session.get(f"/g/s/community/managed?start={start}&size={size}", headers=self.additional_headers(), proxies=self.proxies)
         if response.status_code != 200: return exceptions.CheckException(response)
-        else: return objects.CommunityList(loads(response.text)["communityList"]).CommunityList
+        else: return objects.CommunityList(response.json()["communityList"]).CommunityList
 
     async def get_categories(self, start: int = 0, size: int = 25):
         if self.comId is None: raise exceptions.CommunityNeeded()
         response = await self.session.get(f"/x{self.comId}/s/blog-category?start={start}&size={size}", headers=self.additional_headers(), proxies=self.proxies)
         if response.status_code != 200: return exceptions.CheckException(response)
-        else: return loads(response.text)
+        else: return response.json()
 
     async def change_sidepanel_color(self, color: str):
         data = dumps({
             "path": "appearance.leftSidePanel.style.iconColor",
             "value": color,
-            "timestamp": int(timestamp() * 1000)
+            "timestamp": inttime()
         })
 
         if self.comId is None: raise exceptions.CommunityNeeded()
         response = await self.session.post(f"/x{self.comId}/s/community/configuration", headers=self.additional_headers(data=data), data=data, proxies=self.proxies)
         if response.status_code != 200: return response.status_code
-        else: return loads(response.text)
+        else: return response.json()
 
     async def get_themepack_info(self, file: BinaryIO):
         """
@@ -161,7 +161,7 @@ class ACM(client.Client):
         if self.comId is None: raise exceptions.CommunityNeeded()
         response = await self.session.post(f"/x{self.comId}/s/media/upload/target/community-theme-pack", data=file.read(), headers=headers.Headers(data=file.read()).s_headers, proxies=self.proxies)
         if response.status_code != 200: return exceptions.CheckException(response)
-        else: return loads(response.text)
+        else: return response.json()
 
     async def promote(self, userId: str, rank: str):
         rank = rank.lower().replace("agent", "transfer-agent")
@@ -179,7 +179,7 @@ class ACM(client.Client):
 
         response = await self.session.get(f"/x{self.comId}/s/community/membership-request?status=pending&start={start}&size={size}", headers=self.additional_headers(), proxies=self.proxies)
         if response.status_code != 200: return exceptions.CheckException(response)
-        else: return objects.JoinRequest(loads(response.text)).JoinRequest
+        else: return objects.JoinRequest(response.json()).JoinRequest
 
     async def accept_join_request(self, userId: str):
         data = dumps({})
@@ -202,7 +202,7 @@ class ACM(client.Client):
 
         response = await self.session.get(f"/x{self.comId}/s/community/stats", headers=self.additional_headers(), proxies=self.proxies)
         if response.status_code != 200: return exceptions.CheckException(response)
-        else: return objects.CommunityStats(loads(response.text)["communityStats"]).CommunityStats
+        else: return objects.CommunityStats(response.json()["communityStats"]).CommunityStats
 
     async def get_community_user_stats(self, type: str, start: int = 0, size: int = 25):
         if self.comId is None: raise exceptions.CommunityNeeded()
@@ -213,7 +213,7 @@ class ACM(client.Client):
 
         response = await self.session.get(f"/x{self.comId}/s/community/stats/moderation?type={target}&start={start}&size={size}", headers=self.additional_headers(), proxies=self.proxies)
         if response.status_code != 200: return exceptions.CheckException(response)
-        else: return objects.UserProfileList(loads(response.text)["userProfileList"]).UserProfileList
+        else: return objects.UserProfileList(response.json()["userProfileList"]).UserProfileList
 
     async def change_welcome_message(self, message: str, isEnabled: bool = True):
         data = dumps({
@@ -222,7 +222,7 @@ class ACM(client.Client):
                 "enabled": isEnabled,
                 "text": message
             },
-            "timestamp": int(timestamp() * 1000)
+            "timestamp": inttime()
         })
 
         if self.comId is None: raise exceptions.CommunityNeeded()
@@ -233,7 +233,7 @@ class ACM(client.Client):
     async def change_guidelines(self, message: str):
         data = dumps({
             "content": message,
-            "timestamp": int(timestamp() * 1000)
+            "timestamp": inttime()
         })
 
         if self.comId is None: raise exceptions.CommunityNeeded()
@@ -242,7 +242,7 @@ class ACM(client.Client):
         else: return response.status_code
 
     async def edit_community(self, name: str = None, description: str = None, aminoId: str = None, primaryLanguage: str = None, themePackUrl: str = None):
-        data = {"timestamp": int(timestamp() * 1000)}
+        data = {"timestamp": inttime()}
 
         if name is not None: data["name"] = name
         if description is not None: data["content"] = description
@@ -279,7 +279,7 @@ class ACM(client.Client):
         data = dumps({
             "path": mod,
             "value": isEnabled,
-            "timestamp": int(timestamp() * 1000)
+            "timestamp": inttime()
         })
 
         if self.comId is None: raise exceptions.CommunityNeeded()
@@ -290,7 +290,7 @@ class ACM(client.Client):
     async def add_influencer(self, userId: str, monthlyFee: int):
         data = dumps({
             "monthlyFee": monthlyFee,
-            "timestamp": int(timestamp() * 1000)
+            "timestamp": inttime()
         })
 
         if self.comId is None: raise exceptions.CommunityNeeded()
@@ -308,7 +308,7 @@ class ACM(client.Client):
         if self.comId is None: raise exceptions.CommunityNeeded()
         response = await self.session.get(f"/x{self.comId}/s/notice?type=management&status=1&start={start}&size={size}", headers=self.additional_headers(), proxies=self.proxies)
         if response.status_code != 200: return exceptions.CheckException(response)
-        else: return objects.NoticeList(loads(response.text)["noticeList"]).NoticeList
+        else: return objects.NoticeList(response.json()["noticeList"]).NoticeList
 
     async def delete_pending_role(self, noticeId: str):
         if self.comId is None: raise exceptions.CommunityNeeded()

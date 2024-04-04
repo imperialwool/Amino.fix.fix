@@ -1,23 +1,17 @@
 from __future__ import annotations
 # ^ this thing should fix problem for python3.9 and lower(?)
 
-from uuid import UUID
-from os import urandom
-from base64 import b64encode
+from time import sleep
+from json import dumps
+from typing import BinaryIO
 from threading import Thread
-from binascii import hexlify
-from json import loads, dumps
-from time import timezone, sleep
-from typing import BinaryIO, Union
-from time import time as timestamp
 from httpx import Client as HttpxClient
 from httpx import Timeout as TimeoutConfig
-from locale import getdefaultlocale as locale
 
-from .lib.helpers import gen_deviceId
 from .lib.facades import RequestsClient
 from .socket import Callbacks, SocketHandler
 from .lib import exceptions, headers, objects, helpers
+from .lib.helpers import gen_deviceId, inttime, clientrefid, str_uuid4, bytes_to_b64, LOCAL_TIMEZONE
 
 class Client(Callbacks, SocketHandler):
     """
@@ -93,11 +87,11 @@ class Client(Callbacks, SocketHandler):
         self.configured = False
         self.authenticated = False
         self.autoDevice = autoDevice
+        self.api_library = api_library
         self.http2_enabled = http2_enabled
         self.socket_enabled = socket_enabled
         self.device_id = deviceId if deviceId else gen_deviceId()
         self.user_agent = userAgent if userAgent else helpers.gen_userAgent()
-        self.api_library = api_library
 
         if disable_timeout:
             self.timeout_settings = TimeoutConfig(None)
@@ -113,18 +107,18 @@ class Client(Callbacks, SocketHandler):
         else:
             self.timeout_settings = TimeoutConfig(default_timeout or 60)
 
-        if self.api_library == objects.APILibraries.HTTPX:
-            self.session = HttpxClient(
+        if self.api_library == objects.APILibraries.AIOHTTP:
+            raise Exception("You cant use aiohttp in sync client. Aiohttp is async library.")
+        elif self.api_library == objects.APILibraries.REQUESTS:
+            self.session = RequestsClient(
                 headers=headers.BASIC_HEADERS,
                 http2=http2_enabled,
                 base_url=self.api,
                 proxies=proxies,
                 timeout=self.timeout_settings
             )
-        elif self.api_library == objects.APILibraries.AIOHTTP:
-            raise Exception("You cant use aiohttp in sync client. Aiohttp is async library.")
-        elif self.api_library == objects.APILibraries.REQUESTS:
-            self.session = RequestsClient(
+        else:
+            self.session = HttpxClient(
                 headers=headers.BASIC_HEADERS,
                 http2=http2_enabled,
                 base_url=self.api,
@@ -145,7 +139,7 @@ class Client(Callbacks, SocketHandler):
         self.stop_loop = False
         self.active_live_chats = []
 
-    def additional_headers(self, data: str = None, content_type: str = None):
+    def additional_headers(self, data: str = None, json: dict = None, content_type: str = None) -> dict[str, str]:
         """
         Function to make additional headers, that API needs.
 
@@ -156,6 +150,8 @@ class Client(Callbacks, SocketHandler):
         Recieving:
         - object `dict`
         """
+        if json:
+            data = dumps(data)
         return headers.additionals(
             data=data,
             content_type=content_type,
@@ -184,7 +180,7 @@ class Client(Callbacks, SocketHandler):
         data = dumps({
             "onlineStatus": status,
             "duration": 86400,
-            "timestamp": int(timestamp() * 1000)
+            "timestamp": inttime()
         })
         
         response = self.session.post(f"/g/s/user-profile/{self.profile.userId}/online-status", headers=self.additional_headers(data=data), data=data)
@@ -387,7 +383,7 @@ class Client(Callbacks, SocketHandler):
             "deviceID": self.device_id,
             "clientType": client_type,
             "action": "normal",
-            "timestamp": int(timestamp() * 1000)
+            "timestamp": inttime()
         })
 
         response = self.session.post(f"/g/s/auth/login", headers=self.additional_headers(data=data), data=data)
@@ -427,7 +423,7 @@ class Client(Callbacks, SocketHandler):
             "deviceID": self.device_id,
             "clientType": client_type,
             "action": "normal",
-            "timestamp": int(timestamp() * 1000)
+            "timestamp": inttime()
         })
 
         response = self.session.post(f"/g/s/auth/login", headers=self.additional_headers(data=data), data=data)
@@ -467,7 +463,7 @@ class Client(Callbacks, SocketHandler):
             "deviceID": self.device_id,
             "clientType": 100,
             "action": "normal",
-            "timestamp": int(timestamp() * 1000)
+            "timestamp": inttime()
         })
 
         response = self.session.post(f"/g/s/auth/login", headers=self.additional_headers(data=data), data=data)
@@ -526,7 +522,7 @@ class Client(Callbacks, SocketHandler):
             },
             "type": 1,
             "identity": email,
-            "timestamp": int(timestamp() * 1000)
+            "timestamp": inttime()
         })        
 
         response = self.session.post(f"/g/s/auth/register", data=data, headers=self.additional_headers(data=data), timeout=timeout)
@@ -552,7 +548,7 @@ class Client(Callbacks, SocketHandler):
             "secret": f"0 {password}",
             "deviceID": self.device_id,
             "email": email,
-            "timestamp": int(timestamp() * 1000)
+            "timestamp": inttime()
         })
 
         response = self.session.post(f"/g/s/account/delete-request/cancel", headers=self.additional_headers(data=data), data=data)
@@ -576,7 +572,7 @@ class Client(Callbacks, SocketHandler):
         data = dumps({
             "deviceID": self.device_id,
             "clientType": 100,
-            "timestamp": int(timestamp() * 1000)
+            "timestamp": inttime()
         })
 
         response = self.session.post(f"/g/s/auth/logout", headers=self.additional_headers(data=data), data=data)
@@ -620,7 +616,7 @@ class Client(Callbacks, SocketHandler):
         data = dumps({
             "age": age,
             "gender": gender,
-            "timestamp": int(timestamp() * 1000)
+            "timestamp": inttime()
         })
 
         response = self.session.post(f"/g/s/persona/profile/basic", data=data, headers=self.additional_headers(data=data))
@@ -648,7 +644,7 @@ class Client(Callbacks, SocketHandler):
                 "identity": email,
                 "data": {"code": code}},
             "deviceID": self.device_id,
-            "timestamp": int(timestamp() * 1000)
+            "timestamp": inttime()
         })
 
         response = self.session.post(f"/g/s/auth/check-security-validation", headers=self.additional_headers(data=data), data=data)
@@ -775,12 +771,13 @@ class Client(Callbacks, SocketHandler):
         else:
             return response.status_code
 
-    def check_device(self, deviceId: str):
+    def check_device(self, deviceId: str, locale: str = "en_US"):
         """
         Check if the Device ID is valid.
 
         **Parameters**
             - **deviceId** : ID of the Device.
+            - **locale** : Locale like "ru_RU", "en_US"
 
         **Returns**
             - **Success** : 200 (int)
@@ -791,10 +788,10 @@ class Client(Callbacks, SocketHandler):
             "deviceID": deviceId,
             "bundleID": "com.narvii.amino.master",
             "clientType": 100,
-            "timezone": -timezone // 1000,
+            "timezone": LOCAL_TIMEZONE,
             "systemPushEnabled": True,
-            "locale": locale()[0],
-            "timestamp": int(timestamp() * 1000)
+            "locale": locale,
+            "timestamp": inttime()
         })
 
         response = self.session.post(f"/g/s/device", headers=self.additional_headers(data=data), data=data)
@@ -916,10 +913,11 @@ class Client(Callbacks, SocketHandler):
 
     def watch_ad(self, userId: str = None):
         """
-        Is this funcction even works?
+        Is this function even works?
         """
-        data = dumps(headers.Tapjoy(userId if userId else self.userId).data) 
-        response = self.session.post("https://ads.tapdaq.com/v4/analytics/reward", data=data, headers=headers.Tapjoy().headers)
+
+        data = headers.Tapjoy.Data(userId or self.userId)
+        response = self.session.post("https://ads.tapdaq.com/v4/analytics/reward", data=data, headers=headers.Tapjoy.Headers())
         if response.status_code != 204: return exceptions.CheckException(response)
         else: return response.status_code
 
@@ -1017,7 +1015,7 @@ class Client(Callbacks, SocketHandler):
         else:
             return response.status_code
 
-    def start_chat(self, userId: Union[str, list], message: str, title: str = None, content: str = None, isGlobal: bool = False, publishToGlobal: bool = False):
+    def start_chat(self, userId: str | list, message: str, title: str = None, content: str = None, isGlobal: bool = False, publishToGlobal: bool = False):
         """
         Start an Chat with an User or List of Users.
 
@@ -1043,7 +1041,7 @@ class Client(Callbacks, SocketHandler):
             "inviteeUids": userIds,
             "initialMessageContent": message,
             "content": content,
-            "timestamp": int(timestamp() * 1000)
+            "timestamp": inttime()
         }
 
         if isGlobal is True: data["type"] = 2; data["eventSource"] = "GlobalComposeMenu"
@@ -1061,7 +1059,7 @@ class Client(Callbacks, SocketHandler):
         else:
             return objects.Thread(response.json()["thread"]).Thread
 
-    def invite_to_chat(self, userId: Union[str, list], chatId: str):
+    def invite_to_chat(self, userId: str | list, chatId: str):
         """
         Invite a User or List of Users to a Chat.
 
@@ -1080,7 +1078,7 @@ class Client(Callbacks, SocketHandler):
 
         data = dumps({
             "uids": userIds,
-            "timestamp": int(timestamp() * 1000)
+            "timestamp": inttime()
         })
 
         response = self.session.post(f"/g/s/chat/thread/{chatId}/member/invite", headers=self.additional_headers(data=data), data=data)
@@ -1416,7 +1414,7 @@ class Client(Callbacks, SocketHandler):
         data = {
             "flagType": flagType,
             "message": reason,
-            "timestamp": int(timestamp() * 1000)
+            "timestamp": inttime()
         }
 
         if userId:
@@ -1474,7 +1472,7 @@ class Client(Callbacks, SocketHandler):
             - **embedType** : Type of the Embed. Can be aminofixfix.lib.objects.EmbedTypes only. By default it's LinkSnippet one.
             - **embedLink** : Link of the Embed. Can be only "ndc://" link if its AttachedObject.
             - **embedImage** : Image of the Embed. Required to send Embed, if its LinkSnippet. Can be only 1024x1024 max. Can be string to existing image uploaded to Amino or it can be opened (not readed) file.
-            - **embedId** : ID of the Embed. Works only in AttachedObject Embeds. It can be any ID, just gen it using str(uuid4()).
+            - **embedId** : ID of the Embed. Works only in AttachedObject Embeds. It can be any ID, just gen it using str_uuid4().
             - **embedType** : Type of the AttachedObject Embed. Works only in AttachedObject Embeds. Just look what values AttachedObjectTypes enum contains.
             - **embedTitle** : Title of the Embed. Works only in AttachedObject Embeds. Can be empty.
             - **embedContent** : Content of the Embed. Works only in AttachedObject Embeds. Can be empty.
@@ -1500,17 +1498,17 @@ class Client(Callbacks, SocketHandler):
             data = {
                 "type": messageType,
                 "content": message,
-                "clientRefId": int(timestamp() / 10 % 1000000000),
+                "clientRefId": clientrefid(),
                 "extensions": {
                     "linkSnippetList": [{
                         "link": embedLink,
                         "mediaType": 100,
-                        "mediaUploadValue": b64encode(readEmbed).decode(),
+                        "mediaUploadValue": bytes_to_b64(readEmbed),
                         "mediaUploadValueContentType": "image/png"
                     }],
                     "mentionedArray": mentions
                 },
-                "timestamp": int(timestamp() * 1000)
+                "timestamp": inttime()
             }
         elif embedType == objects.EmbedTypes.ATTACHED_OBJECT:
             try: embedObjectType.value
@@ -1526,7 +1524,7 @@ class Client(Callbacks, SocketHandler):
             data = {
                 "type": messageType,
                 "content": message,
-                "clientRefId": int(timestamp() / 10 % 1000000000),
+                "clientRefId": clientrefid(),
                 "attachedObject": {
                     "objectId": embedId,
                     "objectType": embedObjectType.value,
@@ -1536,15 +1534,15 @@ class Client(Callbacks, SocketHandler):
                     "mediaList": image
                 },
                 "extensions": {"mentionedArray": mentions},
-                "timestamp": int(timestamp() * 1000)
+                "timestamp": inttime()
             }
         else:
             data = {
                 "type": messageType,
                 "content": message,
-                "clientRefId": int(timestamp() / 10 % 1000000000),
+                "clientRefId": clientrefid(),
                 "extensions": {"mentionedArray": mentions},
-                "timestamp": int(timestamp() * 1000)
+                "timestamp": inttime()
             }
 
         if replyTo: data["replyMessageId"] = replyTo
@@ -1572,7 +1570,7 @@ class Client(Callbacks, SocketHandler):
 
             else: raise exceptions.SpecifyType(fileType)
 
-            data["mediaUploadValue"] = b64encode(file.read()).decode()
+            data["mediaUploadValue"] = bytes_to_b64(file.read())
 
         data = dumps(data)
 
@@ -1599,7 +1597,7 @@ class Client(Callbacks, SocketHandler):
         data = {
             "adminOpName": 102,
             "adminOpNote": {"content": reason},
-            "timestamp": int(timestamp() * 1000)
+            "timestamp": inttime()
         }
 
         data = dumps(data)
@@ -1626,7 +1624,7 @@ class Client(Callbacks, SocketHandler):
         """
         data = dumps({
             "messageId": messageId,
-            "timestamp": int(timestamp() * 1000)
+            "timestamp": inttime()
         })
         
         response = self.session.post(f"/g/s/chat/thread/{chatId}/mark-as-read", headers=self.additional_headers(data=data), data=data)
@@ -1662,7 +1660,7 @@ class Client(Callbacks, SocketHandler):
 
             - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
-        data = {"timestamp": int(timestamp() * 1000)}
+        data = {"timestamp": inttime()}
 
         if title: data["title"] = title
         if content: data["content"] = content
@@ -1679,14 +1677,14 @@ class Client(Callbacks, SocketHandler):
 
         if doNotDisturb is not None:
             if doNotDisturb:
-                data = dumps({"alertOption": 2, "timestamp": int(timestamp() * 1000)})
+                data = dumps({"alertOption": 2, "timestamp": inttime()})
                 
                 response = self.session.post(f"/g/s/chat/thread/{chatId}/member/{self.userId}/alert", data=data, headers=self.additional_headers(data=data))
                 if response.status_code != 200: res.append(exceptions.CheckException(response))
                 else: res.append(response.status_code)
 
             if not doNotDisturb:
-                data = dumps({"alertOption": 1, "timestamp": int(timestamp() * 1000)})
+                data = dumps({"alertOption": 1, "timestamp": inttime()})
                 
                 response = self.session.post(f"/g/s/chat/thread/{chatId}/member/{self.userId}/alert", data=data, headers=self.additional_headers(data=data))
                 if response.status_code != 200: res.append(exceptions.CheckException(response))
@@ -1704,14 +1702,14 @@ class Client(Callbacks, SocketHandler):
                 else: res.append(response.status_code)
 
         if backgroundImage is not None:
-            data = dumps({"media": [100, backgroundImage, None], "timestamp": int(timestamp() * 1000)})
+            data = dumps({"media": [100, backgroundImage, None], "timestamp": inttime()})
             
             response = self.session.post(f"/g/s/chat/thread/{chatId}/member/{self.userId}/background", data=data, headers=self.additional_headers(data=data))
             if response.status_code != 200: res.append(exceptions.CheckException(response))
             else: res.append(response.status_code)
 
         if coHosts is not None:
-            data = dumps({"uidList": coHosts, "timestamp": int(timestamp() * 1000)})
+            data = dumps({"uidList": coHosts, "timestamp": inttime()})
             
             response = self.session.post(f"/g/s/chat/thread/{chatId}/co-host", data=data, headers=self.additional_headers(data=data))
             if response.status_code != 200: res.append(exceptions.CheckException(response))
@@ -1797,12 +1795,12 @@ class Client(Callbacks, SocketHandler):
             - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
         url = None
-        if transactionId is None: transactionId = str(UUID(hexlify(urandom(16)).decode('ascii')))
+        if transactionId is None: transactionId = str_uuid4()
 
         data = {
             "coins": coins,
             "tippingContext": {"transactionId": transactionId},
-            "timestamp": int(timestamp() * 1000)
+            "timestamp": inttime()
         }
 
         if blogId is not None: url = f"/g/s/blog/{blogId}/tipping"
@@ -1821,7 +1819,7 @@ class Client(Callbacks, SocketHandler):
         else:
             return response.status_code
 
-    def follow(self, userId: Union[str, list]):
+    def follow(self, userId: str | list):
         """
         Follow an User or Multiple Users.
 
@@ -1834,10 +1832,15 @@ class Client(Callbacks, SocketHandler):
             - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
         if isinstance(userId, str):
-            response = self.session.post(f"/g/s/user-profile/{userId}/member", headers=self.additional_headers())
+            # looks like not working
+            # response = self.session.post(f"/g/s/user-profile/{userId}/member", headers=self.additional_headers())
+            data = dumps({"targetUidList": [userId], "timestamp": inttime()})
+            
+            response = self.session.post(f"/g/s/user-profile/{self.userId}/joined", headers=self.additional_headers(data=data), data=data)
+
 
         elif isinstance(userId, list):
-            data = dumps({"targetUidList": userId, "timestamp": int(timestamp() * 1000)})
+            data = dumps({"targetUidList": userId, "timestamp": inttime()})
             
             response = self.session.post(f"/g/s/user-profile/{self.userId}/joined", headers=self.additional_headers(data=data), data=data)
 
@@ -1915,7 +1918,7 @@ class Client(Callbacks, SocketHandler):
 
             - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
-        data = {"timestamp": int(timestamp() * 1000)}
+        data = {"timestamp": inttime()}
         if invitationId: data["invitationId"] = invitationId
 
         data = dumps(data)
@@ -1938,7 +1941,7 @@ class Client(Callbacks, SocketHandler):
 
             - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
-        data = dumps({"message": message, "timestamp": int(timestamp() * 1000)})
+        data = dumps({"message": message, "timestamp": inttime()})
         response = self.session.post(f"/x{comId}/s/community/membership-request", data=data, headers=self.additional_headers(data=data))
         if response.status_code != 200: 
             return exceptions.CheckException(response)
@@ -1985,7 +1988,7 @@ class Client(Callbacks, SocketHandler):
             "objectType": 16,
             "flagType": flagType,
             "message": reason,
-            "timestamp": int(timestamp() * 1000)
+            "timestamp": inttime()
         })
 
         if isGuest: flg = "g-flag"
@@ -2020,7 +2023,7 @@ class Client(Callbacks, SocketHandler):
             "longitude": 0,
             "mediaList": None,
             "eventSource": "UserProfileView",
-            "timestamp": int(timestamp() * 1000)
+            "timestamp": inttime()
         }
 
         if nickname: data["nickname"] = nickname
@@ -2051,7 +2054,7 @@ class Client(Callbacks, SocketHandler):
             - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
 
-        data = {"timestamp": int(timestamp() * 1000)}
+        data = {"timestamp": inttime()}
 
         if not isAnonymous: data["privacyMode"] = 1
         if isAnonymous: data["privacyMode"] = 2
@@ -2077,7 +2080,7 @@ class Client(Callbacks, SocketHandler):
 
             - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
-        data = dumps({"aminoId": aminoId, "timestamp": int(timestamp() * 1000)})
+        data = dumps({"aminoId": aminoId, "timestamp": inttime()})
         response = self.session.post(f"/g/s/account/change-amino-id", headers=self.additional_headers(data=data), data=data)
         if response.status_code != 200: 
             return exceptions.CheckException(response)
@@ -2132,7 +2135,7 @@ class Client(Callbacks, SocketHandler):
 
             - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
-        data = dumps({"ndcIds": comIds, "timestamp": int(timestamp() * 1000)})
+        data = dumps({"ndcIds": comIds, "timestamp": inttime()})
         response = self.session.post(f"/g/s/user-profile/{self.userId}/linked-community/reorder", headers=self.additional_headers(data=data), data=data)
         if response.status_code != 200: 
             return exceptions.CheckException(response)
@@ -2197,7 +2200,7 @@ class Client(Callbacks, SocketHandler):
             "content": message,
             "stickerId": None,
             "type": 0,
-            "timestamp": int(timestamp() * 1000)
+            "timestamp": inttime()
         }
 
         if replyTo: data["respondTo"] = replyTo
@@ -2251,7 +2254,7 @@ class Client(Callbacks, SocketHandler):
         else:
             return response.status_code
 
-    def like_blog(self, blogId: Union[str, list] = None, wikiId: str = None):
+    def like_blog(self, blogId: str | list = None, wikiId: str = None):
         """
         Like a Blog, Multiple Blogs or a Wiki.
 
@@ -2266,7 +2269,7 @@ class Client(Callbacks, SocketHandler):
         """
         data = {
             "value": 4,
-            "timestamp": int(timestamp() * 1000)
+            "timestamp": inttime()
         }
 
         if blogId:
@@ -2336,7 +2339,7 @@ class Client(Callbacks, SocketHandler):
         """
         data = {
             "value": 4,
-            "timestamp": int(timestamp() * 1000)
+            "timestamp": inttime()
         }
 
         if userId:
@@ -2521,7 +2524,7 @@ class Client(Callbacks, SocketHandler):
             "objectId": objectId,
             "targetCode": 1,
             "objectType": objectType,
-            "timestamp": int(timestamp() * 1000)
+            "timestamp": inttime()
         })
         
         if comId: response = self.session.post(f"/g/s-x{comId}/link-resolution", headers=self.additional_headers(data=data), data=data)
@@ -2697,7 +2700,7 @@ class Client(Callbacks, SocketHandler):
 
         data = dumps({
             "adsLevel": level,
-            "timestamp": int(timestamp() * 1000)
+            "timestamp": inttime()
         })
 
         response = self.session.post(f"/g/s/wallet/ads/config", headers=self.additional_headers(data=data), data=data)
@@ -2731,7 +2734,7 @@ class Client(Callbacks, SocketHandler):
                 "discountStatus": 0,
                 "isAutoRenew": isAutoRenew
             },
-            "timestamp": timestamp()
+            "timestamp": inttime()
         })
 
         response = self.session.post(f"/g/s/store/purchase", headers=self.additional_headers(data=data), data=data)

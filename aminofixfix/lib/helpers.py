@@ -2,16 +2,19 @@ from __future__ import annotations
 # ^ this thing should fix problem for python3.9 and lower(?)
 
 from base64 import b64decode, b64encode
+from time import timezone as tz_raw
+from time import time as timestamp
 from functools import reduce
 from random import choice
 from typing import Union
 from hashlib import sha1
 from os import urandom
 from json import loads
+from uuid import uuid4
 from hmac import new
 import re
 
-LIBRARY_VERSION = "1.0.6.2"
+LIBRARY_VERSION = "1.0.6.3"
 
 PREFIX = bytes.fromhex("19")
 SIG_KEY = bytes.fromhex("DFA5ED192DDA6E88A12FE12130DC6206B1251E44")
@@ -34,6 +37,16 @@ IOS_VERSIONS = [
 APP_VERSIONS = [
     "3.23.0", "3.22.0", "3.21.0", "3.20.0"
 ]
+
+LOCAL_TIMEZONE = -tz_raw // 1000
+
+def str_uuid4() -> str: return str(uuid4())
+
+def inttime() -> int: return int(timestamp() * 1000)
+def clientrefid() -> int: return int(timestamp() / 10 % 1000000000)
+
+def b64_to_bytes(b64: str) -> str: b64decode(b64).decode()
+def bytes_to_b64(data: bytes) -> str: b64encode(data).decode()
 
 def gen_deviceId(data: bytes = None) -> str:
     identifier = PREFIX + ((data if isinstance(data, bytes) else bytes(data, 'utf-8')) if data else urandom(20))

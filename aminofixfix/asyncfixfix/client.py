@@ -1,23 +1,17 @@
 from __future__ import annotations
 # ^ this thing should fix problem for python3.9 and lower(?)
 
-from uuid import UUID
-from os import urandom
-from base64 import b64encode
+from time import sleep
+from json import dumps
 from threading import Thread
-from binascii import hexlify
-from json import loads, dumps
-from time import timezone, sleep
 from typing import BinaryIO, Union
-from time import time as timestamp
 from httpx import Timeout as TimeoutConfig
 from httpx import AsyncClient as HttpxClient
-from locale import getdefaultlocale as locale
 
-from ..lib.helpers import gen_deviceId
 from .socket import Callbacks, SocketHandler
 from ..lib import exceptions, headers, objects, helpers
 from ..lib.facades import AiohttpClient, AiohttpResponse
+from ..lib.helpers import gen_deviceId, inttime, clientrefid, str_uuid4, bytes_to_b64, LOCAL_TIMEZONE
 
 class Client(Callbacks, SocketHandler):
     def __init__(
@@ -39,6 +33,7 @@ class Client(Callbacks, SocketHandler):
         self.configured = False
         self.authenticated = False
         self.autoDevice = autoDevice
+        self.api_library = api_library
         self.socket_enabled = socket_enabled
         self.device_id = deviceId if deviceId else gen_deviceId()
         self.user_agent = userAgent if userAgent else helpers.gen_userAgent()
@@ -57,18 +52,18 @@ class Client(Callbacks, SocketHandler):
         else:
             self.timeout_settings = TimeoutConfig(default_timeout or 60)
         
-        if self.api_library == objects.APILibraries.HTTPX:
-            self.session = HttpxClient(
+        if self.api_library == objects.APILibraries.REQUESTS:
+            raise Exception("You cant use requests in async client. Requests is sync library.")
+        elif self.api_library == objects.APILibraries.AIOHTTP:
+            self.session = AiohttpClient(
                 headers=headers.BASIC_HEADERS,
                 http2=http2_enabled,
                 base_url=self.api,
                 proxies=proxies,
                 timeout=self.timeout_settings
             )
-        elif self.api_library == objects.APILibraries.REQUESTS:
-            raise Exception("You cant use requests in async client. Requests is sync library.")
-        elif self.api_library == objects.APILibraries.AIOHTTP:
-            self.session = AiohttpClient(
+        else:
+            self.session = HttpxClient(
                 headers=headers.BASIC_HEADERS,
                 http2=http2_enabled,
                 base_url=self.api,
@@ -107,7 +102,7 @@ class Client(Callbacks, SocketHandler):
         data = dumps({
             "onlineStatus": status,
             "duration": 86400,
-            "timestamp": int(timestamp() * 1000)
+            "timestamp": inttime()
         })
         
         response = await self.session.post(f"/g/s/user-profile/{self.profile.userId}/online-status", headers=self.additional_headers(data=data), data=data)
@@ -278,7 +273,7 @@ class Client(Callbacks, SocketHandler):
             "deviceID": self.device_id,
             "clientType": client_type,
             "action": "normal",
-            "timestamp": int(timestamp() * 1000)
+            "timestamp": inttime()
         })
 
         response = await self.session.post(f"/g/s/auth/login", headers=self.additional_headers(data=data), data=data)
@@ -318,7 +313,7 @@ class Client(Callbacks, SocketHandler):
             "deviceID": self.device_id,
             "clientType": client_type,
             "action": "normal",
-            "timestamp": int(timestamp() * 1000)
+            "timestamp": inttime()
         })
 
         response = await self.session.post(f"/g/s/auth/login", headers=self.additional_headers(data=data), data=data)
@@ -358,7 +353,7 @@ class Client(Callbacks, SocketHandler):
             "deviceID": self.device_id,
             "clientType": 100,
             "action": "normal",
-            "timestamp": int(timestamp() * 1000)
+            "timestamp": inttime()
         })
 
         response = await self.session.post(f"/g/s/auth/login", headers=self.additional_headers(data=data), data=data)
@@ -417,7 +412,7 @@ class Client(Callbacks, SocketHandler):
             },
             "type": 1,
             "identity": email,
-            "timestamp": int(timestamp() * 1000)
+            "timestamp": inttime()
         })        
 
         response = await self.session.post(f"/g/s/auth/register", data=data, headers=self.additional_headers(data=data), timeout=timeout)
@@ -443,7 +438,7 @@ class Client(Callbacks, SocketHandler):
             "secret": f"0 {password}",
             "deviceID": self.device_id,
             "email": email,
-            "timestamp": int(timestamp() * 1000)
+            "timestamp": inttime()
         })
 
         response = await self.session.post(f"/g/s/account/delete-request/cancel", headers=self.additional_headers(data=data), data=data)
@@ -467,7 +462,7 @@ class Client(Callbacks, SocketHandler):
         data = dumps({
             "deviceID": self.device_id,
             "clientType": 100,
-            "timestamp": int(timestamp() * 1000)
+            "timestamp": inttime()
         })
 
         response = await self.session.post(f"/g/s/auth/logout", headers=self.additional_headers(data=data), data=data)
@@ -511,7 +506,7 @@ class Client(Callbacks, SocketHandler):
         data = dumps({
             "age": age,
             "gender": gender,
-            "timestamp": int(timestamp() * 1000)
+            "timestamp": inttime()
         })
 
         response = await self.session.post(f"/g/s/persona/profile/basic", data=data, headers=self.additional_headers(data=data))
@@ -539,7 +534,7 @@ class Client(Callbacks, SocketHandler):
                 "identity": email,
                 "data": {"code": code}},
             "deviceID": self.device_id,
-            "timestamp": int(timestamp() * 1000)
+            "timestamp": inttime()
         })
 
         response = await self.session.post(f"/g/s/auth/check-security-validation", headers=self.additional_headers(data=data), data=data)
@@ -666,12 +661,13 @@ class Client(Callbacks, SocketHandler):
         else:
             return response.status_code
 
-    async def check_device(self, deviceId: str):
+    async def check_device(self, deviceId: str, locale: str = "en_US"):
         """
         Check if the Device ID is valid.
 
         **Parameters**
             - **deviceId** : ID of the Device.
+            - **locale** : Locale like "ru_RU", "en_US"
 
         **Returns**
             - **Success** : 200 (int)
@@ -682,10 +678,10 @@ class Client(Callbacks, SocketHandler):
             "deviceID": deviceId,
             "bundleID": "com.narvii.amino.master",
             "clientType": 100,
-            "timezone": -timezone // 1000,
+            "timezone": LOCAL_TIMEZONE,
             "systemPushEnabled": True,
-            "locale": locale()[0],
-            "timestamp": int(timestamp() * 1000)
+            "locale": locale,
+            "timestamp": inttime()
         })
 
         response = await self.session.post(f"/g/s/device", headers=self.additional_headers(data=data), data=data)
@@ -786,8 +782,8 @@ class Client(Callbacks, SocketHandler):
             return objects.UserProfile(response.json()["userProfile"]).UserProfile
 
     async def watch_ad(self, userId: str = None):
-        data = dumps(headers.Tapjoy(userId if userId else self.userId).data) 
-        response = await self.session.post("https://ads.tapdaq.com/v4/analytics/reward", data=data, headers=headers.Tapjoy().headers)
+        data = headers.Tapjoy.Data(userId or self.userId)
+        response = await self.session.post("https://ads.tapdaq.com/v4/analytics/reward", data=data, headers=headers.Tapjoy.Headers())
         if response.status_code != 204: return exceptions.CheckException(response)
         else: return response.status_code
 
@@ -897,7 +893,7 @@ class Client(Callbacks, SocketHandler):
             "inviteeUids": userIds,
             "initialMessageContent": message,
             "content": content,
-            "timestamp": int(timestamp() * 1000)
+            "timestamp": inttime()
         }
 
         if isGlobal is True: data["type"] = 2; data["eventSource"] = "GlobalComposeMenu"
@@ -934,7 +930,7 @@ class Client(Callbacks, SocketHandler):
 
         data = dumps({
             "uids": userIds,
-            "timestamp": int(timestamp() * 1000)
+            "timestamp": inttime()
         })
 
         response = await self.session.post(f"/g/s/chat/thread/{chatId}/member/invite", headers=self.additional_headers(data=data), data=data)
@@ -1225,7 +1221,7 @@ class Client(Callbacks, SocketHandler):
         data = {
             "flagType": flagType,
             "message": reason,
-            "timestamp": int(timestamp() * 1000)
+            "timestamp": inttime()
         }
 
         if userId:
@@ -1278,7 +1274,7 @@ class Client(Callbacks, SocketHandler):
             - **embedType** : Type of the Embed. Can be aminofixfix.lib.objects.EmbedTypes only. By default it's LinkSnippet one.
             - **embedLink** : Link of the Embed. Can be only "ndc://" link if its AttachedObject.
             - **embedImage** : Image of the Embed. Required to send Embed, if its LinkSnippet. Can be only 1024x1024 max. Can be string to existing image uploaded to Amino or it can be opened (not readed) file.
-            - **embedId** : ID of the Embed. Works only in AttachedObject Embeds. It can be any ID, just gen it using str(uuid4()).
+            - **embedId** : ID of the Embed. Works only in AttachedObject Embeds. It can be any ID, just gen it using str_uuid4().
             - **embedType** : Type of the AttachedObject Embed. Works only in AttachedObject Embeds. Just look what values AttachedObjectTypes enum contains.
             - **embedTitle** : Title of the Embed. Works only in AttachedObject Embeds. Can be empty.
             - **embedContent** : Content of the Embed. Works only in AttachedObject Embeds. Can be empty.
@@ -1304,17 +1300,17 @@ class Client(Callbacks, SocketHandler):
             data = {
                 "type": messageType,
                 "content": message,
-                "clientRefId": int(timestamp() / 10 % 1000000000),
+                "clientRefId": clientrefid(),
                 "extensions": {
                     "linkSnippetList": [{
                         "link": embedLink,
                         "mediaType": 100,
-                        "mediaUploadValue": b64encode(readEmbed).decode(),
+                        "mediaUploadValue": bytes_to_b64(readEmbed),
                         "mediaUploadValueContentType": "image/png"
                     }],
                     "mentionedArray": mentions
                 },
-                "timestamp": int(timestamp() * 1000)
+                "timestamp": inttime()
             }
         elif embedType == objects.EmbedTypes.ATTACHED_OBJECT:
             try: embedObjectType.value
@@ -1330,7 +1326,7 @@ class Client(Callbacks, SocketHandler):
             data = {
                 "type": messageType,
                 "content": message,
-                "clientRefId": int(timestamp() / 10 % 1000000000),
+                "clientRefId": clientrefid(),
                 "attachedObject": {
                     "objectId": embedId,
                     "objectType": embedObjectType.value,
@@ -1340,15 +1336,15 @@ class Client(Callbacks, SocketHandler):
                     "mediaList": image
                 },
                 "extensions": {"mentionedArray": mentions},
-                "timestamp": int(timestamp() * 1000)
+                "timestamp": inttime()
             }
         else:
             data = {
                 "type": messageType,
                 "content": message,
-                "clientRefId": int(timestamp() / 10 % 1000000000),
+                "clientRefId": clientrefid(),
                 "extensions": {"mentionedArray": mentions},
-                "timestamp": int(timestamp() * 1000)
+                "timestamp": inttime()
             }
 
         if replyTo: data["replyMessageId"] = replyTo
@@ -1376,7 +1372,7 @@ class Client(Callbacks, SocketHandler):
 
             else: raise exceptions.SpecifyType(fileType)
 
-            data["mediaUploadValue"] = b64encode(file.read()).decode()
+            data["mediaUploadValue"] = bytes_to_b64(file.read())
 
         data = dumps(data)
 
@@ -1403,7 +1399,7 @@ class Client(Callbacks, SocketHandler):
         data = {
             "adminOpName": 102,
             "adminOpNote": {"content": reason},
-            "timestamp": int(timestamp() * 1000)
+            "timestamp": inttime()
         }
 
         data = dumps(data)
@@ -1430,7 +1426,7 @@ class Client(Callbacks, SocketHandler):
         """
         data = dumps({
             "messageId": messageId,
-            "timestamp": int(timestamp() * 1000)
+            "timestamp": inttime()
         })
         
         response = await self.session.post(f"/g/s/chat/thread/{chatId}/mark-as-read", headers=self.additional_headers(data=data), data=data)
@@ -1466,7 +1462,7 @@ class Client(Callbacks, SocketHandler):
 
             - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
-        data = {"timestamp": int(timestamp() * 1000)}
+        data = {"timestamp": inttime()}
 
         if title: data["title"] = title
         if content: data["content"] = content
@@ -1483,14 +1479,14 @@ class Client(Callbacks, SocketHandler):
 
         if doNotDisturb is not None:
             if doNotDisturb:
-                data = dumps({"alertOption": 2, "timestamp": int(timestamp() * 1000)})
+                data = dumps({"alertOption": 2, "timestamp": inttime()})
                 
                 response = await self.session.post(f"/g/s/chat/thread/{chatId}/member/{self.userId}/alert", data=data, headers=self.additional_headers(data=data))
                 if response.status_code != 200: res.append(exceptions.CheckException(response))
                 else: res.append(response.status_code)
 
             if not doNotDisturb:
-                data = dumps({"alertOption": 1, "timestamp": int(timestamp() * 1000)})
+                data = dumps({"alertOption": 1, "timestamp": inttime()})
                 
                 response = await self.session.post(f"/g/s/chat/thread/{chatId}/member/{self.userId}/alert", data=data, headers=self.additional_headers(data=data))
                 if response.status_code != 200: res.append(exceptions.CheckException(response))
@@ -1508,14 +1504,14 @@ class Client(Callbacks, SocketHandler):
                 else: res.append(response.status_code)
 
         if backgroundImage is not None:
-            data = dumps({"media": [100, backgroundImage, None], "timestamp": int(timestamp() * 1000)})
+            data = dumps({"media": [100, backgroundImage, None], "timestamp": inttime()})
             
             response = await self.session.post(f"/g/s/chat/thread/{chatId}/member/{self.userId}/background", data=data, headers=self.additional_headers(data=data))
             if response.status_code != 200: res.append(exceptions.CheckException(response))
             else: res.append(response.status_code)
 
         if coHosts is not None:
-            data = dumps({"uidList": coHosts, "timestamp": int(timestamp() * 1000)})
+            data = dumps({"uidList": coHosts, "timestamp": inttime()})
             
             response = await self.session.post(f"/g/s/chat/thread/{chatId}/co-host", data=data, headers=self.additional_headers(data=data))
             if response.status_code != 200: res.append(exceptions.CheckException(response))
@@ -1588,12 +1584,12 @@ class Client(Callbacks, SocketHandler):
 
     async def send_coins(self, coins: int, blogId: str = None, chatId: str = None, objectId: str = None, transactionId: str = None):
         url = None
-        if transactionId is None: transactionId = str(UUID(hexlify(urandom(16)).decode('ascii')))
+        if transactionId is None: transactionId = str_uuid4()
 
         data = {
             "coins": coins,
             "tippingContext": {"transactionId": transactionId},
-            "timestamp": int(timestamp() * 1000)
+            "timestamp": inttime()
         }
 
         if blogId is not None: url = f"/g/s/blog/{blogId}/tipping"
@@ -1625,10 +1621,14 @@ class Client(Callbacks, SocketHandler):
             - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
         if isinstance(userId, str):
-            response = await self.session.post(f"/g/s/user-profile/{userId}/member", headers=self.additional_headers())
+            # looks like not working
+            # response = await self.session.post(f"/g/s/user-profile/{userId}/member", headers=self.additional_headers())
+            data = dumps({"targetUidList": [userId], "timestamp": inttime()})
+            
+            response = await self.session.post(f"/g/s/user-profile/{self.userId}/joined", headers=self.additional_headers(data=data), data=data)
 
         elif isinstance(userId, list):
-            data = dumps({"targetUidList": userId, "timestamp": int(timestamp() * 1000)})
+            data = dumps({"targetUidList": userId, "timestamp": inttime()})
             
             response = await self.session.post(f"/g/s/user-profile/{self.userId}/joined", headers=self.additional_headers(data=data), data=data)
 
@@ -1706,7 +1706,7 @@ class Client(Callbacks, SocketHandler):
 
             - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
-        data = {"timestamp": int(timestamp() * 1000)}
+        data = {"timestamp": inttime()}
         if invitationId: data["invitationId"] = invitationId
 
         data = dumps(data)
@@ -1729,7 +1729,7 @@ class Client(Callbacks, SocketHandler):
 
             - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
-        data = dumps({"message": message, "timestamp": int(timestamp() * 1000)})
+        data = dumps({"message": message, "timestamp": inttime()})
         response = await self.session.post(f"/x{comId}/s/community/membership-request", data=data, headers=self.additional_headers(data=data))
         if response.status_code != 200: 
             return exceptions.CheckException(response)
@@ -1776,7 +1776,7 @@ class Client(Callbacks, SocketHandler):
             "objectType": 16,
             "flagType": flagType,
             "message": reason,
-            "timestamp": int(timestamp() * 1000)
+            "timestamp": inttime()
         })
 
         if isGuest: flg = "g-flag"
@@ -1811,7 +1811,7 @@ class Client(Callbacks, SocketHandler):
             "longitude": 0,
             "mediaList": None,
             "eventSource": "UserProfileView",
-            "timestamp": int(timestamp() * 1000)
+            "timestamp": inttime()
         }
 
         if nickname: data["nickname"] = nickname
@@ -1842,7 +1842,7 @@ class Client(Callbacks, SocketHandler):
             - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
 
-        data = {"timestamp": int(timestamp() * 1000)}
+        data = {"timestamp": inttime()}
 
         if not isAnonymous: data["privacyMode"] = 1
         if isAnonymous: data["privacyMode"] = 2
@@ -1868,7 +1868,7 @@ class Client(Callbacks, SocketHandler):
 
             - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
-        data = dumps({"aminoId": aminoId, "timestamp": int(timestamp() * 1000)})
+        data = dumps({"aminoId": aminoId, "timestamp": inttime()})
         response = await self.session.post(f"/g/s/account/change-amino-id", headers=self.additional_headers(data=data), data=data)
         if response.status_code != 200: 
             return exceptions.CheckException(response)
@@ -1923,7 +1923,7 @@ class Client(Callbacks, SocketHandler):
 
             - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
-        data = dumps({"ndcIds": comIds, "timestamp": int(timestamp() * 1000)})
+        data = dumps({"ndcIds": comIds, "timestamp": inttime()})
         response = await self.session.post(f"/g/s/user-profile/{self.userId}/linked-community/reorder", headers=self.additional_headers(data=data), data=data)
         if response.status_code != 200: 
             return exceptions.CheckException(response)
@@ -1988,7 +1988,7 @@ class Client(Callbacks, SocketHandler):
             "content": message,
             "stickerId": None,
             "type": 0,
-            "timestamp": int(timestamp() * 1000)
+            "timestamp": inttime()
         }
 
         if replyTo: data["respondTo"] = replyTo
@@ -2057,7 +2057,7 @@ class Client(Callbacks, SocketHandler):
         """
         data = {
             "value": 4,
-            "timestamp": int(timestamp() * 1000)
+            "timestamp": inttime()
         }
 
         if blogId:
@@ -2127,7 +2127,7 @@ class Client(Callbacks, SocketHandler):
         """
         data = {
             "value": 4,
-            "timestamp": int(timestamp() * 1000)
+            "timestamp": inttime()
         }
 
         if userId:
@@ -2312,7 +2312,7 @@ class Client(Callbacks, SocketHandler):
             "objectId": objectId,
             "targetCode": 1,
             "objectType": objectType,
-            "timestamp": int(timestamp() * 1000)
+            "timestamp": inttime()
         })
         
         if comId: response = await self.session.post(f"/g/s-x{comId}/link-resolution", headers=self.additional_headers(data=data), data=data)
@@ -2452,7 +2452,7 @@ class Client(Callbacks, SocketHandler):
 
         data = dumps({
             "adsLevel": level,
-            "timestamp": int(timestamp() * 1000)
+            "timestamp": inttime()
         })
 
         response = await self.session.post(f"/g/s/wallet/ads/config", headers=self.additional_headers(data=data), data=data)
@@ -2471,11 +2471,11 @@ class Client(Callbacks, SocketHandler):
                 "discountStatus": 0,
                 "isAutoRenew": isAutoRenew
             },
-            "timestamp": timestamp()
+            "timestamp": inttime()
         })
 
         response = await self.session.post(f"/g/s/store/purchase", headers=self.additional_headers(data=data), data=data)
-        if response.status_code != 200: return exceptions.CheckException(loads(response.text()))
+        if response.status_code != 200: return exceptions.CheckException(response.json())
         else: return response.status_code
 
     async def get_public_communities(self, language: str = "en", size: int = 25):

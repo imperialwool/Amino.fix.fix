@@ -1,34 +1,12 @@
 from __future__ import annotations
 # ^ this thing should fix problem for python3.9 and lower(?)
 
-from os import urandom
-from time import timezone
-from binascii import hexlify
-from base64 import b64encode
-from uuid import UUID, uuid4
-from json import loads, dumps
-from typing import BinaryIO, Union
-from time import time as timestamp
+from json import dumps
+from typing import BinaryIO
 
 from .client import Client
 from .lib import exceptions, headers, objects
-from .lib.helpers import gen_deviceId, json_minify
-
-class VCHeaders:
-    def __init__(self, data = None):
-        vc_headers = {
-            "Accept-Language": "en-US",
-            "Content-Type": "application/json",
-            "User-Agent": "Amino/45725 CFNetwork/1126 Darwin/19.5.0",  # Closest server (this one for me)
-            "Host": "rt.applovin.com",
-            "Accept-Encoding": "gzip, deflate, br",
-            "Connection": "Keep-Alive",
-            "Accept": "*/*"
-        }
-
-        if data: vc_headers["Content-Length"] = str(len(data))
-        self.vc_headers = vc_headers
-
+from .lib.helpers import gen_deviceId, json_minify, str_uuid4, inttime, clientrefid, b64_to_bytes, LOCAL_TIMEZONE
 
 class SubClient(Client):
     """
@@ -144,7 +122,7 @@ class SubClient(Client):
         data = dumps({
             "duration": duration,
             "force": force,
-            "timestamp": int(timestamp() * 1000)
+            "timestamp": inttime()
         })
         
         response = self.session.post(f"/g/s-x{self.comId}/community/invitation", headers=self.additional_headers(data=data), data=data)
@@ -245,7 +223,7 @@ class SubClient(Client):
             "latitude": 0,
             "longitude": 0,
             "eventSource": "GlobalComposeMenu",
-            "timestamp": int(timestamp() * 1000)
+            "timestamp": inttime()
         }
 
         if fansOnly: data["extensions"] = {"fansOnly": fansOnly}
@@ -290,7 +268,7 @@ class SubClient(Client):
             "content": content,
             "mediaList": mediaList,
             "eventSource": "GlobalComposeMenu",
-            "timestamp": int(timestamp() * 1000)
+            "timestamp": inttime()
         }
 
         if icon: data["icon"] = icon
@@ -338,7 +316,7 @@ class SubClient(Client):
             "latitude": 0,
             "longitude": 0,
             "eventSource": "PostDetailView",
-            "timestamp": int(timestamp() * 1000)
+            "timestamp": inttime()
         }
 
         if title: data["title"] = title
@@ -410,7 +388,7 @@ class SubClient(Client):
             "refObjectId": refObjectId,
             "refObjectType": refObjectType,
             "type": 2,
-            "timestamp": int(timestamp() * 1000)
+            "timestamp": inttime()
         })
         
         response = self.session.post(f"/x{self.comId}/s/blog", headers=self.additional_headers(data=data), data=data)
@@ -418,7 +396,7 @@ class SubClient(Client):
             return exceptions.CheckException(response)
         else: return response.status_code
 
-    def check_in(self, tz: int = -timezone // 1000) -> int:
+    def check_in(self, tz: int = LOCAL_TIMEZONE) -> int:
         """
         Check in community.
 
@@ -432,7 +410,7 @@ class SubClient(Client):
         """
         data = dumps({
             "timezone": tz,
-            "timestamp": int(timestamp() * 1000)
+            "timestamp": inttime()
         })
         
         response = self.session.post(f"/x{self.comId}/s/check-in", headers=self.additional_headers(data=data), data=data)
@@ -453,7 +431,7 @@ class SubClient(Client):
         - object `int` (200)
         - on exception, some exception from `aminofixfix.lib.exceptions`
         """
-        data = {"timestamp": int(timestamp() * 1000)}
+        data = {"timestamp": inttime()}
         if method == 0: data["repairMethod"] = "1"  # Coins
         if method == 1: data["repairMethod"] = "2"  # Amino+
 
@@ -464,7 +442,7 @@ class SubClient(Client):
             return exceptions.CheckException(response)
         else: return response.status_code
 
-    def lottery(self, tz: int = -timezone // 1000) -> objects.LotteryLog:
+    def lottery(self, tz: int = LOCAL_TIMEZONE) -> objects.LotteryLog:
         """
         Testing your luck in lottery. Once a day, of course.
 
@@ -478,7 +456,7 @@ class SubClient(Client):
         """
         data = dumps({
             "timezone": tz,
-            "timestamp": int(timestamp() * 1000)
+            "timestamp": inttime()
         })
         
         response = self.session.post(f"/x{self.comId}/s/check-in/lottery", headers=self.additional_headers(data=data), data=data)
@@ -510,7 +488,7 @@ class SubClient(Client):
         """
         mediaList = []
 
-        data = {"timestamp": int(timestamp() * 1000)}
+        data = {"timestamp": inttime()}
 
         if captionList is not None:
             for image, caption in zip(imageList, captionList):
@@ -551,7 +529,7 @@ class SubClient(Client):
         data = dumps({
             "value": 1,
             "eventSource": "PostDetailView",
-            "timestamp": int(timestamp() * 1000)
+            "timestamp": inttime()
         })
         
         response = self.session.post(f"/x{self.comId}/s/blog/{blogId}/poll/option/{optionId}/vote", headers=self.additional_headers(data=data), data=data)
@@ -580,7 +558,7 @@ class SubClient(Client):
             "content": message,
             "stickerId": None,
             "type": 0,
-            "timestamp": int(timestamp() * 1000)
+            "timestamp": inttime()
         }
 
         if replyTo: data["respondTo"] = replyTo
@@ -635,7 +613,7 @@ class SubClient(Client):
             return exceptions.CheckException(response)
         else: return response.status_code
 
-    def like_blog(self, blogId: Union[str, list] = None, wikiId: str = None) -> int:
+    def like_blog(self, blogId: str | list = None, wikiId: str = None) -> int:
         """
         Like a Blog, Multiple Blogs or a Wiki.
 
@@ -650,7 +628,7 @@ class SubClient(Client):
         """
         data = {
             "value": 4,
-            "timestamp": int(timestamp() * 1000)
+            "timestamp": inttime()
         }
 
         if blogId:
@@ -717,7 +695,7 @@ class SubClient(Client):
         """
         data = {
             "value": 1,
-            "timestamp": int(timestamp() * 1000)
+            "timestamp": inttime()
         }
 
         if userId:
@@ -783,7 +761,7 @@ class SubClient(Client):
         data = dumps({
             "value": 1,
             "eventSource": "PostDetailView",
-            "timestamp": int(timestamp() * 1000)
+            "timestamp": inttime()
         })
         
         response = self.session.post(f"/x{self.comId}/s/blog/{blogId}/comment/{commentId}/vote?cv=1.2&value=1", headers=self.additional_headers(data=data), data=data)
@@ -807,7 +785,7 @@ class SubClient(Client):
         data = dumps({
             "value": -1,
             "eventSource": "PostDetailView",
-            "timestamp": int(timestamp() * 1000)
+            "timestamp": inttime()
         })
         
         response = self.session.post(f"/x{self.comId}/s/blog/{blogId}/comment/{commentId}/vote?cv=1.2&value=-1", headers=self.additional_headers(data=data), data=data)
@@ -853,7 +831,7 @@ class SubClient(Client):
             "respondTo": commentId,
             "type": 0,
             "eventSource": "UserProfileView",
-            "timestamp": int(timestamp() * 1000)
+            "timestamp": inttime()
         })
         
         response = self.session.post(f"/x{self.comId}/s/user-profile/{userId}/comment", headers=self.additional_headers(data=data), data=data)
@@ -861,7 +839,7 @@ class SubClient(Client):
             return exceptions.CheckException(response)
         else: return response.status_code
 
-    def send_active_obj(self, startTime: int = None, endTime: int = None, optInAdsFlags: int = 2147483647, tz: int = -timezone // 1000, timers: list = None, timestamp: int = int(timestamp() * 1000)): 
+    def send_active_obj(self, startTime: int = None, endTime: int = None, optInAdsFlags: int = 2147483647, tz: int = LOCAL_TIMEZONE, timers: list = None, timestamp: int = inttime()): 
         """
         Sending mintues to Amino servers.
 
@@ -908,24 +886,10 @@ class SubClient(Client):
         data = dumps({
             "onlineStatus": status,
             "duration": 86400,
-            "timestamp": int(timestamp() * 1000)
+            "timestamp": inttime()
         })
         
         response = self.session.post(f"/x{self.comId}/s/user-profile/{self.profile.userId}/online-status", headers=self.additional_headers(data=data), data=data)
-        if response.status_code != 200: 
-            return exceptions.CheckException(response)
-        else: return response.status_code
-
-    # TODO : Finish this
-    def watch_ad(self):
-        """
-        "Watching" ad.
-
-        Recieving:
-        - object `int` (200)
-        - on exception, some exception from `aminofixfix.lib.exceptions`
-        """
-        response = self.session.post(f"/g/s/wallet/ads/video/start", headers=self.additional_headers())
         if response.status_code != 200: 
             return exceptions.CheckException(response)
         else: return response.status_code
@@ -972,7 +936,7 @@ class SubClient(Client):
             return exceptions.CheckException(response)
         else: return response.status_code
 
-    def start_chat(self, userId: Union[str, list], message: str, title: str = None, content: str = None, isGlobal: bool = False, publishToGlobal: bool = False):
+    def start_chat(self, userId: str | list, message: str, title: str = None, content: str = None, isGlobal: bool = False, publishToGlobal: bool = False):
         """
         Start an Chat with an User or List of Users.
 
@@ -998,7 +962,7 @@ class SubClient(Client):
             "inviteeUids": userIds,
             "initialMessageContent": message,
             "content": content,
-            "timestamp": int(timestamp() * 1000)
+            "timestamp": inttime()
         }
 
         if isGlobal is True: data["type"] = 2; data["eventSource"] = "GlobalComposeMenu"
@@ -1014,7 +978,7 @@ class SubClient(Client):
             return exceptions.CheckException(response)
         else: return objects.Thread(response.json()["thread"]).Thread
 
-    def invite_to_chat(self, userId: Union[str, list], chatId: str):
+    def invite_to_chat(self, userId: str | list, chatId: str):
         """
         Invite a User or List of Users to a Chat.
 
@@ -1033,7 +997,7 @@ class SubClient(Client):
 
         data = dumps({
             "uids": userIds,
-            "timestamp": int(timestamp() * 1000)
+            "timestamp": inttime()
         })
         
         response = self.session.post(f"/x{self.comId}/s/chat/thread/{chatId}/member/invite", headers=self.additional_headers(data=data), data=data)
@@ -1073,12 +1037,12 @@ class SubClient(Client):
             - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
         url = None
-        if transactionId is None: transactionId = str(UUID(hexlify(urandom(16)).decode('ascii')))
+        if transactionId is None: transactionId = str_uuid4()
 
         data = {
             "coins": coins,
             "tippingContext": {"transactionId": transactionId},
-            "timestamp": int(timestamp() * 1000)
+            "timestamp": inttime()
         }
 
         if blogId is not None: url = f"/x{self.comId}/s/blog/{blogId}/tipping"
@@ -1115,7 +1079,7 @@ class SubClient(Client):
             return exceptions.CheckException(response)
         else: return response.status_code
 
-    def follow(self, userId: Union[str, list]):
+    def follow(self, userId: str | list):
         """
         Follow an User or Multiple Users.
 
@@ -1128,10 +1092,14 @@ class SubClient(Client):
             - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
         if isinstance(userId, str):
-            response = self.session.post(f"/x{self.comId}/s/user-profile/{userId}/member", headers=self.additional_headers())
+            # looks like not working
+            # response = self.session.post(f"/x{self.comId}/s/user-profile/{userId}/member", headers=self.additional_headers())
+            data = dumps({"targetUidList": [userId], "timestamp": inttime()})
+            
+            response = self.session.post(f"/x{self.comId}/s/user-profile/{self.profile.userId}/joined", headers=self.additional_headers(data=data), data=data)
 
         elif isinstance(userId, list):
-            data = dumps({"targetUidList": userId, "timestamp": int(timestamp() * 1000)})
+            data = dumps({"targetUidList": userId, "timestamp": inttime()})
             
             response = self.session.post(f"/x{self.comId}/s/user-profile/{self.profile.userId}/joined", headers=self.additional_headers(data=data), data=data)
 
@@ -1232,7 +1200,7 @@ class SubClient(Client):
         data = {
             "flagType": flagType,
             "message": reason,
-            "timestamp": int(timestamp() * 1000)
+            "timestamp": inttime()
         }
 
         if userId:
@@ -1290,7 +1258,7 @@ class SubClient(Client):
             - **embedType** : Type of the Embed. Can be aminofixfix.lib.objects.EmbedTypes only. By default it's LinkSnippet one.
             - **embedLink** : Link of the Embed. Can be only "ndc://" link if its AttachedObject.
             - **embedImage** : Image of the Embed. Required to send Embed, if its LinkSnippet. Can be only 1024x1024 max. Can be string to existing image uploaded to Amino or it can be opened (not readed) file.
-            - **embedId** : ID of the Embed. Works only in AttachedObject Embeds. It can be any ID, just gen it using str(uuid4()).
+            - **embedId** : ID of the Embed. Works only in AttachedObject Embeds. It can be any ID, just gen it using str_uuid4().
             - **embedType** : Type of the AttachedObject Embed. Works only in AttachedObject Embeds. Just look what values AttachedObjectTypes enum contains.
             - **embedTitle** : Title of the Embed. Works only in AttachedObject Embeds. Can be empty.
             - **embedContent** : Content of the Embed. Works only in AttachedObject Embeds. Can be empty.
@@ -1316,17 +1284,17 @@ class SubClient(Client):
             data = {
                 "type": messageType,
                 "content": message,
-                "clientRefId": int(timestamp() / 10 % 1000000000),
+                "clientRefId": clientrefid(),
                 "extensions": {
                     "linkSnippetList": [{
                         "link": embedLink,
                         "mediaType": 100,
-                        "mediaUploadValue": b64encode(readEmbed).decode(),
+                        "mediaUploadValue": b64_to_bytes(readEmbed),
                         "mediaUploadValueContentType": "image/png"
                     }],
                     "mentionedArray": mentions
                 },
-                "timestamp": int(timestamp() * 1000)
+                "timestamp": inttime()
             }
         elif embedType == objects.EmbedTypes.ATTACHED_OBJECT:
             try: embedObjectType.value
@@ -1342,7 +1310,7 @@ class SubClient(Client):
             data = {
                 "type": messageType,
                 "content": message,
-                "clientRefId": int(timestamp() / 10 % 1000000000),
+                "clientRefId": clientrefid(),
                 "attachedObject": {
                     "objectId": embedId,
                     "objectType": embedObjectType.value,
@@ -1352,15 +1320,15 @@ class SubClient(Client):
                     "mediaList": image
                 },
                 "extensions": {"mentionedArray": mentions},
-                "timestamp": int(timestamp() * 1000)
+                "timestamp": inttime()
             }
         else:
             data = {
                 "type": messageType,
                 "content": message,
-                "clientRefId": int(timestamp() / 10 % 1000000000),
+                "clientRefId": clientrefid(),
                 "extensions": {"mentionedArray": mentions},
-                "timestamp": int(timestamp() * 1000)
+                "timestamp": inttime()
             }
 
         if replyTo: data["replyMessageId"] = replyTo
@@ -1388,7 +1356,7 @@ class SubClient(Client):
 
             else: raise exceptions.SpecifyType(fileType)
 
-            data["mediaUploadValue"] = b64encode(file.read()).decode()
+            data["mediaUploadValue"] = b64_to_bytes(file.read())
 
         data = dumps(data)
         print(data)
@@ -1416,7 +1384,7 @@ class SubClient(Client):
         data = {
             "adminOpName": 102,
             # "adminOpNote": {"content": reason},
-            "timestamp": int(timestamp() * 1000)
+            "timestamp": inttime()
         }
         if asStaff and reason:
             data["adminOpNote"] = {"content": reason}
@@ -1444,7 +1412,7 @@ class SubClient(Client):
         """
         data = dumps({
             "messageId": messageId,
-            "timestamp": int(timestamp() * 1000)
+            "timestamp": inttime()
         })
         
         response = self.session.post(f"/x{self.comId}/s/chat/thread/{chatId}/mark-as-read", headers=self.additional_headers(data=data), data=data)
@@ -1479,7 +1447,7 @@ class SubClient(Client):
 
             - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
-        data = {"timestamp": int(timestamp() * 1000)}
+        data = {"timestamp": inttime()}
 
         if title: data["title"] = title
         if content: data["content"] = content
@@ -1496,14 +1464,14 @@ class SubClient(Client):
 
         if doNotDisturb is not None:
             if doNotDisturb:
-                data = dumps({"alertOption": 2, "timestamp": int(timestamp() * 1000)})
+                data = dumps({"alertOption": 2, "timestamp": inttime()})
                 
                 response = self.session.post(f"/x{self.comId}/s/chat/thread/{chatId}/member/{self.profile.userId}/alert", data=data, headers=self.additional_headers(data=data))
                 if response.status_code != 200: res.append(exceptions.CheckException(response))
                 else: res.append(response.status_code)
 
             if not doNotDisturb:
-                data = dumps({"alertOption": 1, "timestamp": int(timestamp() * 1000)})
+                data = dumps({"alertOption": 1, "timestamp": inttime()})
                 
                 response = self.session.post(f"/x{self.comId}/s/chat/thread/{chatId}/member/{self.profile.userId}/alert", data=data, headers=self.additional_headers(data=data))
                 if response.status_code != 200: res.append(exceptions.CheckException(response))
@@ -1521,14 +1489,14 @@ class SubClient(Client):
                 else: res.append(response.status_code)
 
         if backgroundImage is not None:
-            data = dumps({"media": [100, backgroundImage, None], "timestamp": int(timestamp() * 1000)})
+            data = dumps({"media": [100, backgroundImage, None], "timestamp": inttime()})
             
             response = self.session.post(f"/x{self.comId}/s/chat/thread/{chatId}/member/{self.profile.userId}/background", data=data, headers=self.additional_headers(data=data))
             if response.status_code != 200: res.append(exceptions.CheckException(response))
             else: res.append(response.status_code)
 
         if coHosts is not None:
-            data = dumps({"uidList": coHosts, "timestamp": int(timestamp() * 1000)})
+            data = dumps({"uidList": coHosts, "timestamp": inttime()})
             
             response = self.session.post(f"/x{self.comId}/s/chat/thread/{chatId}/co-host", data=data, headers=self.additional_headers(data=data))
             if response.status_code != 200: res.append(exceptions.CheckException(response))
@@ -1590,7 +1558,7 @@ class SubClient(Client):
         """
         data = dumps({
             "uidList": userIds,
-            "timestamp": int(timestamp() * 1000)
+            "timestamp": inttime()
         })
         
         response = self.session.post(f"/x{self.comId}/s/chat/thread/{chatId}/transfer-organizer", headers=self.additional_headers(data=data), data=data)
@@ -1721,14 +1689,14 @@ class SubClient(Client):
         - object `int` (200)
         - on exception, some exception from `aminofixfix.lib.exceptions`
         """
-        if transactionId is None: transactionId = str(UUID(hexlify(urandom(16)).decode('ascii')))
+        if transactionId is None: transactionId = str_uuid4()
 
         data = dumps({
             "paymentContext": {
                 "transactionId": transactionId,
                 "isAutoRenew": autoRenew
             },
-            "timestamp": int(timestamp() * 1000)
+            "timestamp": inttime()
         })
         
         response = self.session.post(f"/x{self.comId}/s/influencer/{userId}/subscribe", headers=self.additional_headers(data=data), data=data)
@@ -1771,7 +1739,7 @@ class SubClient(Client):
         data = dumps({
             "mode": quizMode,
             "quizAnswerList": quizAnswerList,
-            "timestamp": int(timestamp() * 1000)
+            "timestamp": inttime()
         })
         
         response = self.session.post(f"/x{self.comId}/s/blog/{quizId}/quiz/result", headers=self.additional_headers(data=data), data=data)
@@ -1796,18 +1764,16 @@ class SubClient(Client):
         quizAnswerList = []
 
         for question, answer in zip(questionIdsList, answerIdsList):
-            part = dumps({
+            quizAnswerList.append({
                 "optIdList": [answer],
                 "quizQuestionId": question,
                 "timeSpent": 0.0
             })
 
-            quizAnswerList.append(loads(part))
-
         data = dumps({
             "mode": quizMode,
             "quizAnswerList": quizAnswerList,
-            "timestamp": int(timestamp() * 1000)
+            "timestamp": inttime()
         })
         
         response = self.session.post(f"/x{self.comId}/s/blog/{quizId}/quiz/result", headers=self.additional_headers(data=data), data=data)
@@ -1832,7 +1798,7 @@ class SubClient(Client):
         """
         data = dumps({
             "vvChatJoinType": permission,
-            "timestamp": int(timestamp() * 1000)
+            "timestamp": inttime()
         })
         
         response = self.session.post(f"/x{self.comId}/s/chat/thread/{chatId}/vvchat-permission", headers=self.additional_headers(data=data), data=data)
@@ -2022,7 +1988,7 @@ class SubClient(Client):
         - object `UserCheckIns`
         - on exception, some exception from `aminofixfix.lib.exceptions`
         """
-        response = self.session.get(f"/x{self.comId}/s/check-in/stats/{userId}?timezone={-timezone // 1000}", headers=self.additional_headers())
+        response = self.session.get(f"/x{self.comId}/s/check-in/stats/{userId}?timezone={LOCAL_TIMEZONE}", headers=self.additional_headers())
         if response.status_code != 200: 
             return exceptions.CheckException(response)
         else: return objects.UserCheckIns(response.json()).UserCheckIns
@@ -2812,15 +2778,17 @@ class SubClient(Client):
             return exceptions.CheckException(response)
         else: return objects.AdminLogList(response.json()["adminLogList"]).AdminLogList
 
-    def feature(self, time: int, userId: str = None, chatId: str = None, blogId: str = None, wikiId: str = None):
+    def feature(
+            self,
+            time: int | objects.PostFeatureDays | objects.ChatFeatureDays | objects.UserFeatureDays,
+            userId: str = None, chatId: str = None, blogId: str = None, wikiId: str = None
+        ):
         """
         Feature object.
 
         Accepting:
         - time: int
-            - time == 1 is one day (for chats its one hour)
-            - time == 2 is two days (for chats its two hours)
-            - time == 3 is three days (for chats its three hours)
+            - it can be int, but better if it will be enum
         - userId: str = None
         - blogId: str = None
         - wikiId: str = None
@@ -2833,22 +2801,31 @@ class SubClient(Client):
         - on exception, some exception from `aminofixfix.lib.exceptions`
         """
         if chatId:
-            if time == 1: time = 3600
-            if time == 2: time = 7200
-            if time == 3: time = 10800
+            if isinstance(time, int):
+                if time == 1: inttime = 3600
+                elif time == 2: inttime = 7200
+                elif time == 3: inttime = 10800
+                else: raise exceptions.WrongType(time)
+            else:
+                try: inttime = time.value
+                except: raise exceptions.WrongType(time)
 
         else:
-            if time == 1: time = 86400
-            elif time == 2: time = 172800
-            elif time == 3: time = 259200
-            else: raise exceptions.WrongType(time)
+            if isinstance(time, int):
+                if time == 1: inttime = 86400
+                elif time == 2: inttime = 172800
+                elif time == 3: inttime = 259200
+                else: raise exceptions.WrongType(time)
+            else:
+                try: inttime = time.value
+                except: raise exceptions.WrongType(time)
 
         data = {
             "adminOpName": 114,
             "adminOpValue": {
-                "featuredDuration": time
+                "featuredDuration": inttime
             },
-            "timestamp": int(timestamp() * 1000)
+            "timestamp": inttime()
         }
 
         if userId:
@@ -2895,7 +2872,7 @@ class SubClient(Client):
         data = {
             "adminOpName": 114,
             "adminOpValue": {},
-            "timestamp": int(timestamp() * 1000)
+            "timestamp": inttime()
         }
 
         if userId:
@@ -2945,7 +2922,7 @@ class SubClient(Client):
             "adminOpNote": {
                 "content": reason or "[empty reason]"
             },
-            "timestamp": int(timestamp() * 1000)
+            "timestamp": inttime()
         }
 
         if userId:
@@ -3011,7 +2988,7 @@ class SubClient(Client):
             "adminOpNote": {
                 "content": reason
             },
-            "timestamp": int(timestamp() * 1000)
+            "timestamp": inttime()
         }
 
         if userId:
@@ -3077,7 +3054,7 @@ class SubClient(Client):
             "adminOpValue": {
                 "titles": tlt
             },
-            "timestamp": int(timestamp() * 1000)
+            "timestamp": inttime()
         })
 
         response = self.session.post(f"/x{self.comId}/s/user-profile/{userId}/admin", headers=self.additional_headers(data=data), data=data)
@@ -3110,7 +3087,7 @@ class SubClient(Client):
             "adminOpValue": {
                 "titles": tlt
             },
-            "timestamp": int(timestamp() * 1000)
+            "timestamp": inttime()
         })
 
         response = self.session.post(f"/x{self.comId}/s/user-profile/{userId}/admin", headers=self.additional_headers(data=data), data=data)
@@ -3143,7 +3120,7 @@ class SubClient(Client):
             "penaltyType": 0,
             "adminOpNote": {},
             "noticeType": 7,
-            "timestamp": int(timestamp() * 1000)
+            "timestamp": inttime()
         })
 
         response = self.session.post(f"/x{self.comId}/s/notice", headers=self.additional_headers(data=data), data=data)
@@ -3164,6 +3141,7 @@ class SubClient(Client):
             - time == 3 is 8 hours
             - time == 4 is 12 hours
             - time == 5 is 24 hours
+            - time == 6 is 72 hours (visually, its 24 hours)
         - title: str = None
         - reason: str = None
 
@@ -3177,6 +3155,7 @@ class SubClient(Client):
         elif time == 3: time = 21600
         elif time == 4: time = 43200
         elif time == 5: time = 86400
+        elif time == 6: time = 259200
         else: raise exceptions.WrongType(time)
 
         data = dumps({
@@ -3191,7 +3170,7 @@ class SubClient(Client):
             "penaltyValue": time,
             "adminOpNote": {},
             "noticeType": 4,
-            "timestamp": int(timestamp() * 1000)
+            "timestamp": inttime()
         })
 
         response = self.session.post(f"/x{self.comId}/s/notice", headers=self.additional_headers(data=data), data=data)
@@ -3217,7 +3196,7 @@ class SubClient(Client):
             "note": {
                 "content": reason or "No reason provided. (Amino.fix.fix will NOT allow fully empty ban reasons. It's not fair.)"
             },
-            "timestamp": int(timestamp() * 1000)
+            "timestamp": inttime()
         })
 
         response = self.session.post(f"/x{self.comId}/s/user-profile/{userId}/ban", headers=self.additional_headers(data=data), data=data)
@@ -3241,7 +3220,7 @@ class SubClient(Client):
             "note": {
                 "content": reason
             },
-            "timestamp": int(timestamp() * 1000)
+            "timestamp": inttime()
         })
 
         response = self.session.post(f"/x{self.comId}/s/user-profile/{userId}/unban", headers=self.additional_headers(data=data), data=data)
@@ -3262,7 +3241,7 @@ class SubClient(Client):
         """
         data = dumps({
             "uidList": userIds,
-            "timestamp": int(timestamp() * 1000)
+            "timestamp": inttime()
         })
 
         response = self.session.post(f"/x{self.comId}/s/user-profile/featured/reorder", headers=self.additional_headers(data=data), data=data)
@@ -3446,7 +3425,7 @@ class SubClient(Client):
         data = {'objectId': objectId,
                 'objectType': objectType,
                 'v': 1,
-                "timestamp": int(timestamp() * 1000)}
+                "timestamp": inttime()}
 
         if aminoPlus: data['paymentContext'] = {'discountStatus': 1, 'discountValue': 1, 'isAutoRenew': autoRenew}
         else: data['paymentContext'] = {'discountStatus': 0, 'discountValue': 1, 'isAutoRenew': autoRenew}
@@ -3475,7 +3454,7 @@ class SubClient(Client):
 
         data = {"frameId": avatarId,
                 "applyToAll": 0,
-                "timestamp": int(timestamp() * 1000)}
+                "timestamp": inttime()}
 
         if applyToAll: data["applyToAll"] = 1
 
@@ -3524,7 +3503,7 @@ class SubClient(Client):
             "mediaList": None,
             "title": question,
             "type": 0,
-            "timestamp": int(timestamp() * 1000)
+            "timestamp": inttime()
         })
 
         response = self.session.post(f"/x{self.comId}/s/blog/{blogId}/poll/option", headers=self.additional_headers(data=data), data=data)
@@ -3551,7 +3530,7 @@ class SubClient(Client):
             "label": title,
             "mediaList": None,
             "parentCategoryId": parentCategoryId,
-            "timestamp": int(timestamp() * 1000)
+            "timestamp": inttime()
         })
 
         response = self.session.post(f"/x{self.comId}/s/item-category", headers=self.additional_headers(data=data), data=data)
@@ -3572,7 +3551,7 @@ class SubClient(Client):
         """
         data = dumps({
                 "title":title,
-                "timestamp":int(timestamp() * 1000)
+                "timestamp":inttime()
             })
         response = self.session.post(f"/x{self.comId}/s/shared-folder/folders", headers=self.additional_headers(data=data),data=data)
         if response.status_code != 200: 
@@ -3596,7 +3575,7 @@ class SubClient(Client):
         data = dumps({
             "message": message,
             "itemId": wikiId,
-            "timestamp": int(timestamp() * 1000)
+            "timestamp": inttime()
         })
 
         response = self.session.post(f"/x{self.comId}/s/knowledge-base-request", headers=self.additional_headers(data=data), data=data)
@@ -3625,7 +3604,7 @@ class SubClient(Client):
         data = dumps({
             "destinationCategoryIdList": destinationCategoryIdList,
             "actionType": "create",
-            "timestamp": int(timestamp() * 1000)
+            "timestamp": inttime()
         })
 
         response = self.session.post(f"/x{self.comId}/s/knowledge-base-request/{requestId}/approve", headers=self.additional_headers(data=data), data=data)
@@ -3709,7 +3688,7 @@ class SubClient(Client):
             "applyToAll": 0,
             "bubbleId": bubbleId,
             "threadId": chatId,
-            "timestamp": int(timestamp() * 1000)
+            "timestamp": inttime()
         }
 
         if applyToAll is True:
@@ -3736,12 +3715,12 @@ class SubClient(Client):
         - object `int` (200)
         - on exception, some exception from `aminofixfix.lib.exceptions`
         """
-        i = str(uuid4()).upper()
+        i = str_uuid4().upper()
         cover = f"{i}_thumb.jpg"
         video = f"{i}.mp4"
         
         data = dumps({
-            "clientRefId": int(timestamp() / 10 % 1000000000),
+            "clientRefId": clientrefid(),
             "content": message,
             "mediaType": 123,
             "videoUpload":
@@ -3751,7 +3730,7 @@ class SubClient(Client):
                 "video": video
             },
             "type": 4,
-            "timestamp": int(timestamp() * 1000),
+            "timestamp": inttime(),
             "mediaUhqEnabled": mediaUhqEnabled,
             "extensions": {}    
         })

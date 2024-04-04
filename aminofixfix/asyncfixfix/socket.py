@@ -6,14 +6,13 @@ import websocket
 from time import sleep
 from random import randint
 from json import loads, dumps
-from time import time as timestamp
 from datetime import datetime as dt
 
 from threading import Thread
 from sys import _getframe as getframe
 
 from ..lib import objects, helpers
-from ..lib.helpers import gen_deviceId
+from ..lib.helpers import gen_deviceId, inttime
 
 class SocketHandler:
     '''
@@ -107,7 +106,7 @@ class SocketHandler:
 
             device = gen_deviceId() if self.client.autoDevice else self.client.device_id
 
-            final = f"{device}|{int(timestamp() * 1000)}"
+            final = f"{device}|{inttime()}"
 
             self.headers = {
                 "Accept-Encoding": "gzip, deflate, br",
