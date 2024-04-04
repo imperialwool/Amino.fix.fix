@@ -6,7 +6,6 @@ from time import timezone as tz_raw
 from time import time as timestamp
 from functools import reduce
 from random import choice
-from typing import Union
 from hashlib import sha1
 from os import urandom
 from json import loads
@@ -14,7 +13,7 @@ from uuid import uuid4
 from hmac import new
 import re
 
-LIBRARY_VERSION = "1.0.6.3"
+LIBRARY_VERSION = "1.0.7b2"
 
 PREFIX = bytes.fromhex("19")
 SIG_KEY = bytes.fromhex("DFA5ED192DDA6E88A12FE12130DC6206B1251E44")
@@ -57,7 +56,7 @@ def gen_userAgent() -> str:
         choice(IPHONE_IDS), choice(IOS_VERSIONS), choice(APP_VERSIONS)
     )
 
-def signature(data: Union[str, bytes]) -> str:
+def signature(data: str | bytes) -> str:
     data = data if isinstance(data, bytes) else data.encode("utf-8")
     return b64encode(PREFIX + new(SIG_KEY, data, sha1).digest()).decode("utf-8")
 

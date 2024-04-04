@@ -2,7 +2,7 @@ from __future__ import annotations
 # ^ this thing should fix problem for python3.9 and lower(?)
 
 from json import dumps
-from typing import BinaryIO, Union
+from typing import BinaryIO
 
 from .client import Client
 from ..lib import exceptions, headers, objects
@@ -341,7 +341,7 @@ class SubClient(Client):
             return exceptions.CheckException(response)
         else: return response.status_code
 
-    async def like_blog(self, blogId: Union[str, list] = None, wikiId: str = None) -> int:
+    async def like_blog(self, blogId: str | list = None, wikiId: str = None) -> int:
         """
         Like a Blog, Multiple Blogs or a Wiki.
 
@@ -522,7 +522,7 @@ class SubClient(Client):
             return exceptions.CheckException(response)
         else: return response.status_code
 
-    async def start_chat(self, userId: Union[str, list], message: str, title: str = None, content: str = None, isGlobal: bool = False, publishToGlobal: bool = False):
+    async def start_chat(self, userId: str | list, message: str, title: str = None, content: str = None, isGlobal: bool = False, publishToGlobal: bool = False):
         if isinstance(userId, str): userIds = [userId]
         elif isinstance(userId, list): userIds = userId
         else: raise exceptions.WrongType(type(userId))
@@ -548,7 +548,7 @@ class SubClient(Client):
             return exceptions.CheckException(response)
         else: return objects.Thread(response.json()["thread"]).Thread
 
-    async def invite_to_chat(self, userId: Union[str, list], chatId: str):
+    async def invite_to_chat(self, userId: str | list, chatId: str):
         if isinstance(userId, str): userIds = [userId]
         elif isinstance(userId, list): userIds = userId
         else: raise exceptions.WrongType(type(userId))
@@ -601,7 +601,7 @@ class SubClient(Client):
             return exceptions.CheckException(response)
         else: return response.status_code
 
-    async def follow(self, userId: Union[str, list]):
+    async def follow(self, userId: str | list):
         """
         Follow an User or Multiple Users.
 

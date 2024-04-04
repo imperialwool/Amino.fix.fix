@@ -3,8 +3,8 @@ from __future__ import annotations
 
 from time import sleep
 from json import dumps
+from typing import BinaryIO
 from threading import Thread
-from typing import BinaryIO, Union
 from httpx import Timeout as TimeoutConfig
 from httpx import AsyncClient as HttpxClient
 
@@ -867,7 +867,7 @@ class Client(Callbacks, SocketHandler):
         else:
             return response.status_code
 
-    async def start_chat(self, userId: Union[str, list], message: str, title: str = None, content: str = None, isGlobal: bool = False, publishToGlobal: bool = False):
+    async def start_chat(self, userId: str | list, message: str, title: str = None, content: str = None, isGlobal: bool = False, publishToGlobal: bool = False):
         """
         Start an Chat with an User or List of Users.
 
@@ -911,7 +911,7 @@ class Client(Callbacks, SocketHandler):
         else:
             return objects.Thread(response.json()["thread"]).Thread
 
-    async def invite_to_chat(self, userId: Union[str, list], chatId: str):
+    async def invite_to_chat(self, userId: str | list, chatId: str):
         """
         Invite a User or List of Users to a Chat.
 
@@ -1608,7 +1608,7 @@ class Client(Callbacks, SocketHandler):
         else:
             return response.status_code
 
-    async def follow(self, userId: Union[str, list]):
+    async def follow(self, userId: str | list):
         """
         Follow an User or Multiple Users.
 
@@ -2042,7 +2042,7 @@ class Client(Callbacks, SocketHandler):
         else:
             return response.status_code
 
-    async def like_blog(self, blogId: Union[str, list] = None, wikiId: str = None):
+    async def like_blog(self, blogId: str | list = None, wikiId: str = None):
         """
         Like a Blog, Multiple Blogs or a Wiki.
 
