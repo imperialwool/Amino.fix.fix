@@ -15,18 +15,27 @@ class SubClient(Client):
     """
     def __init__(
         self, mainClient: Client,
-        comId: str = None, aminoId: str = None, **kwargs
+        comId: str = None, aminoId: str = None,
+         
+        get_community: bool = False,
+        get_profile: bool = False,
+        **kwargs
     ):
         """
         Init subclient.
 
         Accepting:
         - mainClient: aminofixfix.Client
-        - comId: str | int | None
-        - aminoId: str | None
+        - comId: str | int | None = None
+        - aminoId: str | None = None
             - you can pass only one thing
             - comId will be taken first
-
+        - get_community: bool = False
+            - should subclient get info about community you passed?
+            - False for no (default), True for yes
+        - get_profile: bool = False
+            - should subclient get info about your profile in community you passed?
+            - False for no (default), True for yes
     
         
         \- imperialwool, where is another fields of subclient??? ;-;
@@ -41,29 +50,37 @@ class SubClient(Client):
             socket_enabled=False,
             api_library=mainClient.api_library or objects.APILibraries.HTTPX
         )
-        self.vc_connect = False
-        self.sid = mainClient.sid
-        self.device_id = mainClient.device_id
-        self.user_agent = mainClient.user_agent
-        self.profile = mainClient.profile
-        self.userId = mainClient.userId
+        self.vc_connect: bool = False
+        self.sid: str = mainClient.sid
+        self.userId: str = mainClient.userId
+        self.device_id: str = mainClient.device_id
+        self.user_agent: str = mainClient.user_agent
+        self.profile: objects.UserProfile = mainClient.profile
+
+        self.comId: str | None = None
+        self.aminoId: str | None = None
+
+        self.community: objects.Community | None = None
+        self.profile: objects.UserProfile | None = objects.UserProfile(None)
 
         if comId is not None:
             self.comId = comId
-            self.community: objects.Community = self.get_community_info(comId)
+            if get_community:
+                self.community = self.get_community_info(comId)
 
         if aminoId is not None:
             link = "http://aminoapps.com/c/"
             self.comId = self.get_from_code(link + aminoId).comId
-            self.community: objects.Community = self.get_community_info(self.comId)
+            self.community = self.get_community_info(self.comId)
 
         if comId is None and aminoId is None: raise exceptions.NoCommunity()
 
-        try: self.profile: objects.UserProfile = self.get_user_info(userId=self.profile.userId)
-        except AttributeError: raise exceptions.FailedLogin()
-        except exceptions.UserUnavailable: pass
+        if get_profile:
+            try: self.profile: objects.UserProfile = self.get_user_info(userId=self.profile.userId)
+            except AttributeError: raise exceptions.FailedLogin()
+            except exceptions.UserUnavailable: pass
 
-    def additional_headers(self, data: str = None, content_type: str = None):
+    def additional_headers(self, data: str = None, content_type: str = None) -> dict[str, str]:
         """
         Function to make additional headers, that API needs.
 

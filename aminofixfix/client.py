@@ -82,16 +82,18 @@ class Client(Callbacks, SocketHandler):
             - you can choice library like `aminofixfix.lib.objects.APILibraries.HTTPX`,
               but you probably want to import `objects` from `aminofixfix.lib`
         """
-        self.api = "https://service.aminoapps.com/api/v1"
-        self.proxies = proxies
-        self.configured = False
-        self.authenticated = False
-        self.autoDevice = autoDevice
-        self.api_library = api_library
-        self.http2_enabled = http2_enabled
-        self.socket_enabled = socket_enabled
-        self.device_id = deviceId if deviceId else gen_deviceId()
-        self.user_agent = userAgent if userAgent else helpers.gen_userAgent()
+        self.api: str = "https://service.aminoapps.com/api/v1"
+
+        self.configured: bool = False
+        self.authenticated: bool = False
+        self.autoDevice: bool = autoDevice
+        self.proxies: str | dict = proxies
+        self.timeout_settings: TimeoutConfig
+        self.http2_enabled: bool = http2_enabled
+        self.socket_enabled: bool = socket_enabled
+        self.api_library: objects.APILibraries = api_library
+        self.device_id: str = deviceId if deviceId else gen_deviceId()
+        self.user_agent: str = userAgent if userAgent else helpers.gen_userAgent()
 
         if disable_timeout:
             self.timeout_settings = TimeoutConfig(None)
@@ -129,6 +131,7 @@ class Client(Callbacks, SocketHandler):
         if self.socket_enabled:
             SocketHandler.__init__(self, self, socket_trace=socket_trace, debug=socketDebugging)
             Callbacks.__init__(self, self)
+            
         self.sid = None
         self.json = None
         self.secret = None

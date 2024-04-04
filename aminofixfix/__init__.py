@@ -17,14 +17,19 @@ def work():
         __newest__ = data["info"]["version"]
 
         if version(__newest__) > version(helpers.LIBRARY_VERSION):
-            print("\n!!! New version of amino.fix.fix is available !!!",
-                "||| Using: {} | Available: {} |||".format(helpers.LIBRARY_VERSION, __newest__),
-                "!!! Please, update library to last version !!!\n", sep="\n")
+            print(
+                "\n! New version of amino.fix.fix is available !",
+                "| Using: {} | Available: {} |\n".format(helpers.LIBRARY_VERSION, __newest__),
+                
+                sep="\n"
+            )
         elif version(__newest__) < version(helpers.LIBRARY_VERSION):
-            print("\n!!! ATTENTION, MODIFIED LIBRARY OR PREVIEW VERSION !!!",
-                "||| Using: {} | Available: {} |||".format(helpers.LIBRARY_VERSION, __newest__),
-                "!!! Please, make sure that library installed from verified sources !!!",
-                "Example: pip install amino.fix.fix\n", sep="\n")
+            print(
+                "\n! Using preview version {} of amino.fix.fix !".format(helpers.LIBRARY_VERSION),
+                "| Latest stable available: {} |\n".format(__newest__),
+                
+                sep="\n"
+            )
     except:
         print("\nCan't check if amino.fix.fix needs update. Please, check internet connection or firewall.\n")
 

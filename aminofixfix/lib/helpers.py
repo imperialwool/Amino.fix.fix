@@ -13,7 +13,7 @@ from uuid import uuid4
 from hmac import new
 import re
 
-LIBRARY_VERSION = "1.0.7b2"
+LIBRARY_VERSION = "1.0.7b3"
 
 PREFIX = bytes.fromhex("19")
 SIG_KEY = bytes.fromhex("DFA5ED192DDA6E88A12FE12130DC6206B1251E44")

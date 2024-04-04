@@ -9,47 +9,81 @@ from ..lib import exceptions, headers, objects
 from ..lib.helpers import gen_deviceId, json_minify, str_uuid4, inttime, clientrefid, b64_to_bytes, LOCAL_TIMEZONE
 
 class SubClient(Client):
+    """
+        Client to work with community in Amino.
+        (aminoapps.com)
+    """
     def __init__(
         self, mainClient: Client,
-        comId: str = None, aminoId: str = None, *,
-        deviceId: str = None, autoDevice: bool | None = None, proxies: dict = None,
-        api_library: objects.APILibraries | None = None
+        comId: str = None, aminoId: str = None,
+         
+        get_community: bool = False,
+        get_profile: bool = False,
+        **kwargs
     ):
+        """
+        Init subclient.
+
+        Accepting:
+        - mainClient: aminofixfix.Client
+        - comId: str | int | None = None
+        - aminoId: str | None = None
+            - you can pass only one thing
+            - comId will be taken first
+        - get_community: bool = False
+            - should subclient get info about community you passed?
+            - False for no (default), True for yes
+        - get_profile: bool = False
+            - should subclient get info about your profile in community you passed?
+            - False for no (default), True for yes
+    
+        
+        \- imperialwool, where is another fields of subclient??? ;-;
+
+        \- its in main client lol why you need to pass them again
+        """
         Client.__init__(
-            self, deviceId=deviceId, proxies=proxies,
-            autoDevice=autoDevice or mainClient.autoDevice, userAgent=mainClient.user_agent,
+            self, deviceId=mainClient.device_id, proxies=mainClient.proxies,
+            autoDevice=mainClient.autoDevice, userAgent=mainClient.user_agent,
             http2_enabled=mainClient.http2_enabled,
             own_timeout=mainClient.timeout_settings,
             socket_enabled=False,
-            api_library=api_library or mainClient.api_library or objects.APILibraries.HTTPX
+            api_library=mainClient.api_library or objects.APILibraries.HTTPX
         )
-        self.comId = comId
-        self.aminoId = aminoId
-        self.vc_connect = False
-        self.mainClient = mainClient
-        
-        self.sid = self.mainClient.sid
-        self.userId = self.mainClient.userId
-        self.device_id = self.mainClient.device_id
-        self.user_agent = self.mainClient.user_agent
-        
-        self.community: objects.Community
-        self.profile: objects.UserProfile = self.mainClient.profile
+        self.vc_connect: bool = False
+        self.sid: str = mainClient.sid
+        self.device_id: str = mainClient.device_id
+        self.user_agent: str = mainClient.user_agent
+        self.profile: objects.UserProfile = mainClient.profile
+        self.userId: str = mainClient.userId
+
+        self.community: objects.Community | None = None
+        self.profile: objects.UserProfile | None = objects.UserProfile(None)
+
+        self.aminoId: str = aminoId
+        self.comId: str | int = comId
+
+        self.__get_profile: bool = get_profile
+        self.__get_community: bool = get_community
         
 
     def __await__(self):
         return self._init().__await__()
 
     async def _init(self):
-        if self.comId is not None:
-            self.community: objects.Community = await self.get_community_info(self.comId)
+        if self.comId is not None and self.__get_community:
+            self.community = await self.get_community_info(self.comId)
         if self.aminoId is not None:
             self.comId = (await self.mainClient.search_community(self.aminoId)).comId[0]
-            self.community: objects.Community = await self.mainClient.get_community_info(self.comId)
-        if self.comId is None and self.aminoId is None: raise exceptions.NoCommunity()
-        try: self.profile: objects.UserProfile = await self.get_user_info(userId=self.profile.userId)
-        except AttributeError: raise exceptions.FailedLogin()
-        except exceptions.UserUnavailable(): pass
+            if self.__get_community:
+                self.community = await self.mainClient.get_community_info(self.comId)
+        if self.comId is None and self.aminoId is None:
+            raise exceptions.NoCommunity()
+
+        if self.__get_profile:
+            try: self.profile: objects.UserProfile = await self.get_user_info(userId=self.profile.userId)
+            except AttributeError: raise exceptions.FailedLogin()
+            except exceptions.UserUnavailable(): pass
         return self
 
     def additional_headers(self, data: str = None, content_type: str = None):
