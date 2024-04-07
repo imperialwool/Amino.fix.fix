@@ -6,7 +6,7 @@ from typing import BinaryIO
 
 from .client import Client
 from .lib import exceptions, headers, objects
-from .lib.helpers import gen_deviceId, json_minify, str_uuid4, inttime, clientrefid, b64_to_bytes, LOCAL_TIMEZONE
+from .lib.helpers import gen_deviceId, json_minify, str_uuid4, inttime, clientrefid, bytes_to_b64, LOCAL_TIMEZONE
 
 class SubClient(Client):
     """
@@ -1306,7 +1306,7 @@ class SubClient(Client):
                     "linkSnippetList": [{
                         "link": embedLink,
                         "mediaType": 100,
-                        "mediaUploadValue": b64_to_bytes(readEmbed),
+                        "mediaUploadValue": bytes_to_b64(readEmbed),
                         "mediaUploadValueContentType": "image/png"
                     }],
                     "mentionedArray": mentions
@@ -1373,7 +1373,7 @@ class SubClient(Client):
 
             else: raise exceptions.SpecifyType(fileType)
 
-            data["mediaUploadValue"] = b64_to_bytes(file.read())
+            data["mediaUploadValue"] = bytes_to_b64(file.read())
 
         data = dumps(data)
         print(data)
