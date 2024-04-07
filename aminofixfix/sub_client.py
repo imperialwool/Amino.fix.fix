@@ -1256,6 +1256,7 @@ class SubClient(Client):
             embedTitle: str = None,
             embedContent: str = None,
             embedImage: BinaryIO = None,
+            embedImageType: str = "image/png",
             embedType: objects.EmbedTypes = None,
             embedObjectType: objects.AttachedObjectTypes = None
         ):
@@ -1275,6 +1276,7 @@ class SubClient(Client):
             - **embedType** : Type of the Embed. Can be aminofixfix.lib.objects.EmbedTypes only. By default it's LinkSnippet one.
             - **embedLink** : Link of the Embed. Can be only "ndc://" link if its AttachedObject.
             - **embedImage** : Image of the Embed. Required to send Embed, if its LinkSnippet. Can be only 1024x1024 max. Can be string to existing image uploaded to Amino or it can be opened (not readed) file.
+            - **embedImageType** : Type of Image of the Embed. By default is "image/png". Try to send JPGs using "image/jpeg" or GIFs using "image/gif"!
             - **embedId** : ID of the Embed. Works only in AttachedObject Embeds. It can be any ID, just gen it using str_uuid4().
             - **embedType** : Type of the AttachedObject Embed. Works only in AttachedObject Embeds. Just look what values AttachedObjectTypes enum contains.
             - **embedTitle** : Title of the Embed. Works only in AttachedObject Embeds. Can be empty.
@@ -1307,7 +1309,7 @@ class SubClient(Client):
                         "link": embedLink,
                         "mediaType": 100,
                         "mediaUploadValue": bytes_to_b64(readEmbed),
-                        "mediaUploadValueContentType": "image/png"
+                        "mediaUploadValueContentType": embedImageType
                     }],
                     "mentionedArray": mentions
                 },
