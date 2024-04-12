@@ -13,7 +13,6 @@ Fork of Amino.fix to improve this library.
 - in subclient you should pass `client`, **not** `profile`
 - if you have issues with HTTPX [let me know here](https://github.com/imperialwool/Amino.fix.fix/issues/3)
 - `lib/util` -> `lib/`
-- supporting python3.8+, lower will be never supported
 - if you have issues in pydroid, reinstall/update it
 
 ## How to install?
@@ -50,7 +49,9 @@ def on_text_message(data):
 
 ## API Reference
 
-[Read the Docs Link](https://aminopy.readthedocs.io/en/latest/)
+[old documentation](https://aminopy.readthedocs.io/en/latest/)
+
+new documentation in progress
 
 ## Licenses
 
