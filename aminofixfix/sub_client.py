@@ -16,7 +16,7 @@ class SubClient(Client):
     def __init__(
         self, mainClient: Client,
         comId: str = None, aminoId: str = None,
-         
+        
         get_community: bool = False,
         get_profile: bool = False,
         **kwargs
@@ -1930,7 +1930,7 @@ class SubClient(Client):
             - **userId** : ID of the User.
 
         **Returns**
-            - **Success** : :meth:`User Object <amino.lib.util.objects.UserProfile>`
+            - **Success** : :meth:`User Object <aminofixfix.lib.objects.UserProfile>`
 
             - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
@@ -1949,7 +1949,7 @@ class SubClient(Client):
             - *size* : Size of the list.
 
         **Returns**
-            - **Success** : :meth:`User List <amino.lib.util.objects.UserProfileList>`
+            - **Success** : :meth:`User List <aminofixfix.lib.objects.UserProfileList>`
 
             - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
@@ -1968,7 +1968,7 @@ class SubClient(Client):
             - *size* : Size of the list.
 
         **Returns**
-            - **Success** : :meth:`User List <amino.lib.util.objects.UserProfileList>`
+            - **Success** : :meth:`User List <aminofixfix.lib.objects.UserProfileList>`
 
             - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
@@ -1987,7 +1987,7 @@ class SubClient(Client):
             - *size* : Size of the list.
 
         **Returns**
-            - **Success** : :meth:`Visitors List <amino.lib.util.objects.visitorsList>`
+            - **Success** : :meth:`Visitors List <aminofixfix.lib.objects.visitorsList>`
 
             - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
@@ -2089,7 +2089,7 @@ class SubClient(Client):
             - *size* : Size of the list.
 
         **Returns**
-            - **Success** : :meth:`Users List <amino.lib.util.objects.UserProfileList>`
+            - **Success** : :meth:`Users List <aminofixfix.lib.objects.UserProfileList>`
 
             - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
@@ -2297,7 +2297,7 @@ class SubClient(Client):
             - *size* : Size of the list.
 
         **Returns**
-            - **Success** : :meth:`Chat List <amino.lib.util.objects.ThreadList>`
+            - **Success** : :meth:`Chat List <aminofixfix.lib.objects.ThreadList>`
 
             - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
@@ -2315,7 +2315,7 @@ class SubClient(Client):
             - *size* : Size of the list.
 
         **Returns**
-            - **Success** : :meth:`Chat List <amino.lib.util.objects.ThreadList>`
+            - **Success** : :meth:`Chat List <aminofixfix.lib.objects.ThreadList>`
 
             - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
@@ -2332,7 +2332,7 @@ class SubClient(Client):
             - **chatId** : ID of the Chat.
 
         **Returns**
-            - **Success** : :meth:`Chat Object <amino.lib.util.objects.Thread>`
+            - **Success** : :meth:`Chat Object <aminofixfix.lib.objects.Thread>`
 
             - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
@@ -2351,7 +2351,7 @@ class SubClient(Client):
             - *pageToken* : Next Page Token.
 
         **Returns**
-            - **Success** : :meth:`Message List <amino.lib.util.objects.MessageList>`
+            - **Success** : :meth:`Message List <aminofixfix.lib.objects.MessageList>`
 
             - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
@@ -2373,7 +2373,7 @@ class SubClient(Client):
             - **message** : ID of the Message.
 
         **Returns**
-            - **Success** : :meth:`Message Object <amino.lib.util.objects.Message>`
+            - **Success** : :meth:`Message Object <aminofixfix.lib.objects.Message>`
 
             - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
@@ -2525,7 +2525,7 @@ class SubClient(Client):
             - *size* : Size of the list.
 
         **Returns**
-            - **Success** : :meth:`Comments List <amino.lib.util.objects.CommentList>`
+            - **Success** : :meth:`Comments List <aminofixfix.lib.objects.CommentList>`
 
             - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
@@ -3768,3 +3768,27 @@ class SubClient(Client):
         
         if response.status_code != 200: return exceptions.CheckException(response)
         else: return response.status_code
+
+    def get_link_from_id(self, objectId: str, objectType: int = 0):
+        """
+        Get link from id
+
+        **Parameters**
+            - **objectId** - id of object
+            - **objectType** - type of object
+
+        **Returns**
+            - **Success** : :meth:`Community List <aminofixfix.lib.objects.CommunityList>`
+
+            - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
+        """
+        data = dumps({
+            "objectId": objectId,
+            "objectType": objectType,
+            "timestamp": inttime()
+        })
+        response = self.session.post(f"/g/s-x{self.comId}/link-translation", data=data, headers=self.additional_headers(data=data))
+        if response.status_code != 200: 
+            return exceptions.CheckException(response)
+        else:
+            return objects.LinkInfo(response.json()).LinkInfo

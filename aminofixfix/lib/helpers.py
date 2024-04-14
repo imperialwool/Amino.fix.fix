@@ -13,7 +13,7 @@ from uuid import uuid4
 from hmac import new
 import re
 
-LIBRARY_VERSION = "1.0.7b4"
+LIBRARY_VERSION = "1.0.8"
 
 PREFIX = bytes.fromhex("19")
 SIG_KEY = bytes.fromhex("DFA5ED192DDA6E88A12FE12130DC6206B1251E44")
@@ -34,7 +34,7 @@ IOS_VERSIONS = [
     "17.0", "17.0.1", "17.0.2", "17.0.3", "17.1", "17.1.1", "17.1.2", "17.2", "17.2.1", "17.3", "17.3.1", "17.4"
 ]
 APP_VERSIONS = [
-    "3.23.0", "3.22.0", "3.21.0", "3.20.0"
+    "3.24.0", "3.23.0", "3.22.0", "3.21.0", "3.20.0"
 ]
 
 LOCAL_TIMEZONE = -tz_raw // 1000

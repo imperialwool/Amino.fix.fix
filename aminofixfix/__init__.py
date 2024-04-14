@@ -30,7 +30,7 @@ def work():
                 
                 sep="\n"
             )
-    except:
+    except Exception as e:
         print("\nCan't check if amino.fix.fix needs update. Please, check internet connection or firewall.\n")
 
 Thread(target=work).start()

@@ -864,7 +864,7 @@ class Client(Callbacks, SocketHandler):
             - *size* : Size of the list.
 
         **Returns**
-            - **Success** : :meth:`Community List <amino.lib.util.objects.CommunityList>`
+            - **Success** : :meth:`Community List <aminofixfix.lib.objects.CommunityList>`
 
             - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
@@ -904,7 +904,7 @@ class Client(Callbacks, SocketHandler):
             - **userId** : ID of the User.
 
         **Returns**
-            - **Success** : :meth:`User Object <amino.lib.util.objects.UserProfile>`
+            - **Success** : :meth:`User Object <aminofixfix.lib.objects.UserProfile>`
 
             - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
@@ -933,7 +933,7 @@ class Client(Callbacks, SocketHandler):
             - *size* : Size of the list.
 
         **Returns**
-            - **Success** : :meth:`Chat List <amino.lib.util.objects.ThreadList>`
+            - **Success** : :meth:`Chat List <aminofixfix.lib.objects.ThreadList>`
 
             - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
@@ -951,7 +951,7 @@ class Client(Callbacks, SocketHandler):
             - **chatId** : ID of the Chat.
 
         **Returns**
-            - **Success** : :meth:`Chat Object <amino.lib.util.objects.Thread>`
+            - **Success** : :meth:`Chat Object <aminofixfix.lib.objects.Thread>`
 
             - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
@@ -1123,7 +1123,7 @@ class Client(Callbacks, SocketHandler):
             - *pageToken* : Next Page Token.
 
         **Returns**
-            - **Success** : :meth:`Message List <amino.lib.util.objects.MessageList>`
+            - **Success** : :meth:`Message List <aminofixfix.lib.objects.MessageList>`
 
             - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
@@ -1145,7 +1145,7 @@ class Client(Callbacks, SocketHandler):
             - **messageId** : ID of the Message.
 
         **Returns**
-            - **Success** : :meth:`Message Object <amino.lib.util.objects.Message>`
+            - **Success** : :meth:`Message Object <aminofixfix.lib.objects.Message>`
 
             - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
@@ -1163,7 +1163,7 @@ class Client(Callbacks, SocketHandler):
             - **comId** : ID of the Community.
 
         **Returns**
-            - **Success** : :meth:`Community Object <amino.lib.util.objects.Community>`
+            - **Success** : :meth:`Community Object <aminofixfix.lib.objects.Community>`
 
             - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
@@ -1181,7 +1181,7 @@ class Client(Callbacks, SocketHandler):
             - **aminoId** : Amino ID of the Community.
 
         **Returns**
-            - **Success** : :meth:`Community List <amino.lib.util.objects.CommunityList>`
+            - **Success** : :meth:`Community List <aminofixfix.lib.objects.CommunityList>`
 
             - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
@@ -1204,7 +1204,7 @@ class Client(Callbacks, SocketHandler):
             - *size* : Size of the list.
 
         **Returns**
-            - **Success** : :meth:`User List <amino.lib.util.objects.UserProfileList>`
+            - **Success** : :meth:`User List <aminofixfix.lib.objects.UserProfileList>`
 
             - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
@@ -1224,7 +1224,7 @@ class Client(Callbacks, SocketHandler):
             - *size* : Size of the list.
 
         **Returns**
-            - **Success** : :meth:`User List <amino.lib.util.objects.UserProfileList>`
+            - **Success** : :meth:`User List <aminofixfix.lib.objects.UserProfileList>`
 
             - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
@@ -1244,7 +1244,7 @@ class Client(Callbacks, SocketHandler):
             - *size* : Size of the list.
 
         **Returns**
-            - **Success** : :meth:`Visitors List <amino.lib.util.objects.VisitorsList>`
+            - **Success** : :meth:`Visitors List <aminofixfix.lib.objects.VisitorsList>`
 
             - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
@@ -1263,7 +1263,7 @@ class Client(Callbacks, SocketHandler):
             - *size* : Size of the list.
 
         **Returns**
-            - **Success** : :meth:`Users List <amino.lib.util.objects.UserProfileList>`
+            - **Success** : :meth:`Users List <aminofixfix.lib.objects.UserProfileList>`
 
             - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
@@ -1379,7 +1379,7 @@ class Client(Callbacks, SocketHandler):
             - *size* : Size of the list.
 
         **Returns**
-            - **Success** : :meth:`Comments List <amino.lib.util.objects.CommentList>`
+            - **Success** : :meth:`Comments List <aminofixfix.lib.objects.CommentList>`
 
             - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
@@ -2101,7 +2101,7 @@ class Client(Callbacks, SocketHandler):
             - **userId** : ID of the User.
 
         **Returns**
-            - **Success** : :meth:`Community List <amino.lib.util.objects.CommunityList>`
+            - **Success** : :meth:`Community List <aminofixfix.lib.objects.CommunityList>`
 
             - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
@@ -2119,7 +2119,7 @@ class Client(Callbacks, SocketHandler):
             - **userId** : ID of the User.
 
         **Returns**
-            - **Success** : :meth:`Community List <amino.lib.util.objects.CommunityList>`
+            - **Success** : :meth:`Community List <aminofixfix.lib.objects.CommunityList>`
 
             - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
@@ -2406,7 +2406,7 @@ class Client(Callbacks, SocketHandler):
             - No parameters required.
 
         **Returns**
-            - **Success** : :meth:`Membership Object <amino.lib.util.objects.Membership>`
+            - **Success** : :meth:`Membership Object <aminofixfix.lib.objects.Membership>`
 
             - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
@@ -2427,7 +2427,7 @@ class Client(Callbacks, SocketHandler):
             - *size* : Size of the list.
 
         **Returns**
-            - **Success** : :meth:`Blogs List <amino.lib.util.objects.BlogList>`
+            - **Success** : :meth:`Blogs List <aminofixfix.lib.objects.BlogList>`
 
             - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
@@ -2446,7 +2446,7 @@ class Client(Callbacks, SocketHandler):
             - No parameters required.
 
         **Returns**
-            - **Success** : :meth:`Wallet Object <amino.lib.util.objects.WalletInfo>`
+            - **Success** : :meth:`Wallet Object <aminofixfix.lib.objects.WalletInfo>`
 
             - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
@@ -2465,7 +2465,7 @@ class Client(Callbacks, SocketHandler):
             - *size* : Size of the list.
 
         **Returns**
-            - **Success** : :meth:`Wallet Object <amino.lib.util.objects.WalletInfo>`
+            - **Success** : :meth:`Wallet Object <aminofixfix.lib.objects.WalletInfo>`
 
             - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
@@ -2483,7 +2483,7 @@ class Client(Callbacks, SocketHandler):
             - **deviceID** : ID of the Device.
 
         **Returns**
-            - **Success** : :meth:`User ID <amino.lib.util.objects.UserProfile.userId>`
+            - **Success** : :meth:`User ID <aminofixfix.lib.objects.UserProfile.userId>`
 
             - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
@@ -2502,7 +2502,7 @@ class Client(Callbacks, SocketHandler):
                 - ``http://aminoapps.com/p/EXAMPLE``, the ``code`` is 'EXAMPLE'.
 
         **Returns**
-            - **Success** : :meth:`From Code Object <amino.lib.util.objects.FromCode>`
+            - **Success** : :meth:`From Code Object <aminofixfix.lib.objects.FromCode>`
 
             - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
@@ -2522,7 +2522,7 @@ class Client(Callbacks, SocketHandler):
             - *comId* : ID of the Community. Use if the Object is in a Community.
 
         **Returns**
-            - **Success** : :meth:`From Code Object <amino.lib.util.objects.FromCode>`
+            - **Success** : :meth:`From Code Object <aminofixfix.lib.objects.FromCode>`
 
             - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
@@ -2604,7 +2604,7 @@ class Client(Callbacks, SocketHandler):
             - *size* : Size of the list.
 
         **Returns**
-            - **Success** : :meth:`User Profile Count List Object <amino.lib.util.objects.UserProfileCountList>`
+            - **Success** : :meth:`User Profile Count List Object <aminofixfix.lib.objects.UserProfileCountList>`
 
             - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
@@ -2755,7 +2755,7 @@ class Client(Callbacks, SocketHandler):
             - **language** - Set up language
 
         **Returns**
-            - **Success** : :meth:`Community List <amino.lib.util.objects.CommunityList>`
+            - **Success** : :meth:`Community List <aminofixfix.lib.objects.CommunityList>`
 
             - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
         """
@@ -2765,3 +2765,27 @@ class Client(Callbacks, SocketHandler):
             return exceptions.CheckException(response)
         else:
             return objects.CommunityList(response.json()["communityList"]).CommunityList
+
+    def get_link_from_id(self, objectId: str, objectType: int = 0):
+        """
+        Get link from id
+
+        **Parameters**
+            - **objectId** - id of object
+            - **objectType** - type of object
+
+        **Returns**
+            - **Success** : :meth:`Community List <aminofixfix.lib.objects.CommunityList>`
+
+            - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
+        """
+        data = dumps({
+            "objectId": objectId,
+            "objectType": objectType,
+            "timestamp": inttime()
+        })
+        response = self.session.post(f"/g/s/link-translation", data=data, headers=self.additional_headers(data=data))
+        if response.status_code != 200: 
+            return exceptions.CheckException(response)
+        else:
+            return objects.LinkInfo(response.json()).LinkInfo

@@ -1,5 +1,5 @@
 from setuptools import setup, find_packages
-LIBRARY_VERSION = "1.0.7b4"
+LIBRARY_VERSION = "1.0.8"
 
 # REQUIREMENTS
 
@@ -20,6 +20,13 @@ aiohttp_requirements = [
     "aiohttp>=3.9.0",
     "aiohttp[speedups]",
     "aiohttp_socks"
+]
+
+dev_requirements = [
+    "setuptools",
+    "wheel",
+    "build",
+    "twine"
 ]
 
 # keywords
@@ -65,5 +72,6 @@ setup(
     extras_require={
         "requests": requests_requirements,
         "aiohttp": aiohttp_requirements,
+        "dev": dev_requirements
     },
 )

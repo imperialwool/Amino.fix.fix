@@ -1831,6 +1831,40 @@ class Membership:
 
         return self
 
+class LinkInfo:
+    def __init__(self, data):
+        self.json = data
+
+        self.objectId = None
+        self.shareURLShortCode = None
+        self.targetCode = None
+        self.ndcId = None
+        self.fullPath = None
+        self.shortCode = None
+        self.shareURLFullPath = None
+        self.objectType = None
+
+    @property
+    def LinkInfo(self):
+        try: self.objectId = self.json["linkInfo"]["objectId"]
+        except (KeyError, TypeError): pass
+        try: self.shareURLShortCode = self.json["linkInfo"]["shareURLShortCode"]
+        except (KeyError, TypeError): pass
+        try: self.targetCode = self.json["linkInfo"]["targetCode"]
+        except (KeyError, TypeError): pass
+        try: self.ndcId = self.json["linkInfo"]["ndcId"]
+        except (KeyError, TypeError): pass
+        try: self.fullPath = self.json["linkInfo"]["fullPath"]
+        except (KeyError, TypeError): pass
+        try: self.shortCode = self.json["linkInfo"]["shortCode"]
+        except (KeyError, TypeError): pass
+        try: self.shareURLFullPath = self.json["linkInfo"]["shareURLFullPath"]
+        except (KeyError, TypeError): pass
+        try: self.objectType = self.json["linkInfo"]["objectType"]
+        except (KeyError, TypeError): pass
+        
+        return self
+
 class FromCode:
     def __init__(self, data):
         self.json = data
