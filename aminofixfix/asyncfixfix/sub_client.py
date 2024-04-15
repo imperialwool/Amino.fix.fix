@@ -2346,3 +2346,27 @@ class SubClient(Client):
         if response.status_code != 200:
             return exceptions.CheckException(response)
         else: return response.status_code
+
+    async def get_link_from_id(self, objectId: str, objectType: int = 0):
+        """
+        Get link from id
+
+        **Parameters**
+            - **objectId** - id of object
+            - **objectType** - type of object
+
+        **Returns**
+            - **Success** : :meth:`Community List <aminofixfix.lib.objects.CommunityList>`
+
+            - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
+        """
+        data = dumps({
+            "objectId": objectId,
+            "objectType": objectType,
+            "timestamp": inttime()
+        })
+        response = await self.session.post(f"/g/s-x{self.comId}/link-translation", data=data, headers=self.additional_headers(data=data))
+        if response.status_code != 200: 
+            return exceptions.CheckException(response)
+        else:
+            return objects.LinkInfo(response.json()).LinkInfo

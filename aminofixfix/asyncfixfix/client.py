@@ -625,14 +625,18 @@ class Client(Callbacks, SocketHandler):
         else:
             return response.status_code
 
-    async def change_password(self, email: str, password: str, code: str):
+    async def change_password(
+            self, email: str, code: str | int,
+            old_password: str, new_password: str,
+        ):
         """
         Change password of an account.
 
         **Parameters**
             - **email** : Email of the account.
-            - **password** : Password of the account.
             - **code** : Verification code.
+            - **old_password** : old password of account.
+            - **new_password** : new password for account.
 
         **Returns**
             - **Success** : 200 (int)
@@ -641,21 +645,88 @@ class Client(Callbacks, SocketHandler):
         """
 
         data = dumps({
-            "updateSecret": f"0 {password}",
-            "emailValidationContext": {
-                "data": {
-                    "code": code
-                },
-                "type": 1,
+            "secret": f"0 {old_password}",
+            "deviceTokenType": 0,
+            "clientType": 100,
+            "systemPushEnabled": 1,
+            "clientCallbackURL": "narviiapp://default",
+            "timestamp": inttime(),
+            "locale": "en_US",
+            "bundleID": "com.narvii.master",
+            "validationContext": {
                 "identity": email,
-                "level": 2,
-                "deviceID": self.device_id
+                "data": {
+                    "code": str(code)
+                },
+                "deviceID": self.device_id,
+                "type": 1,
+                "level": 1
             },
-            "phoneNumberValidationContext": None,
-            "deviceID": self.device_id
+            "deviceID": self.device_id,
+            "timezone": LOCAL_TIMEZONE,
+            "updateSecret": f"0 {new_password}"
         })
 
-        response = await self.session.post(f"/g/s/auth/reset-password", headers=self.additional_headers(data=data), data=data)
+        response = await self.session.post(f"/g/s/auth/change-password", headers=self.additional_headers(data=data), data=data)
+        if response.status_code != 200: 
+            return exceptions.CheckException(response)
+        else:
+            return response.status_code
+        
+    async def change_email(
+            self, password: str,
+            old_email: str, old_code: str | int,
+            new_email: str, new_code: str | int
+        ):
+        """
+        Change email of an account.
+
+        **Parameters**
+            - **password** : Password from account.
+            - **old_email** : Old email of the account.
+            - **old_code** : Verification code from old email.
+            - **new_email** : New email for account.
+            - **new_code** : Verification code from new email.
+
+        **Returns**
+            - **Success** : 200 (int)
+
+            - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
+        """
+
+        data = dumps({
+            "secret": f"0 {password}",
+            "deviceTokenType": 0,
+            "clientType": 100,
+            "systemPushEnabled": 1,
+            "timestamp": inttime(),
+            "newValidationContext": {
+                "identity": new_email,
+                "data": {
+                    "code": str(new_code)
+                },
+                "deviceID": self.device_id,
+                "type": 1,
+                "level": 1
+            },
+            "locale": "en_BY",
+            "level": 1,
+            "oldValidationContext": {
+                "identity": old_email,
+                "data": {
+                    "code": str(old_code)
+                },
+                "deviceID": self.device_id,
+                "type": 1,
+                "level": 1
+            },
+            "bundleID": "com.narvii.master",
+            "timezone": LOCAL_TIMEZONE,
+            "deviceID": self.device_id,
+            "clientCallbackURL": "narviiapp://default"
+        })
+
+        response = await self.session.post(f"/g/s/auth/update-email", headers=self.additional_headers(data=data), data=data)
         if response.status_code != 200: 
             return exceptions.CheckException(response)
         else:
@@ -2496,3 +2567,28 @@ class Client(Callbacks, SocketHandler):
             return exceptions.CheckException(response)
         else:
             return objects.CommunityList(response.json()["communityList"]).CommunityList
+        
+    async def get_link_from_id(self, objectId: str, objectType: int = 0):
+        """
+        Get link from id
+
+        **Parameters**
+            - **objectId** - id of object
+            - **objectType** - type of object
+
+        **Returns**
+            - **Success** : :meth:`Community List <aminofixfix.lib.objects.CommunityList>`
+
+            - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
+        """
+        data = dumps({
+            "objectId": objectId,
+            "objectType": objectType,
+            "timestamp": inttime()
+        })
+        response = await self.session.post(f"/g/s/link-translation", data=data, headers=self.additional_headers(data=data))
+        if response.status_code != 200: 
+            return exceptions.CheckException(response)
+        else:
+            return objects.LinkInfo(response.json()).LinkInfo
+

@@ -1,5 +1,5 @@
 from setuptools import setup, find_packages
-LIBRARY_VERSION = "1.0.8"
+LIBRARY_VERSION = "1.0.8.1"
 
 # REQUIREMENTS
 
