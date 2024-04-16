@@ -1,0 +1,91 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "amino.fix.fix"
+dynamic = ["version"]
+description = "Unofficial library to work with Aminoapps"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.8"
+authors = [
+    { name = "imperialwool", email = "hi@iwool.dev" },
+]
+keywords = [
+    "amino",
+    "amino fix",
+    "amino fix fix",
+    "amino py",
+    "amino-bot",
+    "amino.fix",
+    "amino.fix.fix",
+    "aminoapps",
+    "aminofix",
+    "aminofixfix",
+    "api",
+    "imperialwool",
+    "medialab",
+    "minori",
+    "narvii",
+    "ndc",
+    "python",
+    "python3",
+    "python3.x",
+]
+classifiers = [
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+dependencies = [
+    "httpx>=0.27.0",
+    "httpx[http2]",
+    "httpx[socks]",
+    "python-socks",
+    "websocket-client>=1.3.1",
+]
+
+[project.optional-dependencies]
+aiohttp = [
+    "aiohttp>=3.9.0",
+    "aiohttp[speedups]",
+    "aiohttp_socks",
+]
+dev = [
+    "build",
+    "hatch",
+    "twine",
+    "wheel",
+]
+requests = [
+    "requests>=2.30.0",
+    "requests[socks]",
+]
+
+[project.urls]
+Download = "https://github.com/imperialwool/Amino.fix.fix.git"
+Homepage = "https://github.com/imperialwool/Amino.fix.fix"
+Issues = "https://github.com/imperialwool/Amino.fix.fix/issues"
+
+[tool.hatch.version]
+path = "aminofixfix/__init__.py"
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "/aminofixfix",
+]
+exclude = [
+    "/.github",
+    "/docs",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["/aminofixfix"]

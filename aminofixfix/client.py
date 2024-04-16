@@ -39,7 +39,7 @@ class Client(Callbacks, SocketHandler):
         - deviceId: str
         - userAgent: str
         - proxies: str | dict 
-            - str support in beta
+            - from dict will be taken
         - socket_trace: bool = False
             - recieving all things that socket doing
         - socketDebugging: bool = False
