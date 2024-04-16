@@ -6,7 +6,7 @@
 [![Issues](https://img.shields.io/github/issues-raw/imperialwool/amino.fix.fix.svg?maxAge=25000)](https://github.com/imperialwool/Amino.fix.fix/issues)
 [![GitHub pull requests](https://img.shields.io/github/issues-pr/imperialwool/amino.fix.fix.svg?style=flat)](https://github.com/imperialwool/Amino.fix.fix/pulls)
 
-Fork of Amino.fix to improve this library. Also unofficial client to work with Aminoapps.
+Unofficial client to work with Aminoapps, based on Amino.fix.fix. Improved without losing compatibility.
 
 ## Important notices
 
