@@ -36,7 +36,7 @@ class ACM(client.Client):
             "timestamp": inttime()
         })
 
-        response = await self.session.post(f"/g/s/community", headers=self.additional_headers(data=data), data=data, proxies=self.proxies)
+        response = await self.session.post(f"/g/s/community", headers=self.additional_headers(data=data), data=data)
         if response.status_code != 200: return exceptions.CheckException(response)
         else: return response.status_code
 
@@ -54,18 +54,18 @@ class ACM(client.Client):
         })
 
         if self.comId is None: raise exceptions.CommunityNeeded()
-        response = await self.session.post(f"/g/s-x{self.comId}/community/delete-request", headers=self.additional_headers(data=data), data=data, proxies=self.proxies)
+        response = await self.session.post(f"/g/s-x{self.comId}/community/delete-request", headers=self.additional_headers(data=data), data=data)
         if response.status_code != 200: return exceptions.CheckException(response)
         else: return response.status_code
 
     async def list_communities(self, start: int = 0, size: int = 25):
-        response = await self.session.get(f"/g/s/community/managed?start={start}&size={size}", headers=self.additional_headers(), proxies=self.proxies)
+        response = await self.session.get(f"/g/s/community/managed?start={start}&size={size}", headers=self.additional_headers())
         if response.status_code != 200: return exceptions.CheckException(response)
         else: return objects.CommunityList(response.json()["communityList"]).CommunityList
 
     async def get_categories(self, start: int = 0, size: int = 25):
         if self.comId is None: raise exceptions.CommunityNeeded()
-        response = await self.session.get(f"/x{self.comId}/s/blog-category?start={start}&size={size}", headers=self.additional_headers(), proxies=self.proxies)
+        response = await self.session.get(f"/x{self.comId}/s/blog-category?start={start}&size={size}", headers=self.additional_headers())
         if response.status_code != 200: return exceptions.CheckException(response)
         else: return response.json()
 
@@ -77,7 +77,7 @@ class ACM(client.Client):
         })
 
         if self.comId is None: raise exceptions.CommunityNeeded()
-        response = await self.session.post(f"/x{self.comId}/s/community/configuration", headers=self.additional_headers(data=data), data=data, proxies=self.proxies)
+        response = await self.session.post(f"/x{self.comId}/s/community/configuration", headers=self.additional_headers(data=data), data=data)
         if response.status_code != 200: return response.status_code
         else: return response.json()
 
@@ -86,7 +86,7 @@ class ACM(client.Client):
         This method can be used for getting info about current themepack of community.
         """
         if self.comId is None: raise exceptions.CommunityNeeded()
-        response = await self.session.get(f"/g/s-x{self.comId}/community/info?withTopicList=1&withInfluencerList=1&influencerListOrderStrategy=fansCount", data=file.read(), headers=headers.Headers(data=file.read()).s_headers, proxies=self.proxies)
+        response = await self.session.get(f"/g/s-x{self.comId}/community/info?withTopicList=1&withInfluencerList=1&influencerListOrderStrategy=fansCount", data=file.read(), headers=headers.Headers(data=file.read()).s_headers)
         if response.status_code != 200: return exceptions.CheckException(response)
         else: return await response.json()['community']['themePack']
 
@@ -159,7 +159,7 @@ class ACM(client.Client):
         - theoretically you can provide different "w" and "h"
         """
         if self.comId is None: raise exceptions.CommunityNeeded()
-        response = await self.session.post(f"/x{self.comId}/s/media/upload/target/community-theme-pack", data=file.read(), headers=headers.Headers(data=file.read()).s_headers, proxies=self.proxies)
+        response = await self.session.post(f"/x{self.comId}/s/media/upload/target/community-theme-pack", data=file.read(), headers=headers.Headers(data=file.read()).s_headers)
         if response.status_code != 200: return exceptions.CheckException(response)
         else: return response.json()
 
@@ -170,14 +170,14 @@ class ACM(client.Client):
             raise exceptions.WrongType(rank)
 
         if self.comId is None: raise exceptions.CommunityNeeded()
-        response = await self.session.post(f"/x{self.comId}/s/user-profile/{userId}/{rank}", headers=self.additional_headers(), proxies=self.proxies)
+        response = await self.session.post(f"/x{self.comId}/s/user-profile/{userId}/{rank}", headers=self.additional_headers())
         if response.status_code != 200: return exceptions.CheckException(response)
         else: return response.status_code
 
     async def get_join_requests(self, start: int = 0, size: int = 25):
         if self.comId is None: raise exceptions.CommunityNeeded()
 
-        response = await self.session.get(f"/x{self.comId}/s/community/membership-request?status=pending&start={start}&size={size}", headers=self.additional_headers(), proxies=self.proxies)
+        response = await self.session.get(f"/x{self.comId}/s/community/membership-request?status=pending&start={start}&size={size}", headers=self.additional_headers())
         if response.status_code != 200: return exceptions.CheckException(response)
         else: return objects.JoinRequest(response.json()).JoinRequest
 
@@ -185,7 +185,7 @@ class ACM(client.Client):
         data = dumps({})
 
         if self.comId is None: raise exceptions.CommunityNeeded()
-        response = await self.session.post(f"/x{self.comId}/s/community/membership-request/{userId}/accept", headers=self.additional_headers(data=data), data=data, proxies=self.proxies)
+        response = await self.session.post(f"/x{self.comId}/s/community/membership-request/{userId}/accept", headers=self.additional_headers(data=data), data=data)
         if response.status_code != 200: return exceptions.CheckException(response)
         else: return response.status_code
 
@@ -193,14 +193,14 @@ class ACM(client.Client):
         data = dumps({})
 
         if self.comId is None: raise exceptions.CommunityNeeded()
-        response = await self.session.post(f"/x{self.comId}/s/community/membership-request/{userId}/reject", headers=self.additional_headers(data=data), data=data, proxies=self.proxies)
+        response = await self.session.post(f"/x{self.comId}/s/community/membership-request/{userId}/reject", headers=self.additional_headers(data=data), data=data)
         if response.status_code != 200: return exceptions.CheckException(response)
         else: return response.status_code
 
     async def get_community_stats(self):
         if self.comId is None: raise exceptions.CommunityNeeded()
 
-        response = await self.session.get(f"/x{self.comId}/s/community/stats", headers=self.additional_headers(), proxies=self.proxies)
+        response = await self.session.get(f"/x{self.comId}/s/community/stats", headers=self.additional_headers())
         if response.status_code != 200: return exceptions.CheckException(response)
         else: return objects.CommunityStats(response.json()["communityStats"]).CommunityStats
 
@@ -211,7 +211,7 @@ class ACM(client.Client):
         elif type.lower() == "curator": target = "curator"
         else: raise exceptions.WrongType(type)
 
-        response = await self.session.get(f"/x{self.comId}/s/community/stats/moderation?type={target}&start={start}&size={size}", headers=self.additional_headers(), proxies=self.proxies)
+        response = await self.session.get(f"/x{self.comId}/s/community/stats/moderation?type={target}&start={start}&size={size}", headers=self.additional_headers())
         if response.status_code != 200: return exceptions.CheckException(response)
         else: return objects.UserProfileList(response.json()["userProfileList"]).UserProfileList
 
@@ -226,7 +226,7 @@ class ACM(client.Client):
         })
 
         if self.comId is None: raise exceptions.CommunityNeeded()
-        response = await self.session.post(f"/x{self.comId}/s/community/configuration", headers=self.additional_headers(data=data), data=data, proxies=self.proxies)
+        response = await self.session.post(f"/x{self.comId}/s/community/configuration", headers=self.additional_headers(data=data), data=data)
         if response.status_code != 200: return exceptions.CheckException(response)
         else: return response.status_code
 
@@ -237,7 +237,7 @@ class ACM(client.Client):
         })
 
         if self.comId is None: raise exceptions.CommunityNeeded()
-        response = await self.session.post(f"/x{self.comId}/s/community/guideline", headers=self.additional_headers(data=data), data=data, proxies=self.proxies)
+        response = await self.session.post(f"/x{self.comId}/s/community/guideline", headers=self.additional_headers(data=data), data=data)
         if response.status_code != 200: return exceptions.CheckException(response)
         else: return response.status_code
 
@@ -253,7 +253,7 @@ class ACM(client.Client):
         data = dumps(data)
 
         if self.comId is None: raise exceptions.CommunityNeeded()
-        response = await self.session.post(f"/x{self.comId}/s/community/settings", data=data, headers=self.additional_headers(data=data), proxies=self.proxies)
+        response = await self.session.post(f"/x{self.comId}/s/community/settings", data=data, headers=self.additional_headers(data=data))
         if response.status_code != 200: return exceptions.CheckException(response)
         else: return response.status_code
 
@@ -283,7 +283,7 @@ class ACM(client.Client):
         })
 
         if self.comId is None: raise exceptions.CommunityNeeded()
-        response = await self.session.post(f"/x{self.comId}/s/community/configuration", headers=self.additional_headers(data=data), data=data, proxies=self.proxies)
+        response = await self.session.post(f"/x{self.comId}/s/community/configuration", headers=self.additional_headers(data=data), data=data)
         if response.status_code != 200: return exceptions.CheckException(response)
         else: return response.status_code
 
@@ -294,24 +294,24 @@ class ACM(client.Client):
         })
 
         if self.comId is None: raise exceptions.CommunityNeeded()
-        response = await self.session.post(f"/x{self.comId}/s/influencer/{userId}", headers=self.additional_headers(data=data), data=data, proxies=self.proxies)
+        response = await self.session.post(f"/x{self.comId}/s/influencer/{userId}", headers=self.additional_headers(data=data), data=data)
         if response.status_code != 200: return exceptions.CheckException(response)
         else: return response.status_code
 
     async def remove_influencer(self, userId: str):
         if self.comId is None: raise exceptions.CommunityNeeded()
-        response = await self.session.delete(f"/x{self.comId}/s/influencer/{userId}", headers=self.additional_headers(), proxies=self.proxies)
+        response = await self.session.delete(f"/x{self.comId}/s/influencer/{userId}", headers=self.additional_headers())
         if response.status_code != 200: return exceptions.CheckException(response)
         else: return response.status_code
 
     async def get_notice_list(self, start: int = 0, size: int = 25):
         if self.comId is None: raise exceptions.CommunityNeeded()
-        response = await self.session.get(f"/x{self.comId}/s/notice?type=management&status=1&start={start}&size={size}", headers=self.additional_headers(), proxies=self.proxies)
+        response = await self.session.get(f"/x{self.comId}/s/notice?type=management&status=1&start={start}&size={size}", headers=self.additional_headers())
         if response.status_code != 200: return exceptions.CheckException(response)
         else: return objects.NoticeList(response.json()["noticeList"]).NoticeList
 
     async def delete_pending_role(self, noticeId: str):
         if self.comId is None: raise exceptions.CommunityNeeded()
-        response = await self.session.delete(f"/x{self.comId}/s/notice/{noticeId}", headers=self.additional_headers(), proxies=self.proxies)
+        response = await self.session.delete(f"/x{self.comId}/s/notice/{noticeId}", headers=self.additional_headers())
         if response.status_code != 200: return exceptions.CheckException(response)
         else: return response.status_code

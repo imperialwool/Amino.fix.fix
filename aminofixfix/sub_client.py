@@ -3160,7 +3160,8 @@ class SubClient(Client):
             - time == 3 is 8 hours
             - time == 4 is 12 hours
             - time == 5 is 24 hours
-            - time == 6 is 72 hours (visually, its 24 hours)
+            - time == 6 is .. hours
+            - time == 7 is .. hours
         - title: str = None
         - reason: str = None
 
@@ -3174,7 +3175,8 @@ class SubClient(Client):
         elif time == 3: time = 21600
         elif time == 4: time = 43200
         elif time == 5: time = 86400
-        elif time == 6: time = 259200
+        # i will not implement for now strikes higher than 24 hours
+        # fuck you aminoservice
         else: raise exceptions.WrongType(time)
 
         data = dumps({

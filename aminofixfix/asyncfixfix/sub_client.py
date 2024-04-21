@@ -2013,7 +2013,6 @@ class SubClient(Client):
         elif time == 3: time = 21600
         elif time == 4: time = 43200
         elif time == 5: time = 86400
-        elif time == 6: time = 259200
         else: raise exceptions.WrongType(time)
 
         data = dumps({
