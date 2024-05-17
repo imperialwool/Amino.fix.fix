@@ -4,9 +4,14 @@ theme:
   highlightjs: true
 plugins:
   - search
+  - gen-files:
+      scripts:
+      - docs/scripts/gen_ref_pages.py
+  - literate-nav:
+    nav_file: SUMMARY.md
+  - section-index
   - mkdocstrings:
       handlers:
-        # See: https://mkdocstrings.github.io/python/usage/
         python:
           options:
             docstring_style: sphinx
