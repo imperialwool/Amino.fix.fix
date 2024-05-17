@@ -49,9 +49,9 @@ def on_text_message(data):
 
 ## API Reference
 
-[old documentation](https://aminopy.readthedocs.io/en/latest/)
+[New documentation!](https://aminofixfix.readthedocs.io/en/latest/)
 
-new documentation in progress
+[old documentation](https://aminopy.readthedocs.io/en/latest/)
 
 ## Licenses
 
