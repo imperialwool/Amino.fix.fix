@@ -1,5 +1,6 @@
 # Amino.fix.fix
 
+[![Documentation Status](https://readthedocs.org/projects/aminofixfix/badge/?version=latest)](https://aminofixfix.readthedocs.io/en/latest/?badge=latest)
 [![PyPi Version](https://img.shields.io/pypi/v/amino.fix.fix.svg)](https://pypi.python.org/pypi/amino.fix.fix/)
 [![PyPi Preview](https://img.shields.io/badge/pypi_pre-v1.0.7b4-blue)](https://pypi.org/project/amino.fix.fix/#history)
 ![Python Version](https://img.shields.io/badge/python-%3E%3D3.8-orange)
