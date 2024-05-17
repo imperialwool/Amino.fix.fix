@@ -5,12 +5,11 @@ from time import sleep
 from json import dumps
 from typing import BinaryIO
 from threading import Thread
-from httpx import Client as HttpxClient
 from httpx import Timeout as TimeoutConfig
 
-from .lib.facades import RequestsClient
 from .socket import Callbacks, SocketHandler
 from .lib import exceptions, headers, objects, helpers
+from .lib.facades import RequestsClient, SyncHttpxClient
 from .lib.helpers import gen_deviceId, inttime, clientrefid, str_uuid4, bytes_to_b64, LOCAL_TIMEZONE
 
 class Client(Callbacks, SocketHandler):
@@ -120,7 +119,7 @@ class Client(Callbacks, SocketHandler):
                 timeout=self.timeout_settings
             )
         else:
-            self.session = HttpxClient(
+            self.session = SyncHttpxClient(
                 headers=headers.BASIC_HEADERS,
                 http2=http2_enabled,
                 base_url=self.api,

@@ -61,6 +61,6 @@ new documentation in progress
 - [websocket-client](https://github.com/websocket-client/websocket-client) is [Apache 2.0 licensed](https://github.com/websocket-client/websocket-client/blob/master/LICENSE) code. Used for sockets.
 - [python-socks](https://github.com/romis2012/python-socks) is [Apache 2.0 licensed](https://github.com/romis2012/python-socks/blob/master/LICENSE.txt) code. Used for SOCKS proxies in API requests and (in future) sockets.
 - [amino.fix](https://github.com/Minori101/Amino.fix) is [MIT licensed](https://github.com/Minori101/Amino.fix/blob/main/LICENSE). Forked to do this library.
-- [setuptools](https://github.com/pypa/setuptools) is [MIT licensed](https://github.com/pypa/setuptools/blob/main/LICENSE). Used to build PyPI releases.
+- [hathcling](https://github.com/pypa/hatch/) is [MIT licensed](https://github.com/pypa/setuptools/blob/main/LICENSE). Used to build PyPI releases.
 
 This library is [MIT licensed](https://github.com/imperialwool/Amino.fix.fix/blob/main/LICENSE) code.

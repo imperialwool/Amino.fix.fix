@@ -1,31 +1,41 @@
 from __future__ import annotations
 # ^ this thing should fix problem for python3.9 and lower(?)
 
-from requests import Session, Response
+from httpx import Response
+from httpx import Timeout as TimeoutConfig
+from httpx import AsyncClient as HTTPXASYNCCLIENT
 
-class RequestsClient:
+class AsyncHttpxClient:
     '''
-        Facade for Requests library to be compactable with HTTPX client style.
-        Also made for escaping 429.
-
-        [TODO]: timeouts
+        Facade for HTTPX library. Async version. Made for escaping 429.
     '''
     def __init__(
             self,
             headers: dict,
             base_url: str,
             proxies: dict = {},
+            timeout: TimeoutConfig | int = 30,
+            http2_enabled: bool = False,
             **kwargs
         ):
         '''
-            Init of Requests Client.
+            Init of HTTPX Async Client.
         '''
-        self.__client: Session = Session()
-        self.__base_url = base_url
         self.__proxies = proxies
+        self.__timeout = timeout
+        self.__base_url = base_url
         self.__main_headers = headers
+        self.__http2_enabled = http2_enabled
+        self.__client: HTTPXASYNCCLIENT = HTTPXASYNCCLIENT(
+            base_url = self.__base_url,
+            proxies  = self.__proxies,
+            timeout  = self.__timeout,
+            headers  = self.__main_headers,
+            http2    = self.__http2_enabled,
+            follow_redirects = True
+        )
 
-    def request(
+    async def request(
             self,
             method: str,
             path: str,
@@ -42,20 +52,19 @@ class RequestsClient:
             - etc. just for not breaking stuff
 
             Returns:
-            - object `requests.Response`
+            - object `httpx.Response`
         '''
         while True:
-            r = self.__client.request(
-                method=method,
-                url = self.__base_url + path,
-                headers=self.__main_headers | headers,
-                proxies=self.__proxies,
-                data=data
+            r = await self.__client.request(
+                method  = method,
+                url     = path,
+                headers = self.__main_headers | headers,
+                data    = data
             ) 
             if r.status_code != 429:
                 return r
     
-    def get(
+    async def get(
             self,
             path: str,
             headers: dict = {},
@@ -70,11 +79,11 @@ class RequestsClient:
             - etc. just for not breaking stuff
 
             Returns:
-            - object `requests.Response`
+            - object `httpx.Response`
         '''
-        return self.request("GET", path, headers)
+        return await self.request("GET", path, headers)
     
-    def post(
+    async def post(
             self,
             path: str,
             headers: dict = {},
@@ -93,9 +102,9 @@ class RequestsClient:
             Returns:
             - object `requests.Response`
         '''
-        return self.request("POST", path, headers, data)
+        return await self.request("POST", path, headers, data)
     
-    def delete(
+    async def delete(
             self,
             path: str,
             headers: dict = {},
@@ -112,6 +121,6 @@ class RequestsClient:
             - etc. just for not breaking stuff
 
             Returns:
-            - object `requests.Response`
+            - object `httpx.Response`
         '''
-        return self.request("DELETE", path, headers, data)
+        return await self.request("DELETE", path, headers, data)

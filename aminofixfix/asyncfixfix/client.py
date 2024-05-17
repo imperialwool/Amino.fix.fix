@@ -6,11 +6,10 @@ from json import dumps
 from typing import BinaryIO
 from threading import Thread
 from httpx import Timeout as TimeoutConfig
-from httpx import AsyncClient as HttpxClient
 
 from .socket import Callbacks, SocketHandler
 from ..lib import exceptions, headers, objects, helpers
-from ..lib.facades import AiohttpClient, AiohttpResponse
+from ..lib.facades import AiohttpClient, AiohttpResponse, AsyncHttpxClient
 from ..lib.helpers import gen_deviceId, inttime, clientrefid, str_uuid4, bytes_to_b64, LOCAL_TIMEZONE
 
 class Client(Callbacks, SocketHandler):
@@ -63,7 +62,7 @@ class Client(Callbacks, SocketHandler):
                 timeout=self.timeout_settings
             )
         else:
-            self.session = HttpxClient(
+            self.session = AsyncHttpxClient(
                 headers=headers.BASIC_HEADERS,
                 http2=http2_enabled,
                 base_url=self.api,

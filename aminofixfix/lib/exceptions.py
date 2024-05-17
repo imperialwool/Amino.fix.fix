@@ -970,6 +970,7 @@ def CheckCode(data: str | dict, api_code: int, http_error_code: bool = False):
         elif api_code == 404: raise NotFound(data)
         elif api_code == 413: raise TooBigContent(data)
         elif api_code == 418: raise Teapot(data)
+        elif api_code == 429: raise TooManyRequests(data)
         elif api_code == 500: raise InternalServerError(data)
         elif api_code in [502, 503, 504]: raise ServersAreDying(data)
         else: raise UnknownError(data)

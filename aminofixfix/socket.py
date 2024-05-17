@@ -23,12 +23,18 @@ class SocketHandler:
         self.headers = None
         self.proxies = None
         self.client = client
-        self.reconnectTime = 180
+        self.reconnectTime = 600
         self.socket_thread = None
+        self.pingTime = 10
+        self.ping_thread = None
+        self.ping_payload = dumps({"t": 116, "o": {"threadChannelUserInfoList": []}})
 
         if self.socket_enabled:
             self.reconnect_thread = Thread(target=self.reconnect_handler)
             self.reconnect_thread.start()
+
+            self.ping_thread = Thread(target=self.ping_handler)
+            self.ping_thread.start()
 
         websocket.enableTrace(socket_trace)
 
@@ -39,9 +45,12 @@ class SocketHandler:
         if self.debug is True:
             print("[SOCKET: {}] ({})".format(status, dt.now().strftime('%Y-%m-%d %H:%M:%S')), text)
 
+    def ping_handler(self):
+        while True:
+            sleep(self.pingTime)
+            self.socket.send(self.ping_payload)
+
     def reconnect_handler(self):
-        # Made by enchart#3410 thx
-        # Fixed by The_Phoenix#3967
         while True:
             sleep(self.reconnectTime)
 
@@ -55,8 +64,8 @@ class SocketHandler:
         self.socket.run_forever(
             sslopt={"cert_reqs": ssl.CERT_NONE},
             skip_utf8_validation=True,
-            ping_interval=10,
-            ping_payload=dumps({"t": 116, "o": {"threadChannelUserInfoList": []}})
+            ping_interval=self.pingTime,
+            ping_payload=self.ping_payload
         )
 
     def handle_message(self, ws, data):
@@ -66,11 +75,10 @@ class SocketHandler:
     def send(self, data):
         self.socket_log(f"Sending data: {data}")
         
-        if not self.socket_thread:
-            self.run_amino_socket()
-            sleep(5)
-
-        self.socket.send(data)
+        try: self.socket.send(data)
+        except Exception as e:
+            self.socket_log(str(e), "ERROR")
+        
     def handle_error(self, ws, err):
         self.socket_log(
             "Critical error in socket/lib/your code: {} | Socket URL: {}".format(

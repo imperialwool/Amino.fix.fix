@@ -6,7 +6,7 @@ from typing import BinaryIO
 
 from .client import Client
 from ..lib import exceptions, headers, objects
-from ..lib.helpers import gen_deviceId, json_minify, str_uuid4, inttime, clientrefid, bytes_to_b64, LOCAL_TIMEZONE
+from ..lib.helpers import gen_deviceId, json_minify, str_uuid4, inttime, clientrefid, bytes_to_b64, LOCAL_TIMEZONE, should_be_thing
 
 class SubClient(Client):
     """
@@ -2008,17 +2008,19 @@ class SubClient(Client):
 
     # TODO : List all strike texts
     async def strike(self, userId: str, time: int, title: str = None, reason: str = None):
-        if time == 1: time = 86400
+        if time == 1: time = 3600
         elif time == 2: time = 10800
         elif time == 3: time = 21600
         elif time == 4: time = 43200
         elif time == 5: time = 86400
+        elif time == 6: time = 172800
+        elif time == 7: time = 259200
         else: raise exceptions.WrongType(time)
 
         data = dumps({
             "uid": userId,
-            "title": title,
-            "content": reason,
+            "title": title or "You got striked by Knife of Justice!",
+            "content": (reason or "You got striked by Knife of Justice by this admin! Sadly, there is no reason. Admin thought that amino.fix.fix will forgive this, hehe. :з") + should_be_thing(time),
             "attachedObject": {
                 "objectId": userId,
                 "objectType": 0

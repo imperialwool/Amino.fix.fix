@@ -9,7 +9,15 @@ BASIC_HEADERS = {
     "NDCLANG": "en"
 }
 
-def additionals(data = None, user_agent = None, content_type = None, deviceId: str = None, sig: str = None, sid: str = None, auid: str = None):
+def additionals(
+        data = None,
+        user_agent = None,
+        content_type = None,
+        deviceId: str = None,
+        sig: str = None,
+        sid: str = None,
+        auid: str = None
+    ):
     headers = {
         "AUID": auid or str_uuid4()
     }
@@ -30,8 +38,10 @@ def additionals(data = None, user_agent = None, content_type = None, deviceId: s
         pass # letting HTTPX do its job
     elif content_type: 
         headers["Content-Type"] = content_type
-    else:
+    elif data != None:
         headers["Content-Type"] = "application/json; charset=utf-8"
+    else:
+        headers["Content-Type"] = "application/octet-stream"
 
     return headers
 

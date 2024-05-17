@@ -297,7 +297,7 @@ class ACM(Client):
             raise exceptions.WrongType(rank)
 
         if self.comId is None: raise exceptions.CommunityNeeded()
-        response = self.session.post(f"/x{self.comId}/s/user-profile/{userId}/{rank}", headers=self.additional_headers())
+        response = self.session.post(f"/x{self.comId}/s/user-profile/{userId}/{rank}", data="", headers=self.additional_headers(""))
         if response.status_code != 200: return exceptions.CheckException(response)
         else: return response.status_code
 

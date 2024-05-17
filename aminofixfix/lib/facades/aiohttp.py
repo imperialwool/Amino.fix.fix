@@ -7,6 +7,7 @@ from aiohttp import ClientSession, ClientResponse
 class AiohttpClient:
     '''
         Facade for aiohttp library to be compactable with HTTPX client style.
+        Also made for escaping 429.
 
         [TODO]: timeouts
     '''
@@ -21,12 +22,37 @@ class AiohttpClient:
         self.__main_headers = headers
 
         self.__client: ClientSession = ClientSession(
-            base_url=self.__base_url,
-            headers=self.__main_headers,
-            proxies=self.__proxies
+            headers=self.__main_headers
         )
+
+    async def request(
+        self,
+        method: str,
+        url: str,
+        headers: dict = {},
+        data: str | dict | bytes | None = None,
+        **kwargs
+    ) -> AiohttpResponse:
+        while True:
+            async with await self.__client.request(
+                method=method,
+                url=self.__base_url+url,
+                headers=headers,
+                data=data,
+                ssl=False,
+                proxy=self.__proxies
+            ) as resp:
+                if resp.status not in [429]:
+                    answer = AiohttpResponse(resp)
+                    await answer._init()
+                    return answer
     
-    async def get(self, url: str, headers: dict = {}, **kwargs) -> AiohttpResponse:
+    async def get(
+        self,
+        url: str,
+        headers: dict = {},
+        **kwargs
+    ) -> AiohttpResponse:
         '''
             Get request.
 
@@ -38,12 +64,7 @@ class AiohttpClient:
             Returns:
             - object `AiohttpResponse`
         '''
-        async with await self.__client.get(
-            url=url,
-            headers=headers,
-            ssl=False
-        ) as resp:
-            return AiohttpResponse(resp)    
+        return await self.request("GET", url, headers)  
     
     async def post(self, url: str, headers: dict = {}, data: str | dict | bytes | None = None, **kwargs) -> AiohttpResponse:
         '''
@@ -58,14 +79,7 @@ class AiohttpClient:
             Returns:
             - object `AiohttpResponse`
         '''
-        async with await self.__client.post(
-            url=url,
-            data=data if not isinstance(data, dict) else None,
-            json=data if isinstance(data, dict) else None,
-            headers=headers,
-            ssl=False
-        ) as resp:
-            return AiohttpResponse(resp) 
+        return await self.request("POST", url, headers, data)  
     
     async def delete(self, url: str, headers: dict = {}, data: str | dict | bytes | None = None, **kwargs) -> AiohttpResponse:
         '''
@@ -80,14 +94,7 @@ class AiohttpClient:
             Returns:
             - object `AiohttpResponse`
         '''
-        async with await self.__client.delete(
-            url=url,
-            data=data if not isinstance(data, dict) else None,
-            json=data if isinstance(data, dict) else None,
-            headers=headers,
-            ssl=False
-        ) as resp:
-            return AiohttpResponse(resp) 
+        return await self.request("DELETE", url, headers, data)  
     
 class AiohttpResponse:
     '''
