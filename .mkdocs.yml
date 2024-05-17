@@ -8,13 +8,9 @@ plugins:
       scripts:
       - docs/scripts/gen_ref_pages.py
   - literate-nav:
-    nav_file: SUMMARY.md
+      nav_file: SUMMARY.md
   - section-index
-  - mkdocstrings:
-      handlers:
-        python:
-          options:
-            docstring_style: sphinx
+  - mkdocstrings
 markdown_extensions:
   - markdown_include.include:
       base_path: .
