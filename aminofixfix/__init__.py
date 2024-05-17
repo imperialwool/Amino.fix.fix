@@ -36,3 +36,13 @@ def work():
         print("\nCan't check if amino.fix.fix needs update. Please, check internet connection or firewall.\n")
 
 Thread(target=work).start()
+
+'''
+- gen-files:
+      scripts:
+      - docs/scripts/gen_ref_pages.py
+
+  - literate-nav:
+      nav_file: SUMMARY.md
+  - section-index
+  '''

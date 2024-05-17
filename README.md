@@ -50,7 +50,7 @@ def on_text_message(data):
 
 ## API Reference
 
-[New documentation!](https://aminofixfix.readthedocs.io/en/latest/)
+[New documentation!](https://aminofixfix.readthedocs.io/en/latest/) (In progress!!)
 
 [old documentation](https://aminopy.readthedocs.io/en/latest/)
 

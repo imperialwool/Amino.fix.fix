@@ -1,6 +1,3 @@
 mkdocs
 mkdocstrings[python]
 markdown-include
-mkdocs-gen-files
-mkdocs-literate-nav
-mkdocs-section-index

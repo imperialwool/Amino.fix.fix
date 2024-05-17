@@ -73,14 +73,14 @@ def sid_to_uid(SID: str) -> str: return decode_sid(SID)["2"]
 
 def sid_to_ip_address(SID: str) -> str: return decode_sid(SID)["4"]
 
-def json_minify(string, strip_space=True):
-    '''
+def json_minify(string, strip_space=True) -> str:
+    """
         Took from: https://github.com/getify/JSON.minify/tree/python
         Library under MIT license.
         
         I think install library to just minify json is stupid,
         so I copied function, sorry.
-    '''
+    """
     tokenizer = re.compile(r'"|(/\*)|(\*/)|(//)|\n|\r')
     end_slashes_re = re.compile(r'(\\)*$')
 

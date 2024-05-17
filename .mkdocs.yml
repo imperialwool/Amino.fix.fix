@@ -4,13 +4,10 @@ theme:
   highlightjs: true
 plugins:
   - search
-  - gen-files:
-      scripts:
-      - docs/scripts/gen_ref_pages.py
-  - literate-nav:
-      nav_file: SUMMARY.md
-  - section-index
-  - mkdocstrings
+  - mkdocstrings:
+      handlers:
+        options:
+          docstring_style: sphinx
 markdown_extensions:
   - markdown_include.include:
       base_path: .
