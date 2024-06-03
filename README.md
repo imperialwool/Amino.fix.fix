@@ -7,12 +7,11 @@
 [![Issues](https://img.shields.io/github/issues-raw/imperialwool/amino.fix.fix.svg?maxAge=25000)](https://github.com/imperialwool/Amino.fix.fix/issues)
 [![GitHub pull requests](https://img.shields.io/github/issues-pr/imperialwool/amino.fix.fix.svg?style=flat)](https://github.com/imperialwool/Amino.fix.fix/pulls)
 
-Unofficial client to work with Aminoapps, based on Amino.fix and HTTPX. Improved without losing compatibility.
+Unofficial client to work with Aminoapps, based on Amino.fix and HTTPX. Improved without losing compatibility with aminofix.
 
 ## Important notices
 
 - in subclient you should pass `client`, **not** `profile`
-- if you have issues with HTTPX [let me know here](https://github.com/imperialwool/Amino.fix.fix/issues/3)
 - `lib/util` -> `lib/`
 - if you have issues in pydroid, reinstall/update it
 
@@ -50,9 +49,9 @@ def on_text_message(data):
 
 ## API Reference
 
-[New documentation!](https://aminofixfix.readthedocs.io/en/latest/) (In progress!!)
+### [Here is docs, hosted on readthedocs.](https://aminofixfix.readthedocs.io/en/latest/) Generated based on code.
 
-[old documentation](https://aminopy.readthedocs.io/en/latest/)
+###### [old documentation](https://aminopy.readthedocs.io/en/latest/) (in case you need this for some reason)
 
 ## Licenses
 
@@ -62,6 +61,6 @@ def on_text_message(data):
 - [websocket-client](https://github.com/websocket-client/websocket-client) is [Apache 2.0 licensed](https://github.com/websocket-client/websocket-client/blob/master/LICENSE) code. Used for sockets.
 - [python-socks](https://github.com/romis2012/python-socks) is [Apache 2.0 licensed](https://github.com/romis2012/python-socks/blob/master/LICENSE.txt) code. Used for SOCKS proxies in API requests and (in future) sockets.
 - [amino.fix](https://github.com/Minori101/Amino.fix) is [MIT licensed](https://github.com/Minori101/Amino.fix/blob/main/LICENSE). Forked to do this library.
-- [hathcling](https://github.com/pypa/hatch/) is [MIT licensed](https://github.com/pypa/setuptools/blob/main/LICENSE). Used to build PyPI releases.
+- [hatch](https://github.com/pypa/hatch/) is [MIT licensed](https://github.com/pypa/setuptools/blob/main/LICENSE). Used to build PyPI releases.
 
 This library is [MIT licensed](https://github.com/imperialwool/Amino.fix.fix/blob/main/LICENSE) code.
