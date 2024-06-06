@@ -11,6 +11,7 @@ from .socket import Callbacks, SocketHandler
 from .lib import exceptions, headers, objects, helpers
 from .lib.facades import RequestsClient, SyncHttpxClient
 from .lib.helpers import gen_deviceId, inttime, clientrefid, str_uuid4, bytes_to_b64, LOCAL_TIMEZONE
+from mimetypes import guess_type
 
 class Client(Callbacks, SocketHandler):
     """
@@ -887,29 +888,11 @@ class Client(Callbacks, SocketHandler):
         else:
             return objects.UserProfile(response.json()["account"]).UserProfile
 
-    def upload_media(self, file: BinaryIO, fileType: str):
-        """
-        Upload file to the amino servers.
-
-        **Parameters**
-            - **file** : File to be uploaded.
-
-        **Returns**
-            - **Success** : Url of the file uploaded to the server.
-
-            - **Fail** : :meth:`Exceptions <aminofixfix.lib.exceptions>`
-        """
-        if fileType == "audio":
-            t = "audio/aac"
-        elif fileType == "image":
-            t = "image/jpg"
-        elif fileType == "gif":
-            t = "image/gif"
-        else: raise exceptions.SpecifyType(fileType)
-
+    def upload_media(self, file: BinaryIO):
+        fileType =  guess_type(file.name)[0]
+        if fileType not in ("image/gif", "image/jpg", "image/png", "audio/aac"): raise exceptions.SpecifyType(fileType)
         data = file.read()
-
-        response = self.session.post(f"/g/s/media/upload", data=data, headers=self.additional_headers(content_type=t, data=data))
+        response = self.session.post(f"/g/s/media/upload", data=data, headers=self.additional_headers(content_type=fileType, data=data))
         if response.status_code != 200: 
             return exceptions.CheckException(response)
         else:
